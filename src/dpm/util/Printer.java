@@ -15,7 +15,25 @@ import lejos.hardware.lcd.TextLCD;
  */
 public class Printer {
 	
-	public static final TextLCD T = LocalEV3.get().getTextLCD();
+	public static Printer theInstance;
+	
+	public final TextLCD textLCD;
+	
+	private Printer(){
+		textLCD = LocalEV3.get().getTextLCD();
+	}
+	
+	/**
+	 * Gets the instance of Printer. If the instance is not initialized,
+	 * initializes it.
+	 * 
+	 * @return the instance of Printer
+	 */
+	public static synchronized Printer getInstance(){
+		if(theInstance == null)
+			theInstance = new Printer();
+		return theInstance;
+	}
 	
 	/**
 	 * Prints a list of Strings on consecutive lines on the screen.
@@ -24,12 +42,12 @@ public class Printer {
 	 * @param startLine		The line at which the printing begins
 	 * @param clearFirst	If true, clears all text from the screen before printing
 	 */
-	public static void display(List<String> strs, int startLine, boolean clearFirst){
+	public synchronized void display(List<String> strs, int startLine, boolean clearFirst){
 		if(clearFirst)
-			T.clear();
+			textLCD.clear();
 		for(int i = 0; i<strs.size(); i++){
-			T.clear(startLine+i);
-			T.drawString(strs.get(i), 0, i + startLine);
+			textLCD.clear(startLine+i);
+			textLCD.drawString(strs.get(i), 0, i + startLine);
 		}
 	}
 	
@@ -39,7 +57,7 @@ public class Printer {
 	 * 
 	 * @param strs			The Strings to be printed
 	 */
-	public static void display(List<String> strs){
+	public synchronized void display(List<String> strs){
 		display(strs, 0, true);
 	}
 	
@@ -50,7 +68,7 @@ public class Printer {
 	 * @param startLine		The line where the String is to be printed
 	 * @param clearFirst	If true, clears all text from the screen before printing
 	 */
-	public static void display(String str, int startLine, boolean clearFirst){
+	public synchronized void display(String str, int startLine, boolean clearFirst){
 		List<String> strs = new ArrayList<String>();
 		strs.add(str);
 		display(strs, startLine, clearFirst);
@@ -61,11 +79,11 @@ public class Printer {
 	 * 
 	 * @param strs			The Strings to be printed
 	 */
-	public static void display(String str){
+	public synchronized void display(String str){
 		display(str, 0, true);
 	}
 	
-	public static TextLCD getTextLCD(){
-		return T;
+	public synchronized TextLCD getTextLCD(){
+		return textLCD;
 	}
 }
