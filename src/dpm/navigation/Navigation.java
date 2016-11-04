@@ -33,6 +33,8 @@ public class Navigation implements Interruptable{
 	public Navigation(Odometer odometer){
 		this.odometer = odometer;
 		this.isNavigating = false;
+		this.leftMotor = Motors.getMotor(Motors.LEFT);
+		this.rightMotor = Motors.getMotor(Motors.RIGHT);
 		this.position = new double[3];
 	}
 	

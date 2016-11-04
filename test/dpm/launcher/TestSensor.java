@@ -1,6 +1,7 @@
 package dpm.launcher;
 
 import dpm.util.Printer;
+import dpm.util.RemoteBrickManager;
 import dpm.util.Sensors;
 import lejos.hardware.Button;
 import lejos.robotics.SampleProvider;
@@ -14,6 +15,7 @@ public class TestSensor{
 		(new Thread() {
 			public void run() {
 				while (Button.waitForAnyPress() != Button.ID_ESCAPE){}
+				RemoteBrickManager.closeSlave();
 				System.exit(0);
 			}
 		}).start();

@@ -80,7 +80,7 @@ public class Repository {
 	 */
 	public static void localize(){
 		if(localization == null)
-			localization = new Localization(getNavigation());
+			localization = new Localization();
 		localization.doLocalization();
 	}
 	

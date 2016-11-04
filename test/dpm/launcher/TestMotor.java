@@ -2,6 +2,7 @@ package dpm.launcher;
 
 import dpm.util.Motors;
 import dpm.util.Printer;
+import dpm.util.RemoteBrickManager;
 import lejos.hardware.Button;
 import lejos.robotics.RegulatedMotor;
 
@@ -17,6 +18,7 @@ public class TestMotor {
 		(new Thread() {
 			public void run() {
 				while (Button.waitForAnyPress() != Button.ID_ESCAPE){}
+				RemoteBrickManager.closeSlave();
 				System.exit(0);
 			}
 		}).start();

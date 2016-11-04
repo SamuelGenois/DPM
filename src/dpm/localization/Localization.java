@@ -1,11 +1,12 @@
 package dpm.localization;
 
+import dpm.launcher.Repository;
 import dpm.navigation.Navigation;
 import dpm.odometry.Odometer;
+import dpm.util.Motors;
 import dpm.util.Sensors;
 import lejos.hardware.Sound;
-import lejos.hardware.ev3.LocalEV3;
-import lejos.hardware.motor.EV3LargeRegulatedMotor;
+import lejos.robotics.RegulatedMotor;
 import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 
@@ -14,7 +15,7 @@ public class Localization {
 	public static final int MOTOR_ROTATE_SPEED = 100;
 
 	private Odometer odo;
-	private EV3LargeRegulatedMotor leftMotor, rightMotor;
+	private RegulatedMotor leftMotor, rightMotor;
 	private Navigation navi;
 	private SampleProvider usSensor;
 	private float[] usData;
@@ -27,13 +28,13 @@ public class Localization {
 	private double sensorDist = 8.0;
 	
 
-	public Localization(Navigation navi) {
+	public Localization() {
 		this.usSensor = Sensors.getSensor(Sensors.US_LEFT);
 		this.usData = new float[usSensor.sampleSize()];
-		//this.navi = navi;
-		this.odo = navi.getOdometer();
-		this.leftMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
-		this.rightMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
+		this.navi = Repository.getNavigation();
+		this.odo = Repository.getOdometer();
+		this.leftMotor = Motors.getMotor(Motors.LEFT); 
+		this.rightMotor = Motors.getMotor(Motors.RIGHT);
 	}
 	//most of the code below are re-used from previse lab with minimal value changes due to the modification of the robot.
 	public void doLocalization() {
@@ -49,7 +50,7 @@ public class Localization {
 				ccwRotation();						//rotating counterclockwise
 
 				if(getFilteredData() > wallDist){	// as it detects the first opening
-					odo.setPosition(new double [] {0.0, 0.0, 0.0}, new boolean [] {true, true, true}); 	
+					odo.setPosition(new double [] {0.0, 0.0, 0.0}, new boolean [] {true, true, true});
 					Sound.beep();
 					angleA = 0.0;					//set angle A
 					counterclockwise = false;
@@ -121,15 +122,11 @@ public class Localization {
 
 	private void cwRotation(){
 		leftMotor.setSpeed(MOTOR_ROTATE_SPEED);
-		rightMotor.setSpeed(MOTOR_ROTATE_SPEED);
-		leftMotor.forward();
-		rightMotor.backward();
+		rightMotor.setSpeed(-MOTOR_ROTATE_SPEED);
 	}
 
 	private void ccwRotation(){
-		leftMotor.setSpeed(MOTOR_ROTATE_SPEED);
+		leftMotor.setSpeed(-MOTOR_ROTATE_SPEED);
 		rightMotor.setSpeed(MOTOR_ROTATE_SPEED);
-		leftMotor.backward();
-		rightMotor.forward();
 	}
 }

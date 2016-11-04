@@ -94,29 +94,29 @@ public class Motors{
 		}
 		
 		@Override
-		public synchronized void setSpeed(int speed){
+		public void setSpeed(int speed){
 			if(speed >= 0){
-				motor.setSpeed(speed);
+				motor.setSpeed(Math.abs(speed));
 				forward();
 			}
 			else {
-				motor.setSpeed(-speed);
+				motor.setSpeed(Math.abs(speed));
 				backward();
 			}
 		}
 		
 		@Override
-		public synchronized void stop(){
+		public void stop(){
 			motor.stop();
 		}
 		
 		@Override
-		public synchronized void rotate(int angle, boolean immediateReturn){
+		public void rotate(int angle, boolean immediateReturn){
 			motor.rotate(angle, immediateReturn);
 		}
 		
 		@Override
-		public synchronized void rotateTo(int angle, boolean immediateReturn){
+		public void rotateTo(int angle, boolean immediateReturn){
 			motor.rotateTo(angle, immediateReturn);
 		}
 

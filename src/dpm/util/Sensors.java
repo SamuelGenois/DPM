@@ -28,7 +28,7 @@ public class Sensors {
 		switch(id){
 			case US_LEFT:
 				if(leftUSSensor == null)
-					leftUSSensor = new Sensor(RemoteBrickManager.SLAVE, "S1" , US_DISTANCE);
+					leftUSSensor = new Sensor(RemoteBrickManager.MASTER, "S1" , US_DISTANCE);
 				return leftUSSensor;
 			case US_RIGHT:
 				if(rightUSSensor == null)
