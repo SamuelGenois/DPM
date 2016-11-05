@@ -20,9 +20,9 @@ public class Motors{
 	
 	public static final int LEFT = 0,
 							RIGHT = LEFT+1,
-							LOWER_PINCER = RIGHT+1,
-							UPPER_PINCER = LOWER_PINCER+1,
-							LIFT = UPPER_PINCER+1;
+							LOWER_CLAW = RIGHT+1,
+							UPPER_CLAW = LOWER_CLAW+1,
+							LIFT = UPPER_CLAW+1;
 	
 	public static final double WHEEL_RADIUS = 2.1;
 	public static final double TRACK = 15.8;
@@ -43,11 +43,11 @@ public class Motors{
 				if(rightMotor == null)
 					rightMotor = new Motor(RemoteBrickManager.MASTER, 'L', "D");
 				return rightMotor;
-			case LOWER_PINCER:
+			case LOWER_CLAW:
 				if(lowerPincerMotor == null)
 					lowerPincerMotor = new Motor(RemoteBrickManager.SLAVE, 'M', "A");
 				return lowerPincerMotor;
-			case UPPER_PINCER:
+			case UPPER_CLAW:
 				if(upperPincerMotor == null)
 					upperPincerMotor = new Motor(RemoteBrickManager.SLAVE, 'M', "B");
 				return upperPincerMotor;
@@ -94,19 +94,19 @@ public class Motors{
 		}
 		
 		@Override
-		public void setSpeed(int speed){
+		public synchronized void setSpeed(int speed){
 			if(speed >= 0){
-				motor.setSpeed(Math.abs(speed));
+				motor.setSpeed(speed);
 				forward();
 			}
 			else {
-				motor.setSpeed(Math.abs(speed));
+				motor.setSpeed(-speed);
 				backward();
 			}
 		}
 		
 		@Override
-		public void stop(){
+		public synchronized void stop(){
 			motor.stop();
 		}
 		
@@ -129,7 +129,7 @@ public class Motors{
 
 		@Override
 		public void backward() {
-			motor.forward();	
+			motor.backward();	
 		}
 
 

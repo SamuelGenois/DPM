@@ -45,6 +45,7 @@ public class Odometer extends Thread {
 		rightMotor.resetTachoCount();
 		
 		this.start();
+		//new OdometryCorrection(this);
 	}
 
 	// run method (required for Thread)

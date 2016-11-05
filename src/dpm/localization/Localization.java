@@ -81,7 +81,7 @@ public class Localization {
 		
 		//turn 180 degrees facing the wall to measure the distance, then by subtracting this distance 
 		//	from the distance of a tile, we could determine the correctedX.
-		navi.turnTo(180);
+		navi.turnTo(Math.PI);
 		Sound.buzz();
 		distanceA = getFilteredData();
 		correctedX = (distanceA + sensorDist + 2) - 30.48;
@@ -90,7 +90,7 @@ public class Localization {
 		//same methodology as above
 		// by turning the robot to 270 (direct south), and measure the distance, we could determine the correctedY 
 		// by subtracting this distance found from tile distance.
-		navi.turnTo(270);
+		navi.turnTo(3*Math.PI/2);
 		Sound.buzz();
 		distanceB = getFilteredData();
 		correctedY = (distanceB + sensorDist) - 30.48;
@@ -99,7 +99,7 @@ public class Localization {
 		//travel to origin and face direct North (90 degrees)
 		navi.travelTo(0.0, 0.0);
 		Sound.buzz();
-		navi.turnTo(93);
+		navi.turnTo(Math.toRadians(93));
 		Sound.buzz();
 		Delay.msDelay(3000);
 		

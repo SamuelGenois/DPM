@@ -218,7 +218,7 @@ public class Navigation implements Interruptable{
 	
 	private void rotateMotorsSetAngle(int leftMotorRotationAngle, int rightMotorRotationAngle){
 		leftMotor.rotate(leftMotorRotationAngle, true);
-		rightMotor.rotate(rightMotorRotationAngle, true);
+		rightMotor.rotate(rightMotorRotationAngle, false);
 	}
 	
 	private void setSpeeds(int leftMotorSpeed, int rightMotorSpeed){
@@ -234,11 +234,11 @@ public class Navigation implements Interruptable{
 	/*
 	 * The following two methods have been taken from Lab 2's SquareDriver class.
 	 */
-	private static int convertAngle(double radius, double width, double angle) {
-		return convertDistance(radius, Math.PI * width * angle / 360.0);
+	private static int convertAngle(double wheelRadius, double track, double angle) {
+		return convertDistance(wheelRadius, Math.PI * track * angle / 360.0);
 	}
 	
-	private static int convertDistance(double radius, double distance) {
-		return (int) ((180.0 * distance) / (Math.PI * radius));
+	private static int convertDistance(double wheelRadius, double distance) {
+		return (int) ((180.0 * distance) / (Math.PI * wheelRadius));
 	}
 }

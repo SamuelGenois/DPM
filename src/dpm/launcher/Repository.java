@@ -3,11 +3,11 @@ package dpm.launcher;
 import java.util.Timer;
 
 import dpm.blocksearch.BlockSearch;
+import dpm.claw.Claw;
 import dpm.finalization.Finalization;
 import dpm.localization.Localization;
 import dpm.navigation.Navigation;
 import dpm.odometry.Odometer;
-import dpm.pincer.Pincer;
 
 public class Repository {
 
@@ -19,7 +19,7 @@ public class Repository {
 	private static Localization localization;
 	private static Navigation navigation;
 	private static Odometer odometry;
-	private static Pincer pincer;
+	private static Claw pincer;
 	
 	private static Timer timer;
 	
@@ -54,9 +54,9 @@ public class Repository {
 	
 	//This is private because no subsystem should
 	//require direct access to the Pincer object
-	private static Pincer getPincer(){
+	private static Claw getPincer(){
 		if(pincer == null)
-			pincer = new Pincer();
+			pincer = new Claw();
 		return pincer;
 	}
 	
