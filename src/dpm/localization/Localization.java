@@ -33,7 +33,7 @@ public class Localization {
 	 * Constructor
 	 */
 	public Localization() {
-		this.usSensor = Sensors.getSensor(Sensors.US_LEFT);
+		this.usSensor = Sensors.getSensor(Sensors.US_ACTIVE);
 		this.usData = new float[usSensor.sampleSize()];
 		this.navi = Repository.getNavigation();
 		this.odo = Repository.getOdometer();

@@ -7,6 +7,8 @@ import lejos.robotics.RegulatedMotor;
 import lejos.robotics.RegulatedMotorListener;
 
 /**
+ * A utility class that provides references to the robot's motor's interfaces.
+ * The initialization of those interfaces is done internally.
  *
  * @author Samuel Genois
  */

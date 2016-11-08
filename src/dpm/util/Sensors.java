@@ -6,7 +6,9 @@ import lejos.hardware.sensor.EV3UltrasonicSensor;
 import lejos.robotics.SampleProvider;
 
 /**
- * 
+ * A utility class that provides references to the robot's sensor's interfaces.
+ * The initialization of those interfaces is done internally.
+ *  
  * @author Samuel Genois
  */
 public class Sensors {
@@ -15,7 +17,7 @@ public class Sensors {
 	 * The id of the ultrasonic sensor used to detected
 	 * distance in front of the robot
 	 */
-	public static final int	US_LEFT = 0;
+	public static final int	US_ACTIVE = 0;
 	
 	/**
 	 * The id of the ultrasonic sensor used to detect
@@ -51,10 +53,10 @@ public class Sensors {
 	 */
 	public static SampleProvider getSensor(int id){
 		switch(id){
-			case US_LEFT:
-				if(sensors[US_LEFT] == null)
-					sensors[US_LEFT] = new Sensor(RemoteBrickManager.MASTER, "S1" , US_DISTANCE);
-				return sensors[US_LEFT];
+			case US_ACTIVE:
+				if(sensors[US_ACTIVE] == null)
+					sensors[US_ACTIVE] = new Sensor(RemoteBrickManager.MASTER, "S1" , US_DISTANCE);
+				return sensors[US_ACTIVE];
 			case US_PASSIVE:
 				if(sensors[US_PASSIVE] == null)
 					sensors[US_PASSIVE] = new Sensor(RemoteBrickManager.SLAVE, "S1" , US_LISTEN);

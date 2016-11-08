@@ -27,7 +27,7 @@ public class TestSensor{
 	}
 	
 	private static void testRemoteSensor(){
-		SampleProvider usSensor = Sensors.getSensor(Sensors.US_LEFT);
+		SampleProvider usSensor = Sensors.getSensor(Sensors.US_ACTIVE);
 		float[] usData = new float[1];
 		
 		while(true){
