@@ -1,10 +1,11 @@
 package dpm.localization;
 
-import dpm.launcher.Repository;
 import dpm.navigation.Navigation;
 import dpm.odometry.Odometer;
+import dpm.repository.Repository;
 import dpm.util.Motors;
 import dpm.util.Sensors;
+import lejos.hardware.Button;
 import lejos.hardware.Sound;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.SampleProvider;
@@ -28,6 +29,9 @@ public class Localization {
 	private double sensorDist = 8.0;
 	
 
+	/**
+	 * Constructor
+	 */
 	public Localization() {
 		this.usSensor = Sensors.getSensor(Sensors.US_LEFT);
 		this.usData = new float[usSensor.sampleSize()];
@@ -36,7 +40,11 @@ public class Localization {
 		this.leftMotor = Motors.getMotor(Motors.LEFT); 
 		this.rightMotor = Motors.getMotor(Motors.RIGHT);
 	}
+	
 	//most of the code below are re-used from previse lab with minimal value changes due to the modification of the robot.
+	/**
+	 * Performs localization.
+	 */
 	public void doLocalization() {
 		angleA = 0; 
 		angleB = 0;
@@ -67,7 +75,7 @@ public class Localization {
 			}
 			if(getFilteredData() >= wallDist && reverse == true){ //found the second opening,
 				Sound.beep();
-				angleB = odo.getTheta(); //set it as angle B
+				angleB = odo.getAng(); //set it as angle B
 				clockwise = false;
 			}
 		}
@@ -79,13 +87,16 @@ public class Localization {
 		leftMotor.stop();
 		rightMotor.stop();
 		
+		navi.turnTo(0);
+		Button.waitForAnyPress();
+		
 		//turn 180 degrees facing the wall to measure the distance, then by subtracting this distance 
 		//	from the distance of a tile, we could determine the correctedX.
 		navi.turnTo(Math.PI);
 		Sound.buzz();
 		distanceA = getFilteredData();
 		correctedX = (distanceA + sensorDist + 2) - 30.48;
-		odo.setPosition(new double [] {correctedX, odo.getY(), odo.getTheta()}, new boolean [] {true, true, true});
+		odo.setPosition(new double [] {correctedX, odo.getY(), odo.getAng()}, new boolean [] {true, true, true});
 
 		//same methodology as above
 		// by turning the robot to 270 (direct south), and measure the distance, we could determine the correctedY 
@@ -94,7 +105,7 @@ public class Localization {
 		Sound.buzz();
 		distanceB = getFilteredData();
 		correctedY = (distanceB + sensorDist) - 30.48;
-		odo.setPosition(new double [] {odo.getX(), correctedY, odo.getTheta()}, new boolean [] {true, true, true});
+		odo.setPosition(new double [] {odo.getX(), correctedY, odo.getAng()}, new boolean [] {true, true, true});
 
 		//travel to origin and face direct North (90 degrees)
 		navi.travelTo(0.0, 0.0);
@@ -105,15 +116,17 @@ public class Localization {
 		
 	}
 
-	public double getAngleA(){
+	@SuppressWarnings("unused")
+	private double getAngleaA(){
 		return angleA;
 	}
 
-	public double getAngleB(){	
+	@SuppressWarnings("unused")
+	private double getAngleaB(){	
 		return angleB;
 	}
 
-	public float getFilteredData() {
+	private float getFilteredData() {
 
 		usSensor.fetchSample(usData, 0);
 		float distance= usData[0]*100;		

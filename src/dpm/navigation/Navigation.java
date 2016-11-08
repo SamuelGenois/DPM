@@ -1,244 +1,126 @@
 package dpm.navigation;
 
 import dpm.odometry.Odometer;
-import dpm.util.Interruptable;
+import dpm.repository.Repository;
 import dpm.util.Motors;
 import lejos.robotics.RegulatedMotor;
 
 /**
- * A class containing methods related to navigation.
+ * File: Navigation.java
+ * Written by: Sean Lawlor
+ * ECSE 211 - Design Principles and Methods, Head TA
+ * Fall 2011
+ * Ported to EV3 by: Francois Ouellet Delorme
+ * Fall 2015
+ * Modified by: Samuel Genois
+ * Fall 2016
  * 
- * @author Samuel Genois
+ * Movement control class (turnTo, travelTo, flt, localize)
  */
-public class Navigation implements Interruptable{
-
-	public static final double ANGLE_ERROR_TOLERANCE = (Math.PI/96.0);
-	public static final double DISTANCE_ERROR_TOLERANCE = 2.0;
-	
-	public static final long	RESONABLY_SHORT_PERIOD_OF_TIME = 50l,
-								ONE_SECOND = 1000l;
-	
+public class Navigation {
+	final static int FAST = 200, SLOW = 100, ACCELERATION = 4000;
+	final static double DEG_ERR = 3.0, CM_ERR = 1.0;
 	private Odometer odometer;
 	private RegulatedMotor leftMotor, rightMotor;
-	private boolean isNavigating, isTurning;
-	private double[] position;
-	
+
 	/**
-	 * Constructor.
-	 * 
-	 * @param odometer		The robot's odometer
-	 * @param usSensor		The robot's ultrasonic sensor
-	 * @param sensorMotor	The motor that rotates the ultrasonic sensor.
+	 * Constructor
 	 */
-	public Navigation(Odometer odometer){
-		this.odometer = odometer;
-		this.isNavigating = false;
+	public Navigation() {
+		this.odometer = Repository.getOdometer();
+
 		this.leftMotor = Motors.getMotor(Motors.LEFT);
 		this.rightMotor = Motors.getMotor(Motors.RIGHT);
-		this.position = new double[3];
+
+		// set acceleration
+		this.leftMotor.setAcceleration(ACCELERATION);
+		this.rightMotor.setAcceleration(ACCELERATION);
 	}
-	
-	/**
-	 * Calculates the euclidean distance between point (x,y)
-	 * and the robot's current location.
-	 * 
-	 * @param x	The x coordinate of the destination
-	 * @param y	The y coordinate of the destination
-	 * @return	The euclidean distance
+
+	/*
+	 * Functions to set the motor speeds jointly
 	 */
-	public double calculateDistance(double x, double y){
-		odometer.getPosition(position, Odometer.ALL);
-		return Math.sqrt(Math.pow(y-position[Odometer.Y], 2.0)+Math.pow(x-position[Odometer.X], 2.0));
+	private void setSpeeds(int lSpd, int rSpd) {
+		this.leftMotor.setSpeed(lSpd);
+		this.rightMotor.setSpeed(rSpd);
 	}
-	
-	/**
-	 * Calculates the minimum angle the robot must turn
-	 * to match his orientation with theta.
-	 * 
-	 * @param theta	The desired orientation.
-	 * @return		The minimum turn angle.
+
+	/*
+	 * Float the two motors jointly
 	 */
-	public double calculateMinTurnAngle(double theta){
-		odometer.getPosition(position, Odometer.ALL);
-		double minTurnAngle = theta-position[Odometer.THETA];
-		
-		if(minTurnAngle < -Math.PI)
-			minTurnAngle += 2*Math.PI;
-		if(minTurnAngle > Math.PI)
-			minTurnAngle -= 2*Math.PI;
-		
-		//DebuggerPrinter.display(Double.toString(Math.toDegrees(minTurnAngle)), 2, false);
-		return minTurnAngle;
+	public void setFloat() {
+		this.leftMotor.stop();
+		this.rightMotor.stop();
+		this.leftMotor.flt(true);
+		this.rightMotor.flt(true);
 	}
-	
+
 	/**
-	 * Returns the angle of the vector going from the robot
-	 * to its destination (counter clockwise stating from the y axis).
+	 * TravelTo function which takes as arguments the x and y position in cm Will travel to designated position, while
+	 * constantly updating it's heading
 	 * 
-	 * @param x	The x coordinate of the destination
-	 * @param y	The y coordinate of the destination
-	 * @return	The angle
+	 * @param x x coordinate of destination
+	 * @param y y coordinate of destination
 	 */
-	public double destinationAngle(double x, double y){
-		odometer.getPosition(position, Odometer.ALL);
-		return (Math.atan2(x-position[Odometer.X], y-position[Odometer.Y])%(2*Math.PI));
+	public void travelTo(double x, double y) {
+		double minAng;
+		while (Math.abs(x - odometer.getX()) > CM_ERR || Math.abs(y - odometer.getY()) > CM_ERR) {
+			minAng = (Math.atan2(y - odometer.getY(), x - odometer.getX())) * (180.0 / Math.PI);
+			if (minAng < 0)
+				minAng += 360.0;
+			this.turnTo(minAng, false);
+			this.setSpeeds(FAST, FAST);
+		}
+		this.setSpeeds(0, 0);
 	}
-	
+
 	/**
-	 * Returns true if the robot has reached its destination
+	 * TurnTo function which takes an angle and boolean as arguments. The boolean controls whether or not to stop the
+	 * motors when the turn is completed
 	 * 
-	 * @param x	The x coordinate of the destination
-	 * @param y	The y coordinate of the destination
-	 * @return	true if the robot has reached its destination
+	 * @param angle argument
+	 * @param whether or not to stop the motors when the turn is completed
 	 */
-	private boolean hasReachedDestination(double x, double y){
-		return calculateDistance(x, y) < DISTANCE_ERROR_TOLERANCE;
+	public void turnTo(double angle, boolean stop) {
+
+		double error = angle - this.odometer.getAng();
+
+		while (Math.abs(error) > DEG_ERR) {
+
+			error = angle - this.odometer.getAng();
+
+			if (error < -180.0) {
+				this.setSpeeds(-SLOW, SLOW);
+			} else if (error < 0.0) {
+				this.setSpeeds(SLOW, -SLOW);
+			} else if (error > 180.0) {
+				this.setSpeeds(SLOW, -SLOW);
+			} else {
+				this.setSpeeds(-SLOW, SLOW);
+			}
+		}
+
+		if (stop) {
+			this.setSpeeds(0, 0);
+		}
 	}
 	
 	/**
-	 * Returns true if either the travelTo of turnTo methods
-	 * are currently being executed.
-	 * 
-	 * @return
+	 * TurnTo function which takes an angle as argument.
+
+	 * @param angle argument
 	 */
-	public boolean isNavigating(){
-		return (isNavigating || isTurning);
+	public void turnTo(double angle){
+		turnTo(angle, true);
 	}
 	
 	/**
-	 * Returns true if either the  turnTo method
-	 * is currently being executed.
+	 * Go forward a set distance in cm
 	 * 
-	 * @return
-	 */
-	public boolean isTurning(){
-		return isTurning;
-	}
-	
-	/**
-	 * Returns the odometer used by this navigation instance.
-	 * 
-	 * @return the odometer used by this navigation instance
-	 */
-	public Odometer getOdometer(){
-		return odometer;
-	}
-	
-	/**
-	 * Makes the robot travel forward for a set distance
-	 * 
-	 * @param distance the robot travels
+	 * @param distance the forward distance to travel
 	 */
 	public void goForward(double distance) {
-		odometer.getPosition(position, Odometer.ALL);
-		this.travelTo(Math.sin(position[Odometer.THETA]) * distance, Math.cos(position[Odometer.THETA]) * distance);
+		this.travelTo(Math.cos(Math.toRadians(this.odometer.getAng())) * distance, Math.cos(Math.toRadians(this.odometer.getAng())) * distance);
 
-	}
-	
-	/**
-	 * Interrupts currently running travelTo or turnTo methods.
-	 */
-	@Override
-	public void interrupt(){
-		//TODO
-	}
-	
-	/**
-	 * Makes the robot travel to the point (x,y), avoiding
-	 * obstacles along the way.
-	 * 
-	 * @param x
-	 * @param y
-	 */
-	public void travelTo(double x, double y){
-		
-		isNavigating = true;
-		
-		while(!hasReachedDestination(x, y)){
-			
-			/*
-			 * If the robot is not facing its destination, it rotates
-			 * to do so.
-			 */
-			double theta = destinationAngle(x, y);
-			if(Math.abs(calculateMinTurnAngle(theta)) > ANGLE_ERROR_TOLERANCE)
-				turnTo(theta);
-			
-			/*
-			 * This prevents the robot from overshooting if it has already
-			 * reached its destination.
-			 */
-			if(hasReachedDestination(x, y))
-				break;
-			
-			/*
-			 * This pause ensures that the robot is fully immobilized before
-			 * proceeding. It also gives obstacleAvoidance time to detect obstacles.
-			 */
-			try {
-				Thread.sleep(ONE_SECOND / 2);
-			} catch (InterruptedException e) {}
-			
-			/*
-			 * The robot moves forward for a short amount of time
-			 */
-			setSpeeds(150, 150);
-			try {
-				Thread.sleep(RESONABLY_SHORT_PERIOD_OF_TIME);
-			} catch (InterruptedException e) {}
-		}
-		
-		/*
-		 * Stop both the motors
-		 */
-		stopMotors();
-		
-		isNavigating = false;
-	}
-	
-	/**
-	 * Rotates the robot to angle theta. The angle is in radians.
-	 * Positive angles are counter clockwise from the positive y axis.
-	 * Negative angles are counter clockwise form the positive y axis
-	 * 
-	 * @param theta	The angle to with the robot must rotate
-	 */
-	public void turnTo(double theta){
-		isTurning = true;
-		
-		double turnAngle = calculateMinTurnAngle(theta);
-		
-		rotateMotorsSetAngle(convertAngle(Motors.WHEEL_RADIUS, Motors.TRACK, Math.toDegrees(turnAngle)),
-				-convertAngle(Motors.WHEEL_RADIUS, Motors.TRACK, Math.toDegrees(turnAngle)));
-		
-		stopMotors();
-		
-		isTurning = false;
-	}
-	
-	private void rotateMotorsSetAngle(int leftMotorRotationAngle, int rightMotorRotationAngle){
-		leftMotor.rotate(leftMotorRotationAngle, true);
-		rightMotor.rotate(rightMotorRotationAngle, false);
-	}
-	
-	private void setSpeeds(int leftMotorSpeed, int rightMotorSpeed){
-		leftMotor.setSpeed(leftMotorSpeed);
-		rightMotor.setSpeed(rightMotorSpeed);
-	}
-	
-	private void stopMotors(){
-		leftMotor.stop();
-		rightMotor.stop();
-	}
-	
-	/*
-	 * The following two methods have been taken from Lab 2's SquareDriver class.
-	 */
-	private static int convertAngle(double wheelRadius, double track, double angle) {
-		return convertDistance(wheelRadius, Math.PI * track * angle / 360.0);
-	}
-	
-	private static int convertDistance(double wheelRadius, double distance) {
-		return (int) ((180.0 * distance) / (Math.PI * wheelRadius));
 	}
 }

@@ -1,5 +1,6 @@
 package dpm.launcher;
 
+import dpm.repository.Repository;
 import dpm.util.Printer;
 import dpm.util.RemoteBrickManager;
 import lejos.hardware.Button;

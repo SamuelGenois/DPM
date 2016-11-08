@@ -1,6 +1,4 @@
-package dpm.launcher;
-
-import java.util.Timer;
+package dpm.repository;
 
 import dpm.blocksearch.BlockSearch;
 import dpm.claw.Claw;
@@ -11,8 +9,7 @@ import dpm.odometry.Odometer;
 
 public class Repository {
 
-	private static final long	INTERRUPT_DELAY = 5000l,
-								ROUND_DURATION = 300000l;
+	private static final long	INTERRUPT_DELAY = 5000l;
 	
 	private static BlockSearch blockSearch;
 	private static Finalization finalization;
@@ -20,8 +17,6 @@ public class Repository {
 	private static Navigation navigation;
 	private static Odometer odometry;
 	private static Claw pincer;
-	
-	private static Timer timer;
 	
 	/**
 	 * Drops held blocks
@@ -37,7 +32,7 @@ public class Repository {
 	 */
 	public static Navigation getNavigation(){
 		if(navigation == null)
-			navigation = new Navigation(getOdometer());
+			navigation = new Navigation();
 		return navigation;
 	}
 	
@@ -71,7 +66,7 @@ public class Repository {
 	 */
 	public static void interruptBlockSearch(){
 		blockSearch.interrupt();
-		navigation.interrupt();
+		//navigation.interrupt();
 		try {Thread.sleep(INTERRUPT_DELAY);} catch(InterruptedException e){}
 	}
 	
@@ -85,14 +80,11 @@ public class Repository {
 	}
 	
 	/**
-	 * Sets the finalization subsystem
+	 * Executes the finalization routine
 	 */
-	public static void setTimer(){
+	public static void doFinalization(){
 		if(finalization == null)
 			finalization = new Finalization();
-		if(timer != null)
-			timer.cancel();
-		timer = new Timer();
-		timer.schedule(finalization, ROUND_DURATION);
+		finalization.doFinalization();
 	}
 }

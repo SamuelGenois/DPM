@@ -3,6 +3,10 @@ package dpm.claw;
 import dpm.util.Motors;
 import lejos.robotics.RegulatedMotor;
 
+/**
+ * The claw of the robot. Can grab and drop stacks of styrofoam blocks.
+ * Grabbed blocks are kept at least a block's height above floor level.
+ */
 public class Claw {
 	
 	RegulatedMotor	lowerclawMotor;
@@ -10,8 +14,7 @@ public class Claw {
 	RegulatedMotor	liftMotor;
 	
 	/**
-	 * The claw of the robot. Can grab and drop stacks of styrofoam blocks.
-	 * Grabbed blocks are kept at least a block's height above floor level.
+	 * Constructor
 	 */
 	public Claw(){
 		lowerclawMotor = Motors.getMotor(Motors.LOWER_CLAW);
