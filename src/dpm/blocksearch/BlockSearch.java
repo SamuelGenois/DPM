@@ -15,6 +15,14 @@ public class BlockSearch{
 	 * Constructor
 	 */
 	BlockSearch(){}
+	
+	/**
+	 * Searches and approaches styrofoam blocks until interrupted or until
+	 * the entire field has been searched.
+	 */
+	public void search(){
+		//TODO
+	}
 
 	/**
 	 * Interrupts the block searching algorithm
