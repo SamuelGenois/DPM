@@ -1,8 +1,8 @@
 package dpm.navigation;
 
+
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.SampleProvider;
-import dpm.odometry.*;
 import dpm.repository.Repository;
 import dpm.util.*;
 
@@ -55,10 +55,7 @@ public class ObstacleAvoidance extends Thread{
 	private final int FILTER_OUT = 25;
 	
 	/**Minimum distance considered for filtering*/
-	private final int MIN_DISTANCE = 100; 
-	
-	/**Odometer object for using Odometer.java methods*/
-	private Odometer odo;
+	private final int MIN_DISTANCE = 100;
 	
 	/**Navigation object for using Navigation.java methods*/
 	private Navigation nav;
@@ -74,7 +71,6 @@ public class ObstacleAvoidance extends Thread{
 	
 	/**Constructor
 	 * 
-	 * @param odo 	The robot's odometer object
 	 * @param nav	The robot's navigation object
 	 * @param x_fin	The x coordinate of the destination
 	 * @param y_fin	The y coordinate of the destination
@@ -84,10 +80,7 @@ public class ObstacleAvoidance extends Thread{
 		this.leftMotor = Motors.getMotor(Motors.LEFT);
 		this.rightMotor = Motors.getMotor(Motors.RIGHT);
 		this.usSensor = Sensors.getSensor(Sensors.US_ACTIVE);
-		this.odo = Repository.getOdometer();
 		this.nav = nav;
-		this.x_init = odo.getX();
-		this.y_init = odo.getY();
 		this.x_fin = x_fin;
 		this.y_fin = y_fin;
 		this.a = x_fin-x_init;
@@ -131,11 +124,11 @@ public class ObstacleAvoidance extends Thread{
 		right_dist = distance;
 		if (left_dist > right_dist){
 			left_direction = true;
-			nav.turnTo(odo.getAng()-90);
+			nav.turnTo(Repository.getAng()-90);
 		}
 		else{
 			left_direction = false;
-			nav.turnTo(odo.getAng()+90);
+			nav.turnTo(Repository.getAng()+90);
 			sensorMotor.rotate(-180);
 		}
 	}
@@ -192,10 +185,10 @@ public class ObstacleAvoidance extends Thread{
 	 * Stops wall avoidance if avoidanceStarted is true (robot already moved away from its expected trajectory) and it has returned to the same trajectory behind the obstacle
 	 */
 	public void endTravel(){
-		if (Math.abs((odo.getX()-x_init)/a-(odo.getY()-y_init)/b) > 2.0){
+		if (Math.abs((Repository.getX()-x_init)/a-(Repository.getY()-y_init)/b) > 2.0){
 			avoidanceStarted = true;
 		}
-		if (Math.abs((odo.getX()-x_init)/a-(odo.getY()-y_init)/b) < 1.0 && avoidanceStarted){
+		if (Math.abs((Repository.getX()-x_init)/a-(Repository.getY()-y_init)/b) < 1.0 && avoidanceStarted){
 			avoiding = false;
 		}
 	}
@@ -225,7 +218,7 @@ public class ObstacleAvoidance extends Thread{
 	}
 	
 	private double calculateDistance(double x, double y){
-		return Math.sqrt(Math.pow(y-odo.getY(), 2.0)+Math.pow(x-odo.getX(), 2.0));
+		return Math.sqrt(Math.pow(y-Repository.getY(), 2.0)+Math.pow(x-Repository.getX(), 2.0));
 	}
 
 }

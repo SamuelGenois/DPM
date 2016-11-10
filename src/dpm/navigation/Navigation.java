@@ -20,6 +20,7 @@ public class Navigation {
 	final static int FAST = 200, SLOW = 100, ACCELERATION = 4000;
 	final static double DEG_ERR = 3.0, CM_ERR = 1.0;
 	private RegulatedMotor leftMotor, rightMotor;
+	private boolean interrupted;
 
 	/**
 	 * Constructor
@@ -42,7 +43,7 @@ public class Navigation {
 		this.rightMotor.setSpeed(rSpd);
 	}
 
-	/*
+	/**
 	 * Float the two motors jointly
 	 */
 	public void setFloat() {
@@ -50,6 +51,13 @@ public class Navigation {
 		this.rightMotor.stop();
 		this.leftMotor.flt(true);
 		this.rightMotor.flt(true);
+	}
+	
+	/**
+	 * Interrupts currently running travelTo or turnTo methods.
+	 */
+	public void interrupt(){
+		interrupted = true;
 	}
 
 	/**
@@ -61,7 +69,8 @@ public class Navigation {
 	 */
 	public void travelTo(double x, double y) {
 		double minAng;
-		while (Math.abs(x - Repository.getX()) > CM_ERR || Math.abs(y - Repository.getY()) > CM_ERR) {
+		interrupted = false;
+		while (!interrupted && (Math.abs(x - Repository.getX()) > CM_ERR || Math.abs(y - Repository.getY()) > CM_ERR)) {
 			minAng = (Math.atan2(y - Repository.getY(), x - Repository.getX())) * (180.0 / Math.PI);
 			if (minAng < 0)
 				minAng += 360.0;

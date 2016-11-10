@@ -20,8 +20,6 @@ public class OdometryCorrection extends Thread{
 	private final Odometer odometer;
 	private final SampleProvider sensor;
 	private final float[] sensorData;
-	
-	private double[] position;
 
 	/**
 	 * Constructor.
@@ -32,7 +30,6 @@ public class OdometryCorrection extends Thread{
 		this.odometer = odometer;
 		sensor = Sensors.getSensor(Sensors.COLOR_ODO_CORR);
 		sensorData = new float[sensor.sampleSize()];
-		position = new double[3];
 		this.start();
 	}
 	
@@ -49,22 +46,23 @@ public class OdometryCorrection extends Thread{
 			
 			if(sensorData[0] < LIGHT_THRESHOLD){
 				Sound.beep();
-				odometer.getPosition(position);
 				
-				double xDistanceFromGrid = position[Odometer.X]%SQUARE_SIZE;
+				double xDistanceFromGrid = odometer.getX()%SQUARE_SIZE;
 				if(xDistanceFromGrid > SQUARE_SIZE/2)
 					xDistanceFromGrid = SQUARE_SIZE - xDistanceFromGrid;
 				
-				double yDistanceFromGrid = position[Odometer.Y]%SQUARE_SIZE;
+				double yDistanceFromGrid = odometer.getY()%SQUARE_SIZE;
 				if(yDistanceFromGrid > SQUARE_SIZE/2)
 					yDistanceFromGrid = SQUARE_SIZE - yDistanceFromGrid;
 				
 				if(xDistanceFromGrid < CORRECTION_THRESHOLD){
 					if(!(yDistanceFromGrid < CORRECTION_THRESHOLD))
-						odometer.setX(Math.floor(position[Odometer.X]/SQUARE_SIZE)*SQUARE_SIZE);
+						odometer.setPosition(new double[] {Math.floor(odometer.getX()/SQUARE_SIZE)*SQUARE_SIZE, odometer.getY(),odometer.getAng()},
+												new boolean[] {true, true, true});
 				}
 				else if(yDistanceFromGrid < CORRECTION_THRESHOLD)
-					odometer.setY(Math.floor(position[Odometer.Y]/SQUARE_SIZE)*SQUARE_SIZE);
+					odometer.setPosition(new double[] {odometer.getX(), Math.floor(odometer.getY()/SQUARE_SIZE)*SQUARE_SIZE, odometer.getAng()},
+						new boolean[] {true, true, true});
 				
 				else{
 					Sound.buzz();
