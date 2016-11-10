@@ -26,25 +26,86 @@ public class Repository {
 	}
 	
 	/**
-	 * Returns the navigation subsystem. Initializes
-	 * the subsysetm if it is not yet initialized
-	 * @return the navigation subsystem
+	 * Travels to the specified (x,y) coordinates, avoiding
+	 * obstacles along the way. Initializes the subsystem 
+	 * if it is not yet initialized.
+	 * 
+	 * @param x the x coordinate of the destination
+	 * @param y the y coordinate of the destination
 	 */
-	public static Navigation getNavigation(){
-		if(navigation == null)
-			navigation = new Navigation();
-		return navigation;
+	public static void travelTo(double x, double y){
+		getNavigation().travelTo(x, y);
 	}
 	
 	/**
-	 * Returns the odometry subsystem. Initializes
-	 * the subsysetm if it is not yet initialized
-	 * @return the odometry subsystem
+	 * Rotates the robot to the specified angle. The angle is in degrees.
+	 * Angles are counter clockwise from the positive x axis.
+	 * 
+	 * @param theta	The angle to with the robot must rotate
 	 */
-	public static Odometer getOdometer(){
+	public static void turnTo(double angle){
+		getNavigation().turnTo(angle);
+	}
+	
+	/**
+	 * Returns the orientation of the robot. Initializes
+	 * the Odometry subsystem if not yet been initialized.
+	 * @return the orientation of the robot
+	 */
+	public static double getAng(){
+		return getOdometer().getAng();
+	}
+	
+	/**
+	 * Returns the position of the robot. Initializes
+	 * the Odometry subsystem if not yet been initialized.
+	 * @return the position of the robot
+	 */
+	public static double[] getPosition(){
+		return getOdometer().getPosition();
+	}
+	
+	/**
+	 * Returns the x coordinate of the robot. Initializes
+	 * the Odometry subsystem if not yet been initialized.
+	 * @return the x coordinate of the robot
+	 */
+	public static double getX(){
+		return getOdometer().getX();
+	}
+	
+	/**
+	 * Returns the x coordinate of the robot. Initializes
+	 * the Odometry subsystem if not yet been initialized.
+	 * @return the x coordinate of the robot
+	 */
+	public static double getY(){
+		return getOdometer().getY();
+	}
+	
+	/**
+	 * Sets the position of the robot. Initializes
+	 * the Odometry subsystem if not yet been initialized.
+	 * @param position the new position of the robot
+	 */
+	public static void setPosition(double[] position){
+		getOdometer().setPosition(position, new boolean[] {true, true, true});
+	}
+	
+	//This is private because no subsystem should
+	//require direct access to the Odometer object
+	private static Odometer getOdometer(){
 		if(odometry == null)
 			odometry = new Odometer();
 		return odometry;
+	}
+	
+	//This is private because no subsystem should
+	//require direct access to the Navigation object
+	private static Navigation getNavigation(){
+		if(navigation == null)
+			navigation = new Navigation();
+		return navigation;
 	}
 	
 	//This is private because no subsystem should

@@ -1,17 +1,14 @@
 package dpm.launcher;
 
-import dpm.navigation.Navigation;
 import dpm.repository.Repository;
 import dpm.util.Printer;
 import dpm.util.RemoteBrickManager;
 import lejos.hardware.Button;
+import lejos.hardware.Sound;
 
 public class TestNavigation {
 
-	private static final int	TEST_SPEED = 200,
-								TEST_DELAY = 1000;
-	
-	private static Navigation navigation;
+	private static final int	TEST_DELAY = 1000;
 	
 	public static void main(String[] args){
 	
@@ -22,8 +19,6 @@ public class TestNavigation {
 		System.exit(0);
 		}
 	}).start();
-	
-	navigation = Repository.getNavigation();
 	
 	Printer.getInstance().display("Press any button");
 	Button.waitForAnyPress();
@@ -41,15 +36,37 @@ public class TestNavigation {
 	}
 	
 	private static void testTurnTo() {
-		navigation.turnTo(0);
-		navigation.turnTo(Math.toRadians(45));
-		navigation.turnTo(Math.toRadians(90));
-		navigation.turnTo(0);
-		navigation.turnTo(Math.toRadians(315));
-		navigation.turnTo(Math.toRadians(270));
-		navigation.turnTo(0);
+		Repository.turnTo(0);
+		Repository.turnTo(Math.toRadians(45));
+		Repository.turnTo(Math.toRadians(90));
+		Repository.turnTo(0);
+		Repository.turnTo(Math.toRadians(315));
+		Repository.turnTo(Math.toRadians(270));
+		Repository.turnTo(0);
 	}
 	
 	private static void testTravelTo(){
+		Repository.setPosition(new double[] {0.0, 0.0, 0.0});
+		
+		Repository.travelTo(30, 30);
+		Sound.beep();
+		try {Thread.sleep(TEST_DELAY);} catch (InterruptedException e) {}
+		
+		Repository.travelTo(30, 30);
+		Sound.beep();
+		try {Thread.sleep(TEST_DELAY);} catch (InterruptedException e) {}
+		
+		Repository.travelTo(0, 30);
+		Sound.beep();
+		try {Thread.sleep(TEST_DELAY);} catch (InterruptedException e) {}
+		
+		Repository.travelTo(30, 0);
+		Sound.beep();
+		try {Thread.sleep(TEST_DELAY);} catch (InterruptedException e) {}
+		
+		Repository.travelTo(0, 0);
+		Sound.beep();
+		try {Thread.sleep(TEST_DELAY);} catch (InterruptedException e) {}
+		
 	}
 }

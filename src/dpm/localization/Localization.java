@@ -1,7 +1,5 @@
 package dpm.localization;
 
-import dpm.navigation.Navigation;
-import dpm.odometry.Odometer;
 import dpm.repository.Repository;
 import dpm.util.Motors;
 import dpm.util.Sensors;
@@ -15,9 +13,7 @@ public class Localization {
 	public enum LocalizationType { FALLING_EDGE, RISING_EDGE };
 	public static final int MOTOR_ROTATE_SPEED = 100;
 
-	private Odometer odo;
 	private RegulatedMotor leftMotor, rightMotor;
-	private Navigation navi;
 	private SampleProvider usSensor;
 	private float[] usData;
 	private double wallDist = 31;
@@ -35,8 +31,6 @@ public class Localization {
 	public Localization() {
 		this.usSensor = Sensors.getSensor(Sensors.US_ACTIVE);
 		this.usData = new float[usSensor.sampleSize()];
-		this.navi = Repository.getNavigation();
-		this.odo = Repository.getOdometer();
 		this.leftMotor = Motors.getMotor(Motors.LEFT); 
 		this.rightMotor = Motors.getMotor(Motors.RIGHT);
 	}
@@ -58,7 +52,7 @@ public class Localization {
 				ccwRotation();						//rotating counterclockwise
 
 				if(getFilteredData() > wallDist){	// as it detects the first opening
-					odo.setPosition(new double [] {0.0, 0.0, 0.0}, new boolean [] {true, true, true});
+					Repository.setPosition(new double [] {0.0, 0.0, 0.0});
 					Sound.beep();
 					angleA = 0.0;					//set angle A
 					counterclockwise = false;
@@ -75,42 +69,42 @@ public class Localization {
 			}
 			if(getFilteredData() >= wallDist && reverse == true){ //found the second opening,
 				Sound.beep();
-				angleB = odo.getAng(); //set it as angle B
+				angleB = Repository.getAng(); //set it as angle B
 				clockwise = false;
 			}
 		}
 		
-		//find the corrected Angle and set it using odo.setPosition(X,Y,Theta)
+		//find the corrected Angle and set it using Repository.setPosition(X,Y,Theta)
 //		double correctedTheta = 80 + (Math.abs(angleA - angleB))/2;
 		double correctedTheta = 40 + (Math.abs(angleA - angleB))/2;
-		odo.setPosition(new double [] {0.0, 0.0, correctedTheta}, new boolean [] {true, true, true});
+		Repository.setPosition(new double [] {0.0, 0.0, correctedTheta});
 		leftMotor.stop();
 		rightMotor.stop();
 		
-		navi.turnTo(0);
+		Repository.turnTo(0);
 		Button.waitForAnyPress();
 		
 		//turn 180 degrees facing the wall to measure the distance, then by subtracting this distance 
 		//	from the distance of a tile, we could determine the correctedX.
-		navi.turnTo(Math.PI);
+		Repository.turnTo(Math.PI);
 		Sound.buzz();
 		distanceA = getFilteredData();
 		correctedX = (distanceA + sensorDist + 2) - 30.48;
-		odo.setPosition(new double [] {correctedX, odo.getY(), odo.getAng()}, new boolean [] {true, true, true});
+		Repository.setPosition(new double [] {correctedX, Repository.getY(), Repository.getAng()});
 
-		//same methodology as above
+		//same methRepositorylogy as above
 		// by turning the robot to 270 (direct south), and measure the distance, we could determine the correctedY 
 		// by subtracting this distance found from tile distance.
-		navi.turnTo(3*Math.PI/2);
+		Repository.turnTo(3*Math.PI/2);
 		Sound.buzz();
 		distanceB = getFilteredData();
 		correctedY = (distanceB + sensorDist) - 30.48;
-		odo.setPosition(new double [] {odo.getX(), correctedY, odo.getAng()}, new boolean [] {true, true, true});
+		Repository.setPosition(new double [] {Repository.getX(), correctedY, Repository.getAng()});
 
 		//travel to origin and face direct North (90 degrees)
-		navi.travelTo(0.0, 0.0);
+		Repository.travelTo(0.0, 0.0);
 		Sound.buzz();
-		navi.turnTo(Math.toRadians(93));
+		Repository.turnTo(Math.toRadians(93));
 		Sound.buzz();
 		Delay.msDelay(3000);
 		

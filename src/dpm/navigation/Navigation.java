@@ -1,6 +1,5 @@
 package dpm.navigation;
 
-import dpm.odometry.Odometer;
 import dpm.repository.Repository;
 import dpm.util.Motors;
 import lejos.robotics.RegulatedMotor;
@@ -20,14 +19,12 @@ import lejos.robotics.RegulatedMotor;
 public class Navigation {
 	final static int FAST = 200, SLOW = 100, ACCELERATION = 4000;
 	final static double DEG_ERR = 3.0, CM_ERR = 1.0;
-	private Odometer odometer;
 	private RegulatedMotor leftMotor, rightMotor;
 
 	/**
 	 * Constructor
 	 */
 	public Navigation() {
-		this.odometer = Repository.getOdometer();
 
 		this.leftMotor = Motors.getMotor(Motors.LEFT);
 		this.rightMotor = Motors.getMotor(Motors.RIGHT);
@@ -64,8 +61,8 @@ public class Navigation {
 	 */
 	public void travelTo(double x, double y) {
 		double minAng;
-		while (Math.abs(x - odometer.getX()) > CM_ERR || Math.abs(y - odometer.getY()) > CM_ERR) {
-			minAng = (Math.atan2(y - odometer.getY(), x - odometer.getX())) * (180.0 / Math.PI);
+		while (Math.abs(x - Repository.getX()) > CM_ERR || Math.abs(y - Repository.getY()) > CM_ERR) {
+			minAng = (Math.atan2(y - Repository.getY(), x - Repository.getX())) * (180.0 / Math.PI);
 			if (minAng < 0)
 				minAng += 360.0;
 			this.turnTo(minAng, false);
@@ -83,11 +80,11 @@ public class Navigation {
 	 */
 	public void turnTo(double angle, boolean stop) {
 
-		double error = angle - this.odometer.getAng();
+		double error = angle - Repository.getAng();
 
 		while (Math.abs(error) > DEG_ERR) {
 
-			error = angle - this.odometer.getAng();
+			error = angle - Repository.getAng();
 
 			if (error < -180.0) {
 				this.setSpeeds(-SLOW, SLOW);
@@ -120,7 +117,7 @@ public class Navigation {
 	 * @param distance the forward distance to travel
 	 */
 	public void goForward(double distance) {
-		this.travelTo(Math.cos(Math.toRadians(this.odometer.getAng())) * distance, Math.cos(Math.toRadians(this.odometer.getAng())) * distance);
+		this.travelTo(Math.cos(Math.toRadians(Repository.getAng())) * distance, Math.cos(Math.toRadians(Repository.getAng())) * distance);
 
 	}
 }
