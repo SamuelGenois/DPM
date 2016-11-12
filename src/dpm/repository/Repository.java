@@ -88,8 +88,8 @@ public class Repository {
 	 * the Odometry subsystem if not yet been initialized.
 	 * @param position the new position of the robot
 	 */
-	public static void setPosition(double[] position){
-		getOdometer().setPosition(position, new boolean[] {true, true, true});
+	public static void setPosition(double[] position, boolean[] whichOne){
+		getOdometer().setPosition(position, whichOne);
 	}
 	
 	//This is private because no subsystem should

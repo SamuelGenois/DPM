@@ -2,6 +2,7 @@ package dpm.navigation;
 
 import dpm.repository.Repository;
 import dpm.util.Motors;
+import lejos.hardware.Sound;
 import lejos.robotics.RegulatedMotor;
 
 /**
