@@ -5,54 +5,77 @@ import lejos.hardware.sensor.EV3ColorSensor;
 import lejos.hardware.sensor.EV3UltrasonicSensor;
 import lejos.robotics.SampleProvider;
 
+/**
+ * A utility class that provides references to the robot's sensor's interfaces.
+ * The initialization of those interfaces is done internally.
+ *  
+ * @author Samuel Genois
+ */
 public class Sensors {
 	
-	private static final int	US_DISTANCE = 0,
-								US_LISTEN = US_DISTANCE+1,
-								COLOR_RED = US_LISTEN+1,
-								COLOR_RGB = COLOR_RED+1;
-								
-	public static final int		US_LEFT = 100,
-								US_RIGHT = US_LEFT+1,
-								US_PASSIVE = US_RIGHT+1,
-								COLOR_BLOCK_ID = US_PASSIVE+1,
-								COLOR_ODO_CORR = COLOR_BLOCK_ID+1;
+	/**
+	 * The id of the ultrasonic sensor used to detected
+	 * distance in front of the robot
+	 */
+	public static final int	US_ACTIVE = 0;
 	
-	private static SampleProvider	leftUSSensor,
-									rightUSSensor,
-									usInterferenceSensor,
-									odometryCorrectionLSensor,
-									blockIndentificationSensor;
+	/**
+	 * The id of the ultrasonic sensor used to detect
+	 * ultrasonic interference
+	 */
+	public static final int	US_PASSIVE = 1;
 	
+	/**
+	 * The id of the color sensor used to identify blue
+	 * styrofoam blocks
+	 */
+	public static final int	COLOR_BLOCK_ID = 2;
+	
+	/**
+	 * The id of the color sensor used to detect grid lines
+	 */
+	public static final int	COLOR_ODO_CORR = 3;
+	
+	private static final int	US_DISTANCE = 100,
+								US_LISTEN = 101,
+								COLOR_RED = 102,
+								COLOR_RGB = 103;
+	
+	private static SampleProvider[]	sensors = new SampleProvider[4];
+	
+	/**
+	 * Returns a reference to the sensor corresponding to the
+	 * provided id. If the sensor (interface) is yet not initialized,
+	 * initializes it.
+	 * 
+	 * @param id the id of the desired sensor reference
+	 * @return the sensor reference
+	 */
 	public static SampleProvider getSensor(int id){
 		switch(id){
-			case US_LEFT:
-				if(leftUSSensor == null)
-					leftUSSensor = new Sensor(RemoteBrickManager.SLAVE, "S1" , US_DISTANCE);
-				return leftUSSensor;
-			case US_RIGHT:
-				if(rightUSSensor == null)
-					rightUSSensor = new Sensor(RemoteBrickManager.MASTER, "S2" , US_DISTANCE);
-				return rightUSSensor;
+			case US_ACTIVE:
+				if(sensors[US_ACTIVE] == null)
+					sensors[US_ACTIVE] = new Sensor(RemoteBrickManager.MASTER, "S1" , US_DISTANCE);
+				return sensors[US_ACTIVE];
 			case US_PASSIVE:
-				if(usInterferenceSensor == null)
-					usInterferenceSensor = new Sensor(RemoteBrickManager.SLAVE, "S1" , US_LISTEN);
-				return usInterferenceSensor;
+				if(sensors[US_PASSIVE] == null)
+					sensors[US_PASSIVE] = new Sensor(RemoteBrickManager.SLAVE, "S1" , US_LISTEN);
+				return sensors[US_PASSIVE];
 			case COLOR_BLOCK_ID:
-				if(blockIndentificationSensor == null)
-					blockIndentificationSensor = new Sensor(RemoteBrickManager.MASTER, "S3" , COLOR_RGB);
-				return blockIndentificationSensor;
+				if(sensors[COLOR_BLOCK_ID] == null)
+					sensors[COLOR_BLOCK_ID] = new Sensor(RemoteBrickManager.MASTER, "S3" , COLOR_RGB);
+				return sensors[COLOR_BLOCK_ID];
 			case COLOR_ODO_CORR:
-				if(odometryCorrectionLSensor == null)
-					odometryCorrectionLSensor = new Sensor(RemoteBrickManager.MASTER, "S4" , COLOR_RED);
-				return odometryCorrectionLSensor;
+				if(sensors[COLOR_ODO_CORR] == null)
+					sensors[COLOR_ODO_CORR] = new Sensor(RemoteBrickManager.MASTER, "S4" , COLOR_RED);
+				return sensors[COLOR_ODO_CORR];
 			default:
 				return null;
 		}
 		
 	}
 	
-	public static class Sensor implements SampleProvider{
+	private static class Sensor implements SampleProvider{
 		
 		private SampleProvider sensor;
 		

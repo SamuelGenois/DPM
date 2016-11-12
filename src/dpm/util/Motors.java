@@ -7,54 +7,91 @@ import lejos.robotics.RegulatedMotor;
 import lejos.robotics.RegulatedMotorListener;
 
 /**
- * This class centralizes access to the motors actuating the
- * wheels of the robot. It provides methods to make the wheels
- * turn at a specific speed, rotate a specific angle, etc.
- * This class is a singleton.
- * 
+ * A utility class that provides references to the robot's motor's interfaces.
+ * The initialization of those interfaces is done internally.
+ *
  * @author Samuel Genois
  */
 public class Motors{
 	
 	public static final long ONE_SECOND = 1000;
 	
-	public static final int LEFT = 0,
-							RIGHT = LEFT+1,
-							LOWER_PINCER = RIGHT+1,
-							UPPER_PINCER = LOWER_PINCER+1,
-							LIFT = UPPER_PINCER+1;
+	/**
+	 * The id of the motor operating the left wheel
+	 */
+	public static final int LEFT = 0;
 	
+	/**
+	 * The id of the motor operating the right wheel
+	 */
+	public static final int RIGHT = 1;
+	
+	/**
+	 * The id of the motor operating the lower claw
+	 */
+	public static final int LOWER_CLAW = 2;
+	
+	/**
+	 * The id of the motor operating the upper claw
+	 */
+	public static final int UPPER_CLAW = 3;
+	
+	/**
+	 * The id of the motor operating the lifting of the upper claw
+	 */
+	public static final int LIFT = 4;
+	
+	/**
+	 * The id of the motor operating the motion of the
+	 * dynamic ultrasonic sensor
+	 */
+	public static final int SENSOR = 5;
+	
+	/**
+	 * The radius of the robot's wheels
+	 */
 	public static final double WHEEL_RADIUS = 2.1;
+	
+	/**
+	 * The distance between the robot's left and right wheels.
+	 */
 	public static final double TRACK = 15.8;
 	
-	private static RegulatedMotor	leftMotor,
-									rightMotor,
-									lowerPincerMotor,
-									upperPincerMotor,
-									liftMotor;
+	private static RegulatedMotor[] motors = new RegulatedMotor[6];
 	
+	/**
+	 * Returns a reference to the motor corresponding to the
+	 * provided id. If the motor (interface) is yet not initialized,
+	 * initializes it.
+	 * @param id the id of the desired motor reference
+	 * @return the motor reference
+	 */
 	public static RegulatedMotor getMotor(int id){
 		switch(id){
 			case LEFT:
-				if(leftMotor == null)
-					leftMotor = new Motor(RemoteBrickManager.MASTER, 'L', "A");
-				return leftMotor;
+				if(motors[LEFT] == null)
+					motors[LEFT] = new Motor(RemoteBrickManager.MASTER, 'L', "A");
+				return motors[LEFT];
 			case RIGHT:
-				if(rightMotor == null)
-					rightMotor = new Motor(RemoteBrickManager.MASTER, 'L', "D");
-				return rightMotor;
-			case LOWER_PINCER:
-				if(lowerPincerMotor == null)
-					lowerPincerMotor = new Motor(RemoteBrickManager.SLAVE, 'M', "A");
-				return lowerPincerMotor;
-			case UPPER_PINCER:
-				if(upperPincerMotor == null)
-					upperPincerMotor = new Motor(RemoteBrickManager.SLAVE, 'M', "B");
-				return upperPincerMotor;
+				if(motors[RIGHT] == null)
+					motors[RIGHT] = new Motor(RemoteBrickManager.MASTER, 'L', "D");
+				return motors[RIGHT];
+			case LOWER_CLAW:
+				if(motors[LOWER_CLAW] == null)
+					motors[LOWER_CLAW] = new Motor(RemoteBrickManager.SLAVE, 'M', "A");
+				return motors[LOWER_CLAW];
+			case UPPER_CLAW:
+				if(motors[UPPER_CLAW] == null)
+					motors[UPPER_CLAW] = new Motor(RemoteBrickManager.SLAVE, 'M', "B");
+				return motors[UPPER_CLAW];
 			case LIFT:
-				if(liftMotor == null)
-					liftMotor = new Motor(RemoteBrickManager.SLAVE, 'L', "C");
-				return liftMotor;
+				if(motors[LIFT] == null)
+					motors[LIFT] = new Motor(RemoteBrickManager.SLAVE, 'L', "C");
+				return motors[LIFT];
+			case SENSOR:
+				if(motors[SENSOR] == null)
+					motors[SENSOR] = new Motor(RemoteBrickManager.MASTER, 'L', "B");
+				return motors[SENSOR];
 			default:	
 				return null;
 		}
@@ -94,7 +131,7 @@ public class Motors{
 		}
 		
 		@Override
-		public synchronized void setSpeed(int speed){
+		public void setSpeed(int speed){
 			if(speed >= 0){
 				motor.setSpeed(speed);
 				forward();
@@ -106,17 +143,17 @@ public class Motors{
 		}
 		
 		@Override
-		public synchronized void stop(){
+		public void stop(){
 			motor.stop();
 		}
 		
 		@Override
-		public synchronized void rotate(int angle, boolean immediateReturn){
+		public void rotate(int angle, boolean immediateReturn){
 			motor.rotate(angle, immediateReturn);
 		}
 		
 		@Override
-		public synchronized void rotateTo(int angle, boolean immediateReturn){
+		public void rotateTo(int angle, boolean immediateReturn){
 			motor.rotateTo(angle, immediateReturn);
 		}
 
@@ -129,7 +166,7 @@ public class Motors{
 
 		@Override
 		public void backward() {
-			motor.forward();	
+			motor.backward();	
 		}
 
 
