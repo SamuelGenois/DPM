@@ -37,16 +37,23 @@ public class TestNavigation {
 	
 	private static void testTurnTo() {
 		Repository.turnTo(0);
-		Repository.turnTo(Math.toRadians(45));
-		Repository.turnTo(Math.toRadians(90));
+		Sound.beep();
+		Repository.turnTo(45);
+		Sound.twoBeeps();
+		Repository.turnTo(90);
+		Sound.beep();
 		Repository.turnTo(0);
-		Repository.turnTo(Math.toRadians(315));
-		Repository.turnTo(Math.toRadians(270));
+		Sound.twoBeeps();
+		Repository.turnTo(315);
+		Sound.beep();
+		Repository.turnTo(270);
+		Sound.twoBeeps();
 		Repository.turnTo(0);
+		Sound.beep();
 	}
 	
 	private static void testTravelTo(){
-		Repository.setPosition(new double[] {0.0, 0.0, 0.0});
+		Repository.setPosition(new double[] {0.0, 0.0, 0.0}, new boolean[] {true, true, true});
 		
 		Repository.travelTo(30, 30);
 		Sound.beep();
