@@ -15,7 +15,7 @@ import lejos.robotics.RegulatedMotor;
  * Modified by: Samuel Genois
  * Fall 2016
  * 
- * Movement control class (turnTo, travelTo, flt, localize)
+ * Movement control class (turnTo, travelTo, flt, setSpeeds...)
  */
 public class Navigation {
 	final static int FAST = 200, SLOW = 100, ACCELERATION = 4000;
@@ -129,5 +129,15 @@ public class Navigation {
 	public void goForward(double distance) {
 		this.travelTo(Math.cos(Math.toRadians(Repository.getAng())) * distance, Math.cos(Math.toRadians(Repository.getAng())) * distance);
 
+	}
+	
+	/**
+	 * Calculates the euclidean distance between point (x,y) and the robot's current location
+	 * @param x The x coordinate of the destination
+	 * @param y The y coordinate of the destination
+	 * @return The euclidean distance
+	 */
+	public double calculateDistance(double x, double y){
+		return Math.sqrt(Math.pow(y-Repository.getY(), 2.0)+Math.pow(x-Repository.getX(), 2.0));
 	}
 }

@@ -48,6 +48,15 @@ public class Repository {
 	}
 	
 	/**
+	 * Calculates the euclidean distance between point (x,y) and the robot's current location
+	 * @param x The x coordinate of the point
+	 * @param y The y coordinate of the point
+	 */
+	public static double calculateDistance(double x, double y){
+		return getNavigation().calculateDistance(x, y);
+	}
+	
+	/**
 	 * Returns the orientation of the robot. Initializes
 	 * the Odometry subsystem if not yet been initialized.
 	 * @return the orientation of the robot

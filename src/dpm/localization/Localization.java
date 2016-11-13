@@ -9,8 +9,7 @@ import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 
 public class Localization {
-	public enum LocalizationType { FALLING_EDGE, RISING_EDGE };
-	public static int motorRotate = 100;
+	private static int motorRotate = 100;
 	private RegulatedMotor leftMotor, rightMotor;
 	private SampleProvider usSensor;
 	private float[] usData;
@@ -20,14 +19,22 @@ public class Localization {
 	private double distanceA, distanceB, correctedX, correctedY;
 	private double sensorDist = 8.0;
 	
-
+	/**
+	 * Constructor
+	 */
 	public Localization() {
 		this.leftMotor = Motors.getMotor(Motors.LEFT);
 		this.rightMotor = Motors.getMotor(Motors.RIGHT);
 		this.usSensor = Sensors.getSensor(Sensors.US_ACTIVE);
 		this.usData = new float[usSensor.sampleSize()];
 	}
-
+	
+	/**
+	 * Performs ultrasonic sensor localization for both angle and distance
+	 * First finds correct angle by detecting the rising edge of both walls
+	 * Then rotates to 180 and 270 degrees to get the distance from walls to get correct location
+	 * Finally, travels to (0,0) and turns facing north
+	 */
 	public void doLocalization() {
 		double tolerance = 0.1;
 		boolean startWithWall = getFilteredData() <= wallDist;
@@ -38,23 +45,23 @@ public class Localization {
         ccwRotation();
         boolean seenAWall = false;
         
-        // Let's start by getting the CCW
+        // Start by getting the CCW angle
         while (true) {
         	double data = getFilteredData();
         	double angle = Repository.getAng();
         	
-            if (data <= wallDist + tolerance) // maybe adjust tolerance?????
-                seenAWall = true; // Keep rotating, like a brotato.
+            if (data <= wallDist + tolerance) // adjust tolerance
+                seenAWall = true;
             
             if (seenAWall && data >= wallDist - tolerance) {
                 Sound.beep();
                 angleA = angle;
-                break; // Break out of the loop, remove excessive boolean
+                break; // Break out of the loop
             }
         }
         
         
-        // Now, let's move on to the other side. HELLO FROM THE OTHER SIDEEEEEE ~
+        // Move on to the other side
         if (startWithWall)
         	cwRotation(); 
         
@@ -70,9 +77,9 @@ public class Localization {
             if (seenAWall && data >= wallDist - tolerance) {
                 Sound.beep();
                 angleB = angle;
-                break; // Again, break out of the infinite time loop (heh)
+                break; // Again, break out of the infinite loop
             }
-        } // can improve this entire thing with a do-while tbh, but whatever, similar efficiency.
+        }
         
         double correctedTheta = 40 + Math.abs(angleA - angleB)/2;
         
@@ -81,7 +88,7 @@ public class Localization {
         boolean[] bools = { false, false, true };
         Repository.setPosition(newPositions, bools);
 
-		// Now, let's turn 180 degrees facing the wall to find that distance, then find difference between
+		// Now, turn 180 degrees facing the wall to find that distance, then find difference between
         // the wall and the tile, which will give us the correctedX
         
         Repository.turnTo(180);
@@ -94,7 +101,7 @@ public class Localization {
         Repository.setPosition(newPositions, bools);
         
         // Similarly, let's do the same with the Y!
-        // Turn Rob (Yes, that's his name now) to 270 degrees (S) and measure the distance, which will give us the
+        // Turn to 270 degrees (S) and measure the distance, which will give us the
         // correctedY when we subtract the distance from the tile distance
 
 		Repository.turnTo(270);
@@ -105,22 +112,32 @@ public class Localization {
         bools = new boolean[] { false, true, false };
 		Repository.setPosition(newPositions, bools);
         
-        // Travel to the origin, and then face Canada, because the US is already fucked;
-        // we need to look to the great white north for salvation.
+        // Travel to the origin, and then face North
 
 		Repository.travelTo(0, 0);
-		Repository.turnTo(90); // Rotate dat ass >_>?....
-		Delay.msDelay(3000); // Delay because we're a slow backwards society unable to progress. #MURICA
+		Repository.turnTo(90);
+		Delay.msDelay(3000); // Delay
 	}
-
+	
+	/**
+	 * Getter for the first angle
+	 * @return The first angle
+	 */
 	public double getAngleA(){
 		return angleA;
 	}
-
+	/**
+	 * Getter for the second angle
+	 * @return The second angle
+	 */
 	public double getAngleB(){	
 		return angleB;
 	}
-
+	
+	/**
+	 * Get ultrasonic sensor distance reading
+	 * @return US sensor distance reading normalized to cm
+	 */
 	public float getFilteredData() {
 
 		usSensor.fetchSample(usData, 0);
