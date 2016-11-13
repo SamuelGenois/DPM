@@ -5,6 +5,7 @@ import dpm.claw.Claw;
 import dpm.finalization.Finalization;
 import dpm.localization.Localization;
 import dpm.navigation.Navigation;
+import dpm.navigation.ObstacleAvoidance;
 import dpm.odometry.Odometer;
 
 public class Repository {
@@ -16,6 +17,7 @@ public class Repository {
 	private static Localization localization;
 	private static Navigation navigation;
 	private static Odometer odometry;
+	private static ObstacleAvoidance avoidance;
 	private static Claw pincer;
 	
 	/**
@@ -54,6 +56,13 @@ public class Repository {
 	 */
 	public static double calculateDistance(double x, double y){
 		return getNavigation().calculateDistance(x, y);
+	}
+	
+	/**
+	 * Interrupts a running travel operation
+	 */
+	public static void interruptNavigation(){
+		getNavigation().interrupt();
 	}
 	
 	/**
@@ -101,6 +110,29 @@ public class Repository {
 		getOdometer().setPosition(position, whichOne);
 	}
 	
+	/**
+	 * Performs obstacle avoidance
+	 * @param x The x coordinate of current travel
+	 * @param y The y coordinate of current travel
+	 */
+	public static void doAvoidance(double x, double y){
+		getAvoidance(x,y).doWallAvoidance();
+	}
+	
+	/**
+	 * Starts the thread in Navigation.java
+	 */
+	public static void startNavigation(){
+		getNavigation().start();
+	}
+	
+	/**
+	 * Starts the thread in ObstacleAvoidance.java
+	 */
+	public static void startAvoidance(){
+		getAvoidance(0,0).start();
+	}
+	
 	//This is private because no subsystem should
 	//require direct access to the Odometer object
 	private static Odometer getOdometer(){
@@ -118,6 +150,14 @@ public class Repository {
 	}
 	
 	//This is private because no subsystem should
+	//require direct access to the ObstacleAvoidance object
+	//It always creates a new object because parameters are different for each instance
+	private static ObstacleAvoidance getAvoidance(double x, double y){
+		avoidance = new ObstacleAvoidance(x, y);
+		return avoidance;
+	}
+	
+	//This is private because no subsystem should
 	//require direct access to the Pincer object
 	private static Claw getPincer(){
 		if(pincer == null)
@@ -128,7 +168,7 @@ public class Repository {
 	public static void grab(){
 		getPincer().grab();
 	}
-	
+		
 	/**
 	 * Interrupts the ongoing Block Search subsystem algorithm execution and
 	 * any possible ongoing use of the Navigation subsystem. A delay is introduced
