@@ -1,6 +1,7 @@
 package dpm.claw;
 
 import dpm.util.Motors;
+import lejos.hardware.Sound;
 import lejos.robotics.RegulatedMotor;
 
 /**
@@ -33,7 +34,8 @@ public class Claw {
 	 *  - close lower claw
 	 */
 	public void drop(){
-		//TODO
+		//Temporary confirmation that method call succeeds
+		Sound.twoBeeps();
 	}
 	
 	/**
@@ -49,7 +51,8 @@ public class Claw {
 	 *  - close lower claw
 	 */
 	public void grab(){
-		//TODO
+		//Temporary confirmation that method call succeeds
+		Sound.beep();
 	}
 
 }

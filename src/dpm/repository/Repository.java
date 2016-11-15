@@ -3,10 +3,12 @@ package dpm.repository;
 import dpm.blocksearch.BlockSearch;
 import dpm.claw.Claw;
 import dpm.finalization.Finalization;
+import dpm.launcher.WifiConnect;
 import dpm.localization.Localization;
 import dpm.navigation.Navigation;
 import dpm.navigation.ObstacleAvoidance;
 import dpm.odometry.Odometer;
+import java.util.HashMap;
 
 public class Repository {
 
@@ -19,13 +21,8 @@ public class Repository {
 	private static Odometer odometry;
 	private static ObstacleAvoidance avoidance;
 	private static Claw pincer;
+	private static WifiConnect wifiConnect;
 	
-	/**
-	 * Drops held blocks
-	 */
-	public static void drop(){
-		getPincer().drop();
-	}
 	
 	/**
 	 * Travels to the specified (x,y) coordinates, avoiding
@@ -165,8 +162,18 @@ public class Repository {
 		return pincer;
 	}
 	
+	/**
+	 * Grabs a block
+	 */
 	public static void grab(){
 		getPincer().grab();
+	}
+	
+	/**
+	 * Drops held blocks
+	 */
+	public static void drop(){
+		getPincer().drop();
 	}
 		
 	/**
@@ -190,11 +197,21 @@ public class Repository {
 	}
 	
 	/**
+	 * Gets Wifi data
+	 */
+	public static HashMap<String, Integer> getWifiData(){
+		if (wifiConnect == null){
+			wifiConnect = new WifiConnect();
+		}
+		return wifiConnect.ConnectWifi();
+	}
+	
+	/**
 	 * Executes the finalization routine
 	 */
-	public static void doFinalization(){
+	public static void doFinalization(double x, double y){
 		if(finalization == null)
 			finalization = new Finalization();
-		finalization.doFinalization();
+		finalization.doFinalization(x,y);
 	}
 }
