@@ -1,107 +1,116 @@
 package dpm.localization;
 
-import dpm.navigation.Navigation;
-import dpm.odometry.Odometer;
+import dpm.repository.Repository;
+import dpm.util.Motors;
 import dpm.util.Sensors;
 import lejos.hardware.Sound;
-import lejos.hardware.ev3.LocalEV3;
-import lejos.hardware.motor.EV3LargeRegulatedMotor;
+import lejos.robotics.RegulatedMotor;
 import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 
 public class Localization {
 	public enum LocalizationType { FALLING_EDGE, RISING_EDGE };
-	public static final int MOTOR_ROTATE_SPEED = 100;
-
-	private Odometer odo;
-	private EV3LargeRegulatedMotor leftMotor, rightMotor;
-	private Navigation navi;
+	public static int motorRotate = 100;
+	private RegulatedMotor leftMotor, rightMotor;
 	private SampleProvider usSensor;
 	private float[] usData;
-	private double wallDist = 31;
-	private boolean clockwise = true;
-	private boolean counterclockwise = true;
+	private double wallDist = 35;
 	boolean initialWall;
-	public static double angleA, angleB;
-	public static double distanceA, distanceB, correctedX, correctedY;
+	private double angleA, angleB;
+	private double distanceA, distanceB, correctedX, correctedY;
 	private double sensorDist = 8.0;
 	
 
-	public Localization(Navigation navi) {
-		this.usSensor = Sensors.getSensor(Sensors.US_LEFT);
+	public Localization() {
+		this.leftMotor = Motors.getMotor(Motors.LEFT);
+		this.rightMotor = Motors.getMotor(Motors.RIGHT);
+		this.usSensor = Sensors.getSensor(Sensors.US_ACTIVE);
 		this.usData = new float[usSensor.sampleSize()];
-		//this.navi = navi;
-		this.odo = navi.getOdometer();
-		this.leftMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("D"));
-		this.rightMotor = new EV3LargeRegulatedMotor(LocalEV3.get().getPort("A"));
 	}
-	//most of the code below are re-used from previse lab with minimal value changes due to the modification of the robot.
+
 	public void doLocalization() {
-		angleA = 0; 
-		angleB = 0;
+		double tolerance = 0.1;
+		boolean startWithWall = getFilteredData() <= wallDist;
+        angleA = angleB = 0;
 		Sound.setVolume(20);
-		ccwRotation();	//Start by rotating counterclockwise
+        
+        // Begin Rotating in CCW
+        ccwRotation();
+        boolean seenAWall = false;
+        
+        // Let's start by getting the CCW
+        while (true) {
+        	double data = getFilteredData();
+        	double angle = Repository.getAng();
+        	
+            if (data <= wallDist + tolerance) // maybe adjust tolerance?????
+                seenAWall = true; // Keep rotating, like a brotato.
+            
+            if (seenAWall && data >= wallDist - tolerance) {
+                Sound.beep();
+                angleA = angle;
+                break; // Break out of the loop, remove excessive boolean
+            }
+        }
+        
+        
+        // Now, let's move on to the other side. HELLO FROM THE OTHER SIDEEEEEE ~
+        if (startWithWall)
+        	cwRotation(); 
+        
+        seenAWall = false;
+        Delay.msDelay(1000);
+        while (true) {
+        	double data = getFilteredData();
+        	double angle = Repository.getAng();
+        	
+            if (data <= wallDist + tolerance)
+                seenAWall = true;
+            
+            if (seenAWall && data >= wallDist - tolerance) {
+                Sound.beep();
+                angleB = angle;
+                break; // Again, break out of the infinite time loop (heh)
+            }
+        } // can improve this entire thing with a do-while tbh, but whatever, similar efficiency.
+        
+        double correctedTheta = 40 + Math.abs(angleA - angleB)/2;
+        
+        // Find the corrected angle and set it using odo.setPosition(x, y, theta)!
+        double[] newPositions = { 0.0, 0.0, correctedTheta };
+        boolean[] bools = { false, false, true };
+        Repository.setPosition(newPositions, bools);
 
-		// keep rotating until the robot sees a wall, then latch the angle
-		while(counterclockwise){ 
-			
-			if(getFilteredData() <= wallDist){		//since we're using "rising edge", while it's facing the wall...
-				ccwRotation();						//rotating counterclockwise
+		// Now, let's turn 180 degrees facing the wall to find that distance, then find difference between
+        // the wall and the tile, which will give us the correctedX
+        
+        Repository.turnTo(180);
+        distanceA = getFilteredData();
+        Sound.buzz();
+        correctedX = distanceA + sensorDist - 30.48;
+        
+        newPositions = new double[] { correctedX, Repository.getY(), Repository.getAng() };
+        bools = new boolean[] { true, false, false };
+        Repository.setPosition(newPositions, bools);
+        
+        // Similarly, let's do the same with the Y!
+        // Turn Rob (Yes, that's his name now) to 270 degrees (S) and measure the distance, which will give us the
+        // correctedY when we subtract the distance from the tile distance
 
-				if(getFilteredData() > wallDist){	// as it detects the first opening
-					odo.setPosition(new double [] {0.0, 0.0, 0.0}, new boolean [] {true, true, true}); 	
-					Sound.beep();
-					angleA = 0.0;					//set angle A
-					counterclockwise = false;
-				}
-			}
-		}
-
-		boolean reverse = false;
-		while(clockwise){
-			cwRotation();	//rotating clockwise
-
-			if(getFilteredData() <= wallDist){ 
-				reverse = true;
-			}
-			if(getFilteredData() >= wallDist && reverse == true){ //found the second opening,
-				Sound.beep();
-				angleB = odo.getTheta(); //set it as angle B
-				clockwise = false;
-			}
-		}
-		
-		//find the corrected Angle and set it using odo.setPosition(X,Y,Theta)
-//		double correctedTheta = 80 + (Math.abs(angleA - angleB))/2;
-		double correctedTheta = 40 + (Math.abs(angleA - angleB))/2;
-		odo.setPosition(new double [] {0.0, 0.0, correctedTheta}, new boolean [] {true, true, true});
-		leftMotor.stop();
-		rightMotor.stop();
-		
-		//turn 180 degrees facing the wall to measure the distance, then by subtracting this distance 
-		//	from the distance of a tile, we could determine the correctedX.
-		navi.turnTo(180);
-		Sound.buzz();
-		distanceA = getFilteredData();
-		correctedX = (distanceA + sensorDist + 2) - 30.48;
-		odo.setPosition(new double [] {correctedX, odo.getY(), odo.getTheta()}, new boolean [] {true, true, true});
-
-		//same methodology as above
-		// by turning the robot to 270 (direct south), and measure the distance, we could determine the correctedY 
-		// by subtracting this distance found from tile distance.
-		navi.turnTo(270);
-		Sound.buzz();
+		Repository.turnTo(270);
 		distanceB = getFilteredData();
-		correctedY = (distanceB + sensorDist) - 30.48;
-		odo.setPosition(new double [] {odo.getX(), correctedY, odo.getTheta()}, new boolean [] {true, true, true});
+		Sound.buzz();
+		correctedY = distanceB + sensorDist - 30.48;
+        newPositions = new double[] { Repository.getX(), correctedY, Repository.getAng() };
+        bools = new boolean[] { false, true, false };
+		Repository.setPosition(newPositions, bools);
+        
+        // Travel to the origin, and then face Canada, because the US is already fucked;
+        // we need to look to the great white north for salvation.
 
-		//travel to origin and face direct North (90 degrees)
-		navi.travelTo(0.0, 0.0);
-		Sound.buzz();
-		navi.turnTo(93);
-		Sound.buzz();
-		Delay.msDelay(3000);
-		
+		Repository.travelTo(0, 0);
+		Repository.turnTo(90); // Rotate dat ass >_>?....
+		Delay.msDelay(3000); // Delay because we're a slow backwards society unable to progress. #MURICA
 	}
 
 	public double getAngleA(){
@@ -120,15 +129,15 @@ public class Localization {
 	}
 
 	private void cwRotation(){
-		leftMotor.setSpeed(MOTOR_ROTATE_SPEED);
-		rightMotor.setSpeed(MOTOR_ROTATE_SPEED);
+		leftMotor.setSpeed(motorRotate);
+		rightMotor.setSpeed(motorRotate);
 		leftMotor.forward();
 		rightMotor.backward();
 	}
 
 	private void ccwRotation(){
-		leftMotor.setSpeed(MOTOR_ROTATE_SPEED);
-		rightMotor.setSpeed(MOTOR_ROTATE_SPEED);
+		leftMotor.setSpeed(motorRotate);
+		rightMotor.setSpeed(motorRotate);
 		leftMotor.backward();
 		rightMotor.forward();
 	}
