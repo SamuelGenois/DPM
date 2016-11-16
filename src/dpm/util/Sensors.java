@@ -11,30 +11,7 @@ import lejos.robotics.SampleProvider;
  *  
  * @author Samuel Genois
  */
-public class Sensors {
-	
-	/**
-	 * The id of the ultrasonic sensor used to detected
-	 * distance in front of the robot
-	 */
-	public static final int	US_ACTIVE = 0;
-	
-	/**
-	 * The id of the ultrasonic sensor used to detect
-	 * ultrasonic interference
-	 */
-	public static final int	US_PASSIVE = 1;
-	
-	/**
-	 * The id of the color sensor used to identify blue
-	 * styrofoam blocks
-	 */
-	public static final int	COLOR_BLOCK_ID = 2;
-	
-	/**
-	 * The id of the color sensor used to detect grid lines
-	 */
-	public static final int	COLOR_ODO_CORR = 3;
+public class Sensors implements DPMConstants{
 	
 	private static final int	US_DISTANCE = 100,
 								US_LISTEN = 101,

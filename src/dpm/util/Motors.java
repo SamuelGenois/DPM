@@ -12,29 +12,9 @@ import lejos.robotics.RegulatedMotorListener;
  *
  * @author Samuel Genois
  */
-public class Motors{
+public class Motors implements DPMConstants{
 	
 	public static final long ONE_SECOND = 1000;
-	
-	/**
-	 * The id of the motor operating the left wheel
-	 */
-	public static final int LEFT = 0;
-	
-	/**
-	 * The id of the motor operating the right wheel
-	 */
-	public static final int RIGHT = 1;
-	
-	/**
-	 * The id of the motor operating the lower claw
-	 */
-	public static final int LOWER_CLAW = 2;
-	
-	/**
-	 * The id of the motor operating the upper claw
-	 */
-	public static final int UPPER_CLAW = 3;
 	
 	/**
 	 * The id of the motor operating the lifting of the upper claw

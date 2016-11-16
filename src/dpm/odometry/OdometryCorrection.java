@@ -1,5 +1,6 @@
 package dpm.odometry;
 
+import dpm.util.DPMConstants;
 import dpm.util.Sensors;
 import lejos.hardware.Sound;
 import lejos.robotics.SampleProvider;
@@ -10,12 +11,11 @@ import lejos.robotics.SampleProvider;
  * @author Samuel Genois
  *
  */
-public class OdometryCorrection extends Thread{
+public class OdometryCorrection extends Thread implements DPMConstants{
 	
 	private static final long POLLING_DELAY = 50l;
 	private static final float LIGHT_THRESHOLD = 0.25f;
 	private static final double CORRECTION_THRESHOLD = 2.0;
-	private static final double SQUARE_SIZE = 30.48;
 	
 	private final Odometer odometer;
 	private final SampleProvider sensor;

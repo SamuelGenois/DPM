@@ -9,6 +9,10 @@ import lejos.robotics.RegulatedMotor;
  */
 public class Claw {
 	
+	private static final int CAPACITY = 1;
+	
+	private int load;
+	
 	RegulatedMotor	lowerclawMotor;
 	RegulatedMotor	upperclawMotor;
 	RegulatedMotor	liftMotor;
@@ -20,6 +24,24 @@ public class Claw {
 		lowerclawMotor = Motors.getMotor(Motors.LOWER_CLAW);
 		upperclawMotor = Motors.getMotor(Motors.UPPER_CLAW);
 		liftMotor = Motors.getMotor(Motors.LIFT);
+		
+		load = 0;
+	}
+	
+	/**
+	 * Returns true if the claw holds no blocks
+	 * @return true if the claw holds no blocks
+	 */
+	public boolean clawIsEmpty(){
+		return load == 0;
+	}
+	
+	/**
+	 * Returns true if the claw is at full capacity
+	 * @return true if the claw is at full capacity
+	 */
+	public boolean clawIsFull(){
+		return load == CAPACITY;
 	}
 	
 	/**

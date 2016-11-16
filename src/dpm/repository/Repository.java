@@ -3,6 +3,7 @@ package dpm.repository;
 import dpm.blocksearch.BlockSearch;
 import dpm.claw.Claw;
 import dpm.finalization.Finalization;
+import dpm.launcher.Launcher;
 import dpm.localization.Localization;
 import dpm.navigation.Navigation;
 import dpm.odometry.Odometer;
@@ -11,18 +12,49 @@ public class Repository {
 
 	private static final long	INTERRUPT_DELAY = 5000l;
 	
+	private static Launcher launcher = null;
+	
 	private static BlockSearch blockSearch;
 	private static Finalization finalization;
 	private static Localization localization;
 	private static Navigation navigation;
 	private static Odometer odometry;
-	private static Claw pincer;
+	private static Claw claw;
 	
 	/**
 	 * Drops held blocks
 	 */
 	public static void drop(){
-		getPincer().drop();
+		getClaw().drop();
+	}
+	
+	/**
+	 * Executes the block search routine
+	 */
+	public static void search(){
+		getBlockSearch().search();
+	}
+	
+	private static BlockSearch getBlockSearch(){
+		if(blockSearch == null)
+			blockSearch = new BlockSearch();
+		return blockSearch;
+	}
+	
+	/**
+	 * Returns true if the claw holds no blocks
+	 * @return true if the claw holds no blocks
+	 */
+	public static boolean clawIsEmpty(){
+		return claw.clawIsEmpty();
+	}
+	
+	/**
+	 * Returns true if the claw is at full capacity
+	 * @return true if the claw is at full capacity
+	 */
+	public static boolean clawIsFull(){
+		return claw.clawIsFull();
 	}
 	
 	/**
@@ -86,10 +118,51 @@ public class Repository {
 	/**
 	 * Sets the position of the robot. Initializes
 	 * the Odometry subsystem if not yet been initialized.
-	 * @param position the new position of the robot
+	 * @param position the new position values of the robot
+	 * @param update which values must be updated
 	 */
-	public static void setPosition(double[] position, boolean[] whichOne){
-		getOdometer().setPosition(position, whichOne);
+	public static void setPosition(double[] position, boolean[] update){
+		getOdometer().setPosition(position, update);
+	}
+	
+	/**
+	 * Returns the coordinates of the top left and bottom right corners of the green zone.
+	 * @return the coordinates of the top left and bottom right corners of the green zone
+	 */
+	public static int[] getGreenZone() {
+		return launcher.getGreenZone();
+	}
+	
+	/**
+	 * Returns the coordinates of the top left and bottom right corners of the green zone.
+	 * @return the coordinates of the top left and bottom right corners of the green zone
+	 */
+	public static int[] getRedZone() {
+		return launcher.getRedZone();
+	}
+	
+	/**
+	 * Set the launcher subsystem of the repository.
+	 * This method is expected to be called by the launcher itself.
+	 */
+	public static void launch(Launcher launcher){
+		Repository.launcher = launcher;
+	}
+	
+	/**
+	 * Returns the starting corner of the robot.
+	 * @return the starting corner of the robot
+	 */
+	public static int getStartZone() {
+		return launcher.getStartZone();
+	}
+	
+	/**
+	 * Returns the role of the robot.
+	 * @return the role of the robot
+	 */
+	public static int getRole(){
+		return launcher.getRole();
 	}
 	
 	//This is private because no subsystem should
@@ -110,14 +183,14 @@ public class Repository {
 	
 	//This is private because no subsystem should
 	//require direct access to the Pincer object
-	private static Claw getPincer(){
-		if(pincer == null)
-			pincer = new Claw();
-		return pincer;
+	private static Claw getClaw(){
+		if(claw == null)
+			claw = new Claw();
+		return claw;
 	}
 	
 	public static void grab(){
-		getPincer().grab();
+		getClaw().grab();
 	}
 	
 	/**
