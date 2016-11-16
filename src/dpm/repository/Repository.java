@@ -9,7 +9,12 @@ import dpm.navigation.Navigation;
 import dpm.navigation.ObstacleAvoidance;
 import dpm.odometry.Odometer;
 import java.util.HashMap;
-
+import dpm.launcher.Launcher;
+/**
+ * Repository class that allows any subsystem to interact with any other subsystem indirectly
+ * @author Samuel Genois, Emile Traoré
+ *
+ */
 public class Repository {
 
 	private static final long	INTERRUPT_DELAY = 5000l;
@@ -22,7 +27,22 @@ public class Repository {
 	private static ObstacleAvoidance avoidance;
 	private static Claw pincer;
 	private static WifiConnect wifiConnect;
+	private static Launcher launcher;
 	
+	/**
+	 * Executes the block search routine
+	 */
+	public static void search(){
+		getBlockSearch().search();
+	}
+	
+	//This is private because no subsystem should
+	//require direct access to the BlockSearch object
+	private static BlockSearch getBlockSearch(){
+		if(blockSearch == null)
+			blockSearch = new BlockSearch();
+		return blockSearch;
+	}
 	
 	/**
 	 * Travels to the specified (x,y) coordinates, avoiding
@@ -207,11 +227,75 @@ public class Repository {
 	}
 	
 	/**
-	 * Executes the finalization routine
+	 * Executes the finalization routine (for final test)
+	 */
+	public static void doFinalization(){
+		if(finalization == null)
+			finalization = new Finalization();
+		finalization.doFinalization();
+	}
+	
+	/**
+	 * Executes the finalization routine (for demo)
 	 */
 	public static void doFinalization(double x, double y){
 		if(finalization == null)
 			finalization = new Finalization();
 		finalization.doFinalization(x,y);
+	}
+	
+	 /** Returns the coordinates of the top left and bottom right corners of the green zone.
+	 * @return the coordinates of the top left and bottom right corners of the green zone
+	 */
+	public static int[] getGreenZone() {
+		return launcher.getGreenZone();
+	}
+	
+	/**
+	 * Returns the coordinates of the top left and bottom right corners of the green zone.
+	 * @return the coordinates of the top left and bottom right corners of the green zone
+	 */
+	public static int[] getRedZone() {
+		return launcher.getRedZone();
+	}
+	
+	/**
+	 * Set the launcher subsystem of the repository.
+	 * This method is expected to be called by the launcher itself.
+	 */
+	public static void launch(Launcher launcher){
+		Repository.launcher = launcher;
+	}
+	
+	/**
+	 * Returns the starting corner of the robot.
+	 * @return the starting corner of the robot
+	 */
+	public static int getStartZone() {
+		return launcher.getStartZone();
+	}
+	
+	/**
+	 * Returns the role of the robot.
+	 * @return the role of the robot
+	 */
+	public static int getRole(){
+		return launcher.getRole();
+	}
+	
+	/**
+	 * Returns true if the claw holds no blocks
+	 * @return true if the claw holds no blocks
+	 */
+	public static boolean clawIsEmpty(){
+		return pincer.clawIsEmpty();
+	}
+	
+	/**
+	 * Returns true if the claw is at full capacity
+	 * @return true if the claw is at full capacity
+	 */
+	public static boolean clawIsFull(){
+		return pincer.clawIsFull();
 	}
 }

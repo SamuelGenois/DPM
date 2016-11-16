@@ -51,6 +51,9 @@ public class Odometer implements TimerListener {
 		this(Motors.getMotor(Motors.LEFT), Motors.getMotor(Motors.RIGHT), DEFAULT_INTERVAL, true);
 	}
 	
+	/**
+	 * Alternative constructor
+	 */
 	public Odometer (RegulatedMotor leftMotor, RegulatedMotor rightMotor, int INTERVAL, boolean autostart) {
 		
 		this.leftMotor = leftMotor;

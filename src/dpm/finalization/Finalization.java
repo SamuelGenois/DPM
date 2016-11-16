@@ -19,6 +19,20 @@ public class Finalization{
 	/**
 	 * Executes the final tasks the robot must do
 	 * before the end of the round.
+	 * <br> So far: temporary version for beta demo (only travels to green zone after picking up one block)
+	 */
+	
+	public void doFinalization(double targetX, double targetY){
+		Repository.interruptBlockSearch();
+		Repository.interruptNavigation();
+		Repository.travelTo(targetX, targetY);
+		Repository.turnTo(Repository.getAng()+180);
+		Repository.drop();
+	}
+	
+	/**
+	 * Executes the final tasks the robot must do
+	 * before the end of the round.
 	 * <br>
 	 * <br> - Stop navigating
 	 * <br> - Stop searching for blocks
@@ -29,13 +43,8 @@ public class Finalization{
 	 * <br> - Request the termination of the program
 	 * 
 	 */
-	//So far: temporary version for beta demo (only travels to green zone after picking up one block)
-	public void doFinalization(double targetX, double targetY){
-		Repository.interruptBlockSearch();
-		Repository.interruptNavigation();
-		Repository.travelTo(targetX, targetY);
-		Repository.turnTo(Repository.getAng()+180);
-		Repository.drop();
+	public void doFinalization(){
+		//TODO
 	}
 
 }

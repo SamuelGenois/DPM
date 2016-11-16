@@ -14,7 +14,7 @@ import java.util.HashMap;
  * @author Emile Traoré
  *
  */
-public class TestBetaDemo{
+public class BetaDemo{
 	private static boolean runningDemo = true;
 	private static boolean wifiAcquired = false;
 	private static int GZx, GZy;

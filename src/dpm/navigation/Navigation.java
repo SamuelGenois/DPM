@@ -45,6 +45,10 @@ public class Navigation extends Thread{
 		this.rightMotor.setAcceleration(ACCELERATION);
 	}
 	
+	/**
+	 * Thread method that polls the ultrasonic sensor
+	 * <br>If the ultrasonic sensor distance drops below a threshold, engage obstacle avoidance
+	 */
 	public void run(){
 		while (!interrupted) {
 			usSensor.fetchSample(usData,0);
