@@ -24,11 +24,11 @@ public class TestNavigation {
 	Button.waitForAnyPress();
 	Printer.getInstance().display("Running");
 	
-	testTurnTo();
+	//testTurnTo();
 	
-	Printer.getInstance().display("Press any button");
-	Button.waitForAnyPress();
-	Printer.getInstance().display("Running");
+	//Printer.getInstance().display("Press any button");
+	//Button.waitForAnyPress();
+	//Printer.getInstance().display("Running");
 	
 	testTravelTo();
 	
@@ -59,10 +59,6 @@ public class TestNavigation {
 		Sound.beep();
 		try {Thread.sleep(TEST_DELAY);} catch (InterruptedException e) {}
 		
-		Repository.travelTo(30, 30);
-		Sound.beep();
-		try {Thread.sleep(TEST_DELAY);} catch (InterruptedException e) {}
-		
 		Repository.travelTo(0, 30);
 		Sound.beep();
 		try {Thread.sleep(TEST_DELAY);} catch (InterruptedException e) {}
@@ -74,6 +70,8 @@ public class TestNavigation {
 		Repository.travelTo(0, 0);
 		Sound.beep();
 		try {Thread.sleep(TEST_DELAY);} catch (InterruptedException e) {}
+		
+		Repository.turnTo(90);
 		
 	}
 }
