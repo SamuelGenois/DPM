@@ -8,6 +8,11 @@ import lejos.robotics.RegulatedMotor;
 import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 
+/**
+ * Class that contains methods and parameters used for ultrasonic sensor localization
+ * @author Will Liang
+ *
+ */
 public class Localization {
 	private static int motorRotate = 100;
 	private RegulatedMotor leftMotor, rightMotor;

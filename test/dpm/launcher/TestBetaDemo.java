@@ -6,6 +6,14 @@ import lejos.hardware.Sound;
 
 import java.util.HashMap;
 
+/**
+ * Class that executes the tasks required in the beta demo
+ * <br>Gets Wifi data and calculates coordinates of green zone
+ * <br>Starts the preliminary block search algorithm
+ * <br>Once a block is found, travels to green zone and drops it
+ * @author Emile Traoré
+ *
+ */
 public class TestBetaDemo{
 	private static boolean runningDemo = true;
 	private static boolean wifiAcquired = false;
@@ -21,7 +29,7 @@ public class TestBetaDemo{
 			public void run() {
 				while (!wifiAcquired){
 				}
-				try{Thread.sleep(30000);}catch (Exception e){}
+				try{Thread.sleep(10000);}catch (Exception e){}
 				Sound.buzz();
 				runningDemo = false;
 				Repository.doFinalization(GZx, GZy);
