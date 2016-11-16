@@ -15,7 +15,6 @@ import java.util.HashMap;
  *
  */
 public class BetaDemo{
-	private static boolean runningDemo = true;
 	private static boolean wifiAcquired = false;
 	private static int GZx, GZy;
 	public static void main (String[] args){
@@ -23,16 +22,6 @@ public class BetaDemo{
 			public void run() {
 				while (Button.waitForAnyPress() != Button.ID_ESCAPE){}
 			System.exit(0);
-			}
-		}).start();
-		(new Thread() {
-			public void run() {
-				while (!wifiAcquired){
-				}
-				try{Thread.sleep(10000);}catch (Exception e){}
-				Sound.buzz();
-				runningDemo = false;
-				Repository.doFinalization(GZx, GZy);
 			}
 		}).start();
 		
@@ -70,12 +59,9 @@ public class BetaDemo{
 			GZx = (initialY-GZy)*30;
 			GZy = (initialX+GZx)*30;
 		}
-		//Repository.localize();
-		while (runningDemo){
-			Repository.travelTo(0,60);
-			Repository.travelTo(60,60);
-			Repository.travelTo(60,0);
-			Repository.travelTo(0,0);
-		}
+		Repository.localize();
+		Sound.beep();
+		Repository.search();
+		Repository.doFinalization(GZx, GZy);
 	}
 }

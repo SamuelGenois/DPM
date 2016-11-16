@@ -177,7 +177,7 @@ public class BlockSearch implements DPMConstants{
 			Repository.grab();
 			if(Repository.clawIsFull()){
 				greenZoneSearchable = false;
-				Repository.doFinalization();
+				this.interrupt();
 			}
 		}
 		else{
