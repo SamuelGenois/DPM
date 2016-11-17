@@ -14,6 +14,8 @@ public interface DPMConstants {
 	
 	public static final int GARBAGE_COLLECTOR = 1;
 	
+	public static final int NO_ROLE = -1;
+	
 	//Starting Zones
 	public static final int LOWER_LEFT = 1;
 	

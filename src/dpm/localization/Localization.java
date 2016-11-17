@@ -1,6 +1,7 @@
 package dpm.localization;
 
 import dpm.repository.Repository;
+import dpm.util.DPMConstants;
 import dpm.util.Motors;
 import dpm.util.Sensors;
 import lejos.hardware.Sound;
@@ -13,7 +14,7 @@ import lejos.utility.Delay;
  * @author Will Liang
  *
  */
-public class Localization {
+public class Localization implements DPMConstants{
 	private static int motorRotate = 100;
 	private RegulatedMotor leftMotor, rightMotor;
 	private SampleProvider usSensor;
@@ -122,6 +123,23 @@ public class Localization {
 		Repository.travelTo(0, 0);
 		Repository.turnTo(90);
 		Delay.msDelay(3000); // Delay
+		
+		//Not required when testing localization alone
+		/*
+		switch(Repository.getStartZone()){
+			case LOWER_RIGHT:
+				Repository.setPosition(new double[] {10*SQUARE_SIZE, 0, 180}, new boolean[] {true, true, true});
+				break;
+			case UPPER_LEFT:
+				Repository.setPosition(new double[] {0, 10*SQUARE_SIZE, 0}, new boolean[] {true, true, true});
+				break;
+			case UPPER_RIGHT:
+				Repository.setPosition(new double[] {10*SQUARE_SIZE, 10*SQUARE_SIZE, 270}, new boolean[] {true, true, true});
+				break;
+			case LOWER_LEFT:
+			default:
+		}
+		*/
 	}
 	
 	/**

@@ -3,12 +3,10 @@ package dpm.repository;
 import dpm.blocksearch.BlockSearch;
 import dpm.claw.Claw;
 import dpm.finalization.Finalization;
-import dpm.launcher.WifiConnect;
 import dpm.localization.Localization;
 import dpm.navigation.Navigation;
 import dpm.navigation.ObstacleAvoidance;
 import dpm.odometry.Odometer;
-import java.util.HashMap;
 import dpm.launcher.Launcher;
 /**
  * Repository class that allows any subsystem to interact with any other subsystem indirectly
@@ -26,7 +24,6 @@ public class Repository {
 	private static Odometer odometry;
 	private static ObstacleAvoidance avoidance;
 	private static Claw pincer;
-	private static WifiConnect wifiConnect;
 	private static Launcher launcher;
 	
 	/**
@@ -217,16 +214,6 @@ public class Repository {
 	}
 	
 	/**
-	 * Gets Wifi data
-	 */
-	public static HashMap<String, Integer> getWifiData(){
-		if (wifiConnect == null){
-			wifiConnect = new WifiConnect();
-		}
-		return wifiConnect.ConnectWifi();
-	}
-	
-	/**
 	 * Executes the finalization routine (for final test)
 	 */
 	public static void doFinalization(){
@@ -235,14 +222,19 @@ public class Repository {
 		finalization.doFinalization();
 	}
 	
+	//Code to delete
+	/*
+	
 	/**
 	 * Executes the finalization routine (for demo)
-	 */
+	 *
 	public static void doFinalization(double x, double y){
 		if(finalization == null)
 			finalization = new Finalization();
 		finalization.doFinalization(x,y);
 	}
+	
+	*/
 	
 	 /** Returns the coordinates of the top left and bottom right corners of the green zone.
 	 * @return the coordinates of the top left and bottom right corners of the green zone

@@ -24,10 +24,6 @@ package dpm.launcher;
 */
 import java.io.IOException;
 import java.util.HashMap;
-
-import lejos.hardware.Button;
-import lejos.hardware.ev3.LocalEV3;
-import lejos.hardware.lcd.TextLCD;
 import dpm.util.Printer;
 
 public class WifiConnect {
