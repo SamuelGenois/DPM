@@ -1,6 +1,7 @@
 package dpm.launcher;
 
 import dpm.repository.Repository;
+import dpm.util.Printer;
 import lejos.hardware.Button;
 import lejos.hardware.Sound;
 
@@ -59,9 +60,10 @@ public class BetaDemo{
 			GZx = (initialY-GZy)*30;
 			GZy = (initialX+GZx)*30;
 		}
-		Repository.localize();
-		Sound.beep();
-		Repository.search();
-		Repository.doFinalization(GZx, GZy);
+		Printer.getInstance().display("\n\n\n"+GZx+"\n"+GZy);
+		//Repository.localize();
+		//Sound.beep();
+		//Repository.search();
+		//Repository.doFinalization(GZx, GZy);
 	}
 }

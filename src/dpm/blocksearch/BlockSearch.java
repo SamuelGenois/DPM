@@ -24,7 +24,7 @@ public class BlockSearch implements DPMConstants{
 	private static final long	BACKUP_TIME = 3000l;
 	
 	private static final int	SCAN_RANGE = 61,
-								COLOR_SENSOR_RANGE = 3;
+								COLOR_SENSOR_RANGE = 2;
 	
 	private int currentRegion;
 	
@@ -58,6 +58,8 @@ public class BlockSearch implements DPMConstants{
 		
 		leftMotor = Motors.getMotor(Motors.LEFT);
 		rightMotor = Motors.getMotor(Motors.RIGHT);
+		leftMotor.setAcceleration(WHEEL_MOTOR_ACCELERATION);
+		rightMotor.setAcceleration(WHEEL_MOTOR_ACCELERATION);
 		
 		regionOrder = new int[16];
 		createRegionOrder();
@@ -66,14 +68,17 @@ public class BlockSearch implements DPMConstants{
 		currentRegion = 0;
 		currentOrientation = 90.0;
 		
-		if(Repository.getRole() == BUILDER){
+		goodZoneRegions = new ArrayList<Integer>();
+		badZoneRegions = new ArrayList<Integer>();
+		
+		/*if(Repository.getRole() == BUILDER){
 			goodZoneRegions = getRegions(Repository.getGreenZone());
 			badZoneRegions = getRegions(Repository.getRedZone());
 		}
 		else {
 			goodZoneRegions = getRegions(Repository.getRedZone());
 			badZoneRegions = getRegions(Repository.getGreenZone());
-		}
+		}*/
 	}
 	
 	private void createRegionOrder(){
@@ -95,9 +100,10 @@ public class BlockSearch implements DPMConstants{
 	 */
 	public void search(){
 		interrupted = false;
-		
 		//For testing
-		searchRegion(0);
+		for (int i=0; i<16; i++){
+			searchRegion(i);
+		}
 		
 		//Final
 		/*
@@ -141,7 +147,7 @@ public class BlockSearch implements DPMConstants{
 			usSensor.fetchSample(usData, 0);
 			if((int)(usData[0]*100) < SCAN_RANGE){
 				Sound.beep();
-				leftMotor.stop();
+				leftMotor.stop(true);
 				rightMotor.stop();
 				currentOrientation = Repository.getAng();
 				checkObject(scanPoint);
@@ -151,7 +157,7 @@ public class BlockSearch implements DPMConstants{
 			}
 		}
 		
-		leftMotor.stop();
+		leftMotor.stop(true);
 		rightMotor.stop();
 		
 		Sound.beep();
@@ -161,43 +167,72 @@ public class BlockSearch implements DPMConstants{
 	}
 	
 	private void checkObject(double[] scanPoint){
-		
-		do{
+		Repository.travelTo((usData[0]*100-COLOR_SENSOR_RANGE)*Math.cos(Math.toRadians(currentOrientation))+scanPoint[0], 
+				(usData[0]*100-COLOR_SENSOR_RANGE)*Math.sin(Math.toRadians(currentOrientation))+scanPoint[1]);
+		/*do{
 			leftMotor.setSpeed(150);
 			rightMotor.setSpeed(150);
 			usSensor.fetchSample(usData, 0);
 			
-		} while((int)(usData[0]*100) > COLOR_SENSOR_RANGE);
+		} while((int)(usData[0]*100) > COLOR_SENSOR_RANGE 
+				&& Repository.calculateDistance(scanPoint[0],scanPoint[1]) < SCAN_RANGE);
 		
-		leftMotor.stop();
-		rightMotor.stop();
+		leftMotor.stop(true);
+		rightMotor.stop();*/
 		
-		if(identify()){
+		if(identify() == 0){
 			Sound.beep();
-			Repository.grab();
+			/*Repository.grab();
 			if(Repository.clawIsFull()){
 				greenZoneSearchable = false;
 				this.interrupt();
-			}
+			}*/
 		}
 		else{
-			Sound.buzz();
-			currentOrientation -= 28.0;
-			if(currentOrientation < 0.0)
-				currentOrientation += 360.0;
+			Repository.turnTo(Repository.getAng()-15);
+			if(identify() == 0){
+				Sound.beep();
+				/*Repository.grab();
+				if(Repository.clawIsFull()){
+					greenZoneSearchable = false;
+					this.interrupt();
+				}*/
+			}
+			else{         
+				if (identify() == 1){
+					Sound.twoBeeps();
+					currentOrientation -= 30.0;
+					if(currentOrientation < 0.0)
+						currentOrientation += 360.0;
+				}
+				else{
+					currentOrientation -= 10.0;
+					if(currentOrientation < 0.0)
+						currentOrientation += 360.0;
+					Sound.buzz();
+				}
+			}
 		}
 		
 		leftMotor.setSpeed(-150);
 		rightMotor.setSpeed(-150);
 		try{Thread.sleep(BACKUP_TIME);} catch(InterruptedException e){}
-		leftMotor.stop();
+		leftMotor.stop(true);
 		rightMotor.stop();
 		Repository.travelTo(scanPoint[0], scanPoint[1]);
 		
 	}
 	
-	private boolean identify(){
+	private int identify(){
 		colorSensor.fetchSample(colorData, 0);
-		return colorData[0]<colorData[1];
+		if (colorData[1] > colorData[0] && 1000*(colorData[0]+colorData[1]+colorData[2]) > 5){
+			return 0;
+		}
+		else if (colorData[0] > colorData[1] && colorData[1] > 2*colorData[2] && 1000*(colorData[0]+colorData[1]+colorData[2]) > 10){
+			return 1;
+		}
+		else{
+			return 2;
+		}
 	}
 }

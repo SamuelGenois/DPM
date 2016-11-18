@@ -298,4 +298,10 @@ public class Repository {
 	public static boolean clawIsFull(){
 		return pincer.clawIsFull();
 	}
+	
+	public static void setRT(double r, double t){
+		getOdometer().leftRadius = r;
+		getOdometer().rightRadius = r;
+		getOdometer().width = t;
+	}
 }

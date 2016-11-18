@@ -41,6 +41,7 @@ public class Localization {
 	 * Finally, travels to (0,0) and turns facing north
 	 */
 	public void doLocalization() {
+		Repository.setRT(2.14,12.9);
 		double tolerance = 0.1;
 		boolean startWithWall = getFilteredData() <= wallDist;
         angleA = angleB = 0;
@@ -71,7 +72,7 @@ public class Localization {
         	cwRotation(); 
         
         seenAWall = false;
-        Delay.msDelay(1000);
+        Delay.msDelay(4000);
         while (true) {
         	double data = getFilteredData();
         	double angle = Repository.getAng();
@@ -86,7 +87,7 @@ public class Localization {
             }
         }
         
-        double correctedTheta = 40 + Math.abs(angleA - angleB)/2;
+        double correctedTheta = 15 + Math.abs(angleA - angleB)/2;
         
         // Find the corrected angle and set it using odo.setPosition(x, y, theta)!
         double[] newPositions = { 0.0, 0.0, correctedTheta };
@@ -121,6 +122,7 @@ public class Localization {
 
 		Repository.travelTo(0, 0);
 		Repository.turnTo(90);
+		Repository.setRT(2.05, 15.3);
 		Delay.msDelay(3000); // Delay
 	}
 	
