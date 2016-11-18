@@ -7,13 +7,14 @@ import lejos.hardware.Sound;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
+import dpm.util.DPMConstants;
 
 /**
  * Class that contains methods and parameters used for ultrasonic sensor localization
  * @author Will Liang
  *
  */
-public class Localization {
+public class Localization implements DPMConstants{
 	private static int motorRotate = 100;
 	private RegulatedMotor leftMotor, rightMotor;
 	private SampleProvider usSensor;
@@ -41,6 +42,7 @@ public class Localization {
 	 * Finally, travels to (0,0) and turns facing north
 	 */
 	public void doLocalization() {
+		Repository.setRT(2.14,12.9);
 		double tolerance = 0.1;
 		boolean startWithWall = getFilteredData() <= wallDist;
         angleA = angleB = 0;
@@ -71,7 +73,7 @@ public class Localization {
         	cwRotation(); 
         
         seenAWall = false;
-        Delay.msDelay(1000);
+        Delay.msDelay(4000);
         while (true) {
         	double data = getFilteredData();
         	double angle = Repository.getAng();
@@ -86,7 +88,7 @@ public class Localization {
             }
         }
         
-        double correctedTheta = 40 + Math.abs(angleA - angleB)/2;
+        double correctedTheta = 15 + Math.abs(angleA - angleB)/2;
         
         // Find the corrected angle and set it using odo.setPosition(x, y, theta)!
         double[] newPositions = { 0.0, 0.0, correctedTheta };
@@ -121,7 +123,26 @@ public class Localization {
 
 		Repository.travelTo(0, 0);
 		Repository.turnTo(90);
+		Repository.setRT(2.1, 12.5); //Set the radius and track to navigation-expected values
 		Delay.msDelay(3000); // Delay
+		//Not required when testing localization alone
+				/*
+				switch(Repository.getStartZone()){
+					case LOWER_RIGHT:
+						Repository.setPosition(new double[] {10*SQUARE_SIZE, 0, 180}, new boolean[] {true, true, true});
+						break;
+					case UPPER_LEFT:
+						Repository.setPosition(new double[] {0, 10*SQUARE_SIZE, 0}, new boolean[] {true, true, true});
+						break;
+					case UPPER_RIGHT:
+						Repository.setPosition(new double[] {10*SQUARE_SIZE, 10*SQUARE_SIZE, 270}, new boolean[] {true, true, true});
+						break;
+					case LOWER_LEFT:
+					default:
+				}
+				
+			}
+		}*/
 	}
 	
 	/**

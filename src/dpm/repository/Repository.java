@@ -3,7 +3,6 @@ package dpm.repository;
 import dpm.blocksearch.BlockSearch;
 import dpm.claw.Claw;
 import dpm.finalization.Finalization;
-import dpm.launcher.WifiConnect;
 import dpm.localization.Localization;
 import dpm.navigation.Navigation;
 import dpm.navigation.ObstacleAvoidance;
@@ -26,7 +25,6 @@ public class Repository {
 	private static Odometer odometry;
 	private static ObstacleAvoidance avoidance;
 	private static Claw pincer;
-	private static WifiConnect wifiConnect;
 	private static Launcher launcher;
 	
 	/**
@@ -217,31 +215,12 @@ public class Repository {
 	}
 	
 	/**
-	 * Gets Wifi data
-	 */
-	public static HashMap<String, Integer> getWifiData(){
-		if (wifiConnect == null){
-			wifiConnect = new WifiConnect();
-		}
-		return wifiConnect.ConnectWifi();
-	}
-	
-	/**
 	 * Executes the finalization routine (for final test)
 	 */
 	public static void doFinalization(){
 		if(finalization == null)
 			finalization = new Finalization();
 		finalization.doFinalization();
-	}
-	
-	/**
-	 * Executes the finalization routine (for demo)
-	 */
-	public static void doFinalization(double x, double y){
-		if(finalization == null)
-			finalization = new Finalization();
-		finalization.doFinalization(x,y);
 	}
 	
 	 /** Returns the coordinates of the top left and bottom right corners of the green zone.
@@ -297,5 +276,11 @@ public class Repository {
 	 */
 	public static boolean clawIsFull(){
 		return pincer.clawIsFull();
+	}
+	
+	public static void setRT(double r, double t){
+		getOdometer().leftRadius = r;
+		getOdometer().rightRadius = r;
+		getOdometer().width = t;
 	}
 }

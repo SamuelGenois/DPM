@@ -14,6 +14,8 @@ public interface DPMConstants {
 	
 	public static final int GARBAGE_COLLECTOR = 1;
 	
+	public static final int NO_ROLE = -1;
+	
 	//Starting Zones
 	public static final int LOWER_LEFT = 1;
 	
@@ -68,4 +70,9 @@ public interface DPMConstants {
 	 * The id of the color sensor used to detect grid lines
 	 */
 	public static final int	COLOR_ODO_CORR = 3;
+	
+	/**
+	 * The acceleration of the wheel motors
+	 */
+	public static final int WHEEL_MOTOR_ACCELERATION = 4000;
 }

@@ -2,6 +2,8 @@ package dpm.launcher;
 
 public interface Launcher {
 	
+	public static int TEAM_NUMBER = 8;
+	
 	/**
 	 * Returns the coordinates of the top left and bottom right corners of the green zone.
 	 * @return the coordinates of the top left and bottom right corners of the green zone
