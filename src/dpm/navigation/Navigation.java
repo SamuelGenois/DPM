@@ -1,6 +1,7 @@
 package dpm.navigation;
 
 import dpm.repository.Repository;
+import dpm.util.DPMConstants;
 import dpm.util.Motors;
 import dpm.util.Printer;
 import dpm.util.Sensors;
@@ -20,8 +21,8 @@ import lejos.robotics.SampleProvider;
  * 
  * Movement control class (turnTo, travelTo, flt, setSpeeds...)
  */
-public class Navigation extends Thread{
-	private final static int FAST = 200, SLOW = 100, ACCELERATION = 4000;	//Motor speed parameters
+public class Navigation extends Thread implements DPMConstants{
+	private final static int FAST = 200, SLOW = 100;						//Motor speed parameters
 	private final static double DEG_ERR = 3.0, CM_ERR = 1.0;				//Tolerances for turnTo and travelTo
 	private final static int AVOIDANCE_THRESHOLD = 20;						//Distance below which obstacle avoidance engaged
 	private RegulatedMotor leftMotor, rightMotor;							//Motor objects
@@ -41,8 +42,8 @@ public class Navigation extends Thread{
 		this.usSensor = Sensors.getSensor(Sensors.US_ACTIVE);
 		this.usData = new float[usSensor.sampleSize()];
 		// set acceleration
-		this.leftMotor.setAcceleration(ACCELERATION);
-		this.rightMotor.setAcceleration(ACCELERATION);
+		this.leftMotor.setAcceleration(WHEEL_MOTOR_ACCELERATION);
+		this.rightMotor.setAcceleration(WHEEL_MOTOR_ACCELERATION);
 	}
 	
 	/**
@@ -53,10 +54,10 @@ public class Navigation extends Thread{
 		while (!interrupted) {
 			usSensor.fetchSample(usData,0);
 			distance=(int)(usData[0]*100.0);
-			if (distance < AVOIDANCE_THRESHOLD  && distance != 0){
+			/*if (distance < AVOIDANCE_THRESHOLD  && distance != 0){
 				this.interrupt();
 				Repository.doAvoidance(travel_x, travel_y);
-			}
+			}*/
 			try { Thread.sleep(50); } catch(Exception e){}
 			Printer.getInstance().display("   "+(int)Repository.getX()+"   "+(int)Repository.getY());
 		}
@@ -118,17 +119,15 @@ public class Navigation extends Thread{
 	 */
 	public void turnTo(double angle, boolean stop) {
 		interrupted = true;
-		if (angle < 0){
-			angle+=360;
-		}
-		else if (angle > 360){
-			angle-=360;
-		}
 		double error = angle - Repository.getAng();
-		while (Math.abs(error) > DEG_ERR) {
-
+		if (error > 180){
+			error-=360;
+		}
+		while (Math.abs(error) > DEG_ERR || Math.abs(error) > 360-DEG_ERR) {
 			error = angle - Repository.getAng();
-
+			if (error > 180){
+				error-=360;
+			}
 			if (error < -180.0) {
 				this.setSpeeds(-SLOW, SLOW);
 			} else if (error < 0.0) {

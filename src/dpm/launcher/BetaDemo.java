@@ -17,13 +17,9 @@ import java.util.HashMap;
  *
  */
 public class BetaDemo implements Launcher, DPMConstants{
-	//private static boolean runningDemo = true;
-	//private static boolean wifiAcquired = false;
+	private int[] greenZone, redZone;
+	private int startingCorner, role;
 	
-	private final int[] greenZone, redZone;
-	private final int startingCorner, role;
-	
-	//private static int GZx, GZy;
 	public static void main (String[] args){
 		(new Thread() {
 			public void run() {
@@ -31,18 +27,6 @@ public class BetaDemo implements Launcher, DPMConstants{
 			System.exit(0);
 			}
 		}).start();
-		/*
-		(new Thread() {
-			public void run() {
-				while (!wifiAcquired){
-				}
-				try{Thread.sleep(10000);}catch (Exception e){}
-				Sound.buzz();
-				runningDemo = false;
-				Repository.doFinalization(GZx, GZy);
-			}
-		}).start();
-		*/
 		
 		Launcher launcher = new BetaDemo();
 		
@@ -51,10 +35,13 @@ public class BetaDemo implements Launcher, DPMConstants{
 		}
 		
 		Printer.getInstance().display("Ready");
-		Button.waitForAnyPress();
 		
 		Repository.launch(launcher);
+		System.out.println(""+(Repository.getGreenZone()[0] + Repository.getGreenZone()[2])/2 + "\n" +
+				(Repository.getGreenZone()[1] + Repository.getGreenZone()[3])/2);
 		Repository.localize();
+		Repository.search();
+		Repository.doFinalization();
 		
 		(new Thread() {
 			public void run() {
@@ -70,65 +57,23 @@ public class BetaDemo implements Launcher, DPMConstants{
 		
 		HashMap<String, Integer> wifiData = new WifiConnect().ConnectWifi();
 		
-		//For Testing?
-		//wifiAcquired = true;
-		
-		greenZone = new int[] {wifiData.get("LGZx"), wifiData.get("UGZy"), wifiData.get("UGZx"), wifiData.get("LGZy")};
-		redZone = new int[] {wifiData.get("LRZx"), wifiData.get("URZy"), wifiData.get("URZx"), wifiData.get("LRZy")};
-		startingCorner = wifiData.get("BSC");
-		
-		if(wifiData.get("BTN") == TEAM_NUMBER)
-			role = BUILDER;
-		else if(wifiData.get("CTN") == TEAM_NUMBER)
-			role = BUILDER;
-		else
-			role = NO_ROLE;
+		try{
+			greenZone = new int[] {wifiData.get("LGZx"), wifiData.get("UGZy"), wifiData.get("UGZx"), wifiData.get("LGZy")};
+			redZone = new int[] {wifiData.get("LRZx"), wifiData.get("URZy"), wifiData.get("URZx"), wifiData.get("LRZy")};
+			startingCorner = wifiData.get("BSC");
+			
+			if(wifiData.get("BTN") == TEAM_NUMBER)
+				role = BUILDER;
+			else if(wifiData.get("CTN") == TEAM_NUMBER)
+				role = BUILDER;
+			else
+				role = NO_ROLE;
+		}
+		catch (Exception e){
+			System.exit(0);
+		}
 	}
 	
-	//Code to delete
-	/*
-		//Determine the coordinates of green zone based on wifi data
-		int initialX, initialY;
-		int startCorner = wifiData.get("BSC");
-		GZx = (wifiData.get("LGZx")+wifiData.get("UGZx"))/2;
-		GZy = (wifiData.get("LGZy")+wifiData.get("UGZy"))/2;
-		if (startCorner == 1){
-			initialX = 0;
-			initialY = 0;
-			GZx = (initialX+GZx)*30;
-			GZy = (initialY+GZy)*30;
-		}
-		else if (startCorner == 2){
-			//6 should be 10 for competition
-			initialX = 6;
-			initialY = 0;
-			GZx = (initialY+GZy)*30;
-			GZy = (initialX-GZx)*30;
-		}
-		else if (startCorner == 3){
-			//6 should be 10 for competition
-			initialX = 6;
-			initialY = 6;
-			GZx = (initialX-GZx)*30;
-			GZy = (initialY-GZy)*30;
-		}
-		else if (startCorner == 4){
-			//6 should be 10 for competition
-			initialX = 0;
-			initialY = 6;
-			GZx = (initialY-GZy)*30;
-			GZy = (initialX+GZx)*30;
-		}
-		//Repository.localize();
-		while (runningDemo){
-			Repository.travelTo(0,60);
-			Repository.travelTo(60,60);
-			Repository.travelTo(60,0);
-			Repository.travelTo(0,0);
-		}
-	
-	}
-	*/
 	
 	@Override
 	public int[] getGreenZone() {

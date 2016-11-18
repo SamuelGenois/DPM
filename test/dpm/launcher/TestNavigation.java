@@ -19,7 +19,7 @@ public class TestNavigation {
 		System.exit(0);
 		}
 	}).start();
-	
+	Repository.setRT(2.1, 12.5);
 	Printer.getInstance().display("Press any button");
 	Button.waitForAnyPress();
 	Printer.getInstance().display("Running");
@@ -30,7 +30,7 @@ public class TestNavigation {
 	//Button.waitForAnyPress();
 	//Printer.getInstance().display("Running");
 	
-	testTravelTo();
+	  testTravelTo();
 	
 	Printer.getInstance().display("Finished");
 	}
@@ -71,7 +71,7 @@ public class TestNavigation {
 		Sound.beep();
 		try {Thread.sleep(TEST_DELAY);} catch (InterruptedException e) {}
 		
-		Repository.turnTo(90);
+		Repository.turnTo(0);
 		
 	}
 }

@@ -7,6 +7,7 @@ import dpm.localization.Localization;
 import dpm.navigation.Navigation;
 import dpm.navigation.ObstacleAvoidance;
 import dpm.odometry.Odometer;
+import java.util.HashMap;
 import dpm.launcher.Launcher;
 /**
  * Repository class that allows any subsystem to interact with any other subsystem indirectly
@@ -222,20 +223,6 @@ public class Repository {
 		finalization.doFinalization();
 	}
 	
-	//Code to delete
-	/*
-	
-	/**
-	 * Executes the finalization routine (for demo)
-	 *
-	public static void doFinalization(double x, double y){
-		if(finalization == null)
-			finalization = new Finalization();
-		finalization.doFinalization(x,y);
-	}
-	
-	*/
-	
 	 /** Returns the coordinates of the top left and bottom right corners of the green zone.
 	 * @return the coordinates of the top left and bottom right corners of the green zone
 	 */
@@ -289,5 +276,18 @@ public class Repository {
 	 */
 	public static boolean clawIsFull(){
 		return pincer.clawIsFull();
+	}
+	
+	/**
+	 * Resets the claw position
+	 */
+	public static void clawReset(){
+		pincer.reset();
+	}
+	
+	public static void setRT(double r, double t){
+		getOdometer().leftRadius = r;
+		getOdometer().rightRadius = r;
+		getOdometer().width = t;
 	}
 }

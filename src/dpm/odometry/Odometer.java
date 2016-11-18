@@ -40,7 +40,7 @@ public class Odometer implements TimerListener {
 	private RegulatedMotor leftMotor, rightMotor;
 	private static final int	DEFAULT_TIMEOUT_PERIOD = 20,
 								DEFAULT_INTERVAL = 30;
-	private double leftRadius, rightRadius, width;
+	public double leftRadius, rightRadius, width;
 	private double x, y, theta;
 	private double[] oldDH, dDH;
 	
@@ -60,9 +60,9 @@ public class Odometer implements TimerListener {
 		this.rightMotor = rightMotor;
 		
 		// default values, modify for your robot
-		this.rightRadius = 2.1;
-		this.leftRadius = 2.1;
-		this.width = 15.8;
+		this.rightRadius = 2.14;
+		this.leftRadius = 2.14;
+		this.width = 12.9;
 		
 		this.x = 0.0;
 		this.y = 0.0;
