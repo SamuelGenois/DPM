@@ -101,19 +101,19 @@ public class BlockSearch implements DPMConstants{
 	public void search(){
 		interrupted = false;
 		//For testing
-		for (int i=0; i<16; i++){
-			searchRegion(i);
-		}
+		searchRegion(0);
+		searchRegion(1);
+		searchRegion(5);
+		searchRegion(4);
 		
 		//Final
 		/*
-		int i = currentRegion;
-		
 		while(!interrupted && i<regionOrder.length){
-			if(!badZoneRegions.contains(regionOrder[i]) && !(goodZoneRegions.contains(regionOrder[i]) && !greenZoneSearchable))
-				searchRegion(regionOrder[i]);
-			i++;
-			currentRegion = i;
+			if(!badZoneRegions.contains(regionOrder[currentRegion])
+				&& !(goodZoneRegions.contains(regionOrder[currentRegion]) && !greenZoneSearchable))
+				searchRegion(regionOrder[currentRegion]);
+				
+			currentRegion++;
 		}*/
 	}
 	
