@@ -17,13 +17,9 @@ import java.util.HashMap;
  *
  */
 public class BetaDemo implements Launcher, DPMConstants{
-	//private static boolean runningDemo = true;
-	//private static boolean wifiAcquired = false;
-	
 	private final int[] greenZone, redZone;
 	private final int startingCorner, role;
 	
-	//private static int GZx, GZy;
 	public static void main (String[] args){
 		(new Thread() {
 			public void run() {
@@ -31,18 +27,6 @@ public class BetaDemo implements Launcher, DPMConstants{
 			System.exit(0);
 			}
 		}).start();
-		/*
-		(new Thread() {
-			public void run() {
-				while (!wifiAcquired){
-				}
-				try{Thread.sleep(10000);}catch (Exception e){}
-				Sound.buzz();
-				runningDemo = false;
-				Repository.doFinalization(GZx, GZy);
-			}
-		}).start();
-		*/
 		
 		Launcher launcher = new BetaDemo();
 		
@@ -84,51 +68,6 @@ public class BetaDemo implements Launcher, DPMConstants{
 		else
 			role = NO_ROLE;
 	}
-	
-	//Code to delete
-	/*
-		//Determine the coordinates of green zone based on wifi data
-		int initialX, initialY;
-		int startCorner = wifiData.get("BSC");
-		GZx = (wifiData.get("LGZx")+wifiData.get("UGZx"))/2;
-		GZy = (wifiData.get("LGZy")+wifiData.get("UGZy"))/2;
-		if (startCorner == 1){
-			initialX = 0;
-			initialY = 0;
-			GZx = (initialX+GZx)*30;
-			GZy = (initialY+GZy)*30;
-		}
-		else if (startCorner == 2){
-			//6 should be 10 for competition
-			initialX = 6;
-			initialY = 0;
-			GZx = (initialY+GZy)*30;
-			GZy = (initialX-GZx)*30;
-		}
-		else if (startCorner == 3){
-			//6 should be 10 for competition
-			initialX = 6;
-			initialY = 6;
-			GZx = (initialX-GZx)*30;
-			GZy = (initialY-GZy)*30;
-		}
-		else if (startCorner == 4){
-			//6 should be 10 for competition
-			initialX = 0;
-			initialY = 6;
-			GZx = (initialY-GZy)*30;
-			GZy = (initialX+GZx)*30;
-		}
-		//Repository.localize();
-		while (runningDemo){
-			Repository.travelTo(0,60);
-			Repository.travelTo(60,60);
-			Repository.travelTo(60,0);
-			Repository.travelTo(0,0);
-		}
-	
-	}
-	*/
 	
 	@Override
 	public int[] getGreenZone() {
