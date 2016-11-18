@@ -95,6 +95,14 @@ public class Claw {
     }
     
     /**
+     * Resets the claw back to the initial position
+     */
+    public void reset(){
+    	 liftMotor.rotate(height*3);
+    	 gripclawMotor.rotate(gripStrength);
+    }
+    
+    /**
      * Returns true if the claw contains no blocks
      * @return True if the claw contains no blocks, false otherwise
      */

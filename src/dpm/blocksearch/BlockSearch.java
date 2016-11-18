@@ -21,7 +21,9 @@ import lejos.robotics.SampleProvider;
  */
 public class BlockSearch implements DPMConstants{
 	
-	private static final long	BACKUP_TIME = 3000l;
+	private static final long	BACKUP_TIME = 800l;
+	
+	private static final int MOTOR_SCAN_SPEED = 90;
 	
 	private static final int	SCAN_RANGE = 61,
 								COLOR_SENSOR_RANGE = 2;
@@ -101,10 +103,14 @@ public class BlockSearch implements DPMConstants{
 	public void search(){
 		interrupted = false;
 		//For testing
-		searchRegion(0);
-		searchRegion(1);
-		searchRegion(5);
-		searchRegion(4);
+		if (!interrupted)
+			searchRegion(0);
+		if (!interrupted)
+			searchRegion(1);
+		if (!interrupted)
+			searchRegion(5);
+		if (!interrupted)
+			searchRegion(4);
 		
 		//Final
 		/*
@@ -140,8 +146,8 @@ public class BlockSearch implements DPMConstants{
 		
 		Repository.turnTo(currentOrientation);
 		
-		leftMotor.setSpeed(150);
-		rightMotor.setSpeed(-150);
+		leftMotor.setSpeed(MOTOR_SCAN_SPEED);
+		rightMotor.setSpeed(-MOTOR_SCAN_SPEED);
 		
 		while(!interrupted && Repository.getAng() < 180){
 			usSensor.fetchSample(usData, 0);
@@ -152,8 +158,8 @@ public class BlockSearch implements DPMConstants{
 				currentOrientation = Repository.getAng();
 				checkObject(scanPoint);
 				Repository.turnTo(currentOrientation);
-				leftMotor.setSpeed(150);
-				rightMotor.setSpeed(-150);
+				leftMotor.setSpeed(MOTOR_SCAN_SPEED);
+				rightMotor.setSpeed(-MOTOR_SCAN_SPEED);
 			}
 		}
 		
@@ -182,21 +188,35 @@ public class BlockSearch implements DPMConstants{
 		
 		if(identify() == 0){
 			Sound.beep();
-			/*Repository.grab();
+			leftMotor.setSpeed(-150);
+			rightMotor.setSpeed(-150);
+			try{Thread.sleep(BACKUP_TIME);} catch(InterruptedException e){}
+			leftMotor.stop(true);
+			rightMotor.stop();
+			Repository.turnTo(Repository.getAng()+180);
+			Repository.drop();
+			Repository.grab();
 			if(Repository.clawIsFull()){
 				greenZoneSearchable = false;
 				this.interrupt();
-			}*/
+			}
 		}
 		else{
 			Repository.turnTo(Repository.getAng()-15);
 			if(identify() == 0){
 				Sound.beep();
-				/*Repository.grab();
+				leftMotor.setSpeed(-150);
+				rightMotor.setSpeed(-150);
+				try{Thread.sleep(BACKUP_TIME);} catch(InterruptedException e){}
+				leftMotor.stop(true);
+				rightMotor.stop();
+				Repository.turnTo(Repository.getAng()+180);
+				Repository.drop();
+				Repository.grab();
 				if(Repository.clawIsFull()){
 					greenZoneSearchable = false;
 					this.interrupt();
-				}*/
+				}
 			}
 			else{         
 				if (identify() == 1){
@@ -204,19 +224,22 @@ public class BlockSearch implements DPMConstants{
 					currentOrientation -= 30.0;
 					if(currentOrientation < 0.0)
 						currentOrientation += 360.0;
+					leftMotor.setSpeed(-150);
+					rightMotor.setSpeed(-150);
+					try{Thread.sleep(BACKUP_TIME);} catch(InterruptedException e){}
 				}
 				else{
+					Sound.buzz();
 					currentOrientation -= 10.0;
 					if(currentOrientation < 0.0)
 						currentOrientation += 360.0;
-					Sound.buzz();
+					leftMotor.setSpeed(-150);
+					rightMotor.setSpeed(-150);
+					try{Thread.sleep(BACKUP_TIME);} catch(InterruptedException e){}
 				}
 			}
 		}
 		
-		leftMotor.setSpeed(-150);
-		rightMotor.setSpeed(-150);
-		try{Thread.sleep(BACKUP_TIME);} catch(InterruptedException e){}
 		leftMotor.stop(true);
 		rightMotor.stop();
 		Repository.travelTo(scanPoint[0], scanPoint[1]);
@@ -225,10 +248,10 @@ public class BlockSearch implements DPMConstants{
 	
 	private int identify(){
 		colorSensor.fetchSample(colorData, 0);
-		if (colorData[1] > colorData[0] && 1000*(colorData[0]+colorData[1]+colorData[2]) > 5){
+		if (colorData[1] > colorData[0] && 1000*(colorData[0]+colorData[1]+colorData[2]) > 10){
 			return 0;
 		}
-		else if (colorData[0] > colorData[1] && colorData[1] > 2*colorData[2] && 1000*(colorData[0]+colorData[1]+colorData[2]) > 10){
+		else if (colorData[0] > colorData[1] && colorData[1] > 2*colorData[2] && 1000*(colorData[0]+colorData[1]+colorData[2]) > 100){
 			return 1;
 		}
 		else{

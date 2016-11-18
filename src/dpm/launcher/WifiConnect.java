@@ -41,7 +41,7 @@ public class WifiConnect {
 	 * 2. TEAM_NUMBER: your project team number
 	 * */
 
-	private static final String SERVER_IP = "192.168.2.44";
+	private static final String SERVER_IP = "192.168.2.13";
 	private static final int TEAM_NUMBER = 8;
 	
 	/**

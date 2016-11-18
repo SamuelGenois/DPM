@@ -18,7 +18,7 @@ public class RemoteBrickManager{
 	public static final int	MASTER = 0,
 							SLAVE = 1;
 	
-	private static final String SLAVE_NAME = "slave1";
+	private static final String SLAVE_NAME = "EV3";
 	
 	private static RemoteRequestEV3 slave;
 	

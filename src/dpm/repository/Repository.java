@@ -278,6 +278,13 @@ public class Repository {
 		return pincer.clawIsFull();
 	}
 	
+	/**
+	 * Resets the claw position
+	 */
+	public static void clawReset(){
+		pincer.reset();
+	}
+	
 	public static void setRT(double r, double t){
 		getOdometer().leftRadius = r;
 		getOdometer().rightRadius = r;
