@@ -88,7 +88,7 @@ public class Localization implements DPMConstants{
             }
         }
         
-        double correctedTheta = 35 + Math.abs(angleA - angleB)/2;
+        double correctedTheta = 45 + Math.abs(angleA - angleB)/2;
         
         // Find the corrected angle and set it using odo.setPosition(x, y, theta)!
         double[] newPositions = { 0.0, 0.0, correctedTheta };

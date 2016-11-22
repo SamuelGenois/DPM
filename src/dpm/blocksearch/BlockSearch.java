@@ -70,6 +70,7 @@ public class BlockSearch implements DPMConstants{
 		currentRegion = 0;
 		currentOrientation = 90.0;
 		
+		//For the Demo
 		goodZoneRegions = new ArrayList<Integer>();
 		badZoneRegions = new ArrayList<Integer>();
 		
@@ -102,7 +103,8 @@ public class BlockSearch implements DPMConstants{
 	 */
 	public void search(){
 		interrupted = false;
-		//For testing
+		
+		//For demo
 		if (!interrupted)
 			searchRegion(0);
 		if (!interrupted)
@@ -146,10 +148,9 @@ public class BlockSearch implements DPMConstants{
 		
 		Repository.turnTo(currentOrientation);
 		
-		leftMotor.setSpeed(MOTOR_SCAN_SPEED);
-		rightMotor.setSpeed(-MOTOR_SCAN_SPEED);
-		
 		while(!interrupted && Repository.getAng() < 180){
+			leftMotor.setSpeed(MOTOR_SCAN_SPEED);
+			rightMotor.setSpeed(-MOTOR_SCAN_SPEED);
 			usSensor.fetchSample(usData, 0);
 			if((int)(usData[0]*100) < SCAN_RANGE){
 				Sound.beep();
@@ -157,9 +158,6 @@ public class BlockSearch implements DPMConstants{
 				rightMotor.stop();
 				currentOrientation = Repository.getAng();
 				checkObject(scanPoint);
-				Repository.turnTo(currentOrientation);
-				leftMotor.setSpeed(MOTOR_SCAN_SPEED);
-				rightMotor.setSpeed(-MOTOR_SCAN_SPEED);
 			}
 		}
 		
@@ -216,6 +214,7 @@ public class BlockSearch implements DPMConstants{
 				if(Repository.clawIsFull()){
 					greenZoneSearchable = false;
 					this.interrupt();
+					return;
 				}
 			}
 			else{         
@@ -243,7 +242,7 @@ public class BlockSearch implements DPMConstants{
 		leftMotor.stop(true);
 		rightMotor.stop();
 		Repository.travelTo(scanPoint[0], scanPoint[1]);
-		
+		Repository.turnTo(currentOrientation);	
 	}
 	
 	private int identify(){
