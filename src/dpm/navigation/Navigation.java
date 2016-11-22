@@ -55,6 +55,7 @@ public class Navigation implements DPMConstants{
 		usSensor.fetchSample(usData,0);
 		distance=(int)(usData[0]*100.0);
 		if (distance < AVOIDANCE_THRESHOLD  && distance != 0){
+			this.setSpeeds(0,0);
 			Sound.buzz();
 			return new ObstacleAvoidance(travel_x, travel_y).doWallAvoidance();
 		}
@@ -105,7 +106,7 @@ public class Navigation implements DPMConstants{
 				minAng += 360.0;
 			this.turnTo(minAng, false);
 			boolean keepMoving = getDistance();
-			if (keepMoving){
+			if (!keepMoving){
 				break;
 			}
 			this.setSpeeds(FAST, FAST);
@@ -126,22 +127,26 @@ public class Navigation implements DPMConstants{
 		if (error > 180){
 			error-=360;
 		}
-		while (Math.abs(error) > DEG_ERR || Math.abs(error) > 360-DEG_ERR) {
-			error = angle - Repository.getAng();
-			if (error > 180){
-				error-=360;
-			}
-			if (error < -180.0) {
-				this.setSpeeds(-SLOW, SLOW);
-			} else if (error < 0.0) {
-				this.setSpeeds(SLOW, -SLOW);
-			} else if (error > 180.0) {
-				this.setSpeeds(SLOW, -SLOW);
-			} else {
-				this.setSpeeds(-SLOW, SLOW);
+		if (error <= -180){
+			error+=360;
+		}
+		if (Math.abs(error) > 2*DEG_ERR){
+			while (Math.abs(error) > DEG_ERR) {
+					error = angle - Repository.getAng();
+					if (error > 180){
+						error-=360;
+					}
+					if (error < -180.0) {
+						this.setSpeeds(-SLOW, SLOW);
+					} else if (error < 0.0) {
+						this.setSpeeds(SLOW, -SLOW);
+					} else if (error > 180.0) {
+						this.setSpeeds(SLOW, -SLOW);
+					} else {
+						this.setSpeeds(-SLOW, SLOW);
+					}
 			}
 		}
-
 		if (stop) {
 			this.setSpeeds(0, 0);
 		}

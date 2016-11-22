@@ -14,9 +14,12 @@ public class TestAvoidance extends Thread{
 			System.exit(0);
 			}
 		}).start();
-		Printer.getInstance().display("Press any button");
+		Printer.getInstance().display("Press any derp");
 		Button.waitForAnyPress();
-		Printer.getInstance().display("Running");
+		Printer.getInstance().display("Derping");
 		Repository.travelTo(60, 60);
+		Repository.travelTo(60, 0);
+		Repository.travelTo(0, 60);
+		Repository.travelTo(0, 0);
 	}
 }

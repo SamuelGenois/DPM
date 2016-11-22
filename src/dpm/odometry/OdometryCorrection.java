@@ -14,7 +14,7 @@ import lejos.robotics.SampleProvider;
 public class OdometryCorrection extends Thread implements DPMConstants{
 	
 	private static final long POLLING_DELAY = 50l;
-	private static final float LIGHT_THRESHOLD = 0.3f;
+	private static final float LIGHT_THRESHOLD = 0.25f;
 	private static final double CORRECTION_THRESHOLD = 2.0;
 	
 	private final Odometer odometer;
@@ -61,6 +61,7 @@ public class OdometryCorrection extends Thread implements DPMConstants{
 												new boolean[] {true, false, false});
 				}
 				else if(yDistanceFromGrid < CORRECTION_THRESHOLD)
+					if(!(xDistanceFromGrid < CORRECTION_THRESHOLD))
 					odometer.setPosition(new double[] {odometer.getX(), Math.floor(odometer.getY()/SQUARE_SIZE)*SQUARE_SIZE, odometer.getAng()},
 						new boolean[] {false, true, false});
 				
