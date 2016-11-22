@@ -15,7 +15,7 @@ import dpm.util.*;
  * 
  */
 
-public class ObstacleAvoidance extends Thread{
+public class ObstacleAvoidance{
 	
 	
 	private final int bandCenter_left = 22;		//The nominal distance from the wall (for right side avoid)
@@ -34,7 +34,7 @@ public class ObstacleAvoidance extends Thread{
 	private double a, b;									//Parameter for slope of the line in symmetric form
 	
 	private int filterControl = 0;			//Variable for the filter, when incremented past FILTER_MAX the actual distance is adjusted to sensor distance
-	private final int FILTER_OUT = 25;		//Variable for the filter, sets the maximum number of samples before actual distance is adjusted to sensor distance
+	private final int FILTER_OUT = 4;		//Variable for the filter, sets the maximum number of samples before actual distance is adjusted to sensor distance
 	private final int MIN_DISTANCE = 100;	//Minimum distance considered for filtering
 	
 	
@@ -75,28 +75,23 @@ public class ObstacleAvoidance extends Thread{
 	 * <br>Polls the ultrasonic sensor every 50ms to get the distance as an integer
 	 * <br>Also filters out the reported distance if it is very large compared to the current distance and a large distance has not been reported enough times
 	 */
-	public void run(){
-		while (scanning) {
-			int distance;
-			usSensor.fetchSample(usData,0);
-			distance=(int)(usData[0]*100.0);
-			try { Thread.sleep(50); } catch(Exception e){}
-			if (filter){
-				if (distance < MIN_DISTANCE || this.distance > bandCenter+bandwidth || filterControl > FILTER_OUT){
-					synchronized (this){
-						this.distance = distance;
-					}
-					filterControl = 0;
-				}
-				else{
-					filterControl++;
-				}
+	public int getDistance(){
+		int distance_temp;
+		usSensor.fetchSample(usData,0);
+		distance_temp=(int)(usData[0]*100.0);
+		if (filter){
+			if (distance_temp < MIN_DISTANCE || this.distance > bandCenter+bandwidth || filterControl > FILTER_OUT){
+				filterControl = 0;
+				this.distance = distance_temp;
 			}
 			else{
-				this.distance = distance;
+				filterControl++;
 			}
-			Printer.getInstance().display(""+calculateError());
 		}
+		else{
+			this.distance = distance_temp;
+		}
+		return this.distance;
 	}
 	
 	/*
@@ -107,11 +102,11 @@ public class ObstacleAvoidance extends Thread{
 		int left_dist, right_dist;
 		//Check distance on the left
 		sensorMotor.rotate(90, false);
-		left_dist = distance;
+		left_dist = getDistance();
 		Delay.msDelay(100);
 		//Check distance on the right
 		sensorMotor.rotate(-180, false);
-		right_dist = distance;
+		right_dist = getDistance();
 		Delay.msDelay(100);
 		//If largest distance on the left, align robot to be on left of wall
 		if (left_dist > right_dist){
@@ -136,19 +131,19 @@ public class ObstacleAvoidance extends Thread{
 		int fwd_dist, side_dist, actual_dist;
 		//Get distance from wall on the side of the robot, rotate sensor, and get distance in front of the robot
 		if (left_direction){
-			side_dist = distance;
-			Delay.msDelay(50);
+			side_dist = getDistance();
+			Delay.msDelay(10);
 			sensorMotor.rotate(90,false);
-			fwd_dist = distance;
-			Delay.msDelay(50);
+			fwd_dist = getDistance();
+			Delay.msDelay(10);
 			sensorMotor.rotate(-90,false);
 		}
 		else{
-			side_dist = distance;
-			Delay.msDelay(50);
+			side_dist = getDistance();
+			Delay.msDelay(10);
 			sensorMotor.rotate(-90,false);
-			fwd_dist = distance;
-			Delay.msDelay(50);
+			fwd_dist = getDistance();
+			Delay.msDelay(10);
 			sensorMotor.rotate(90,false);
 		}
 		//Consider the minimum of these two as the distance from wall
@@ -223,9 +218,7 @@ public class ObstacleAvoidance extends Thread{
 	 * @return A boolean that determines whether robot needs to continue moving towards destination or it is close enough (for navigation to determine what to do)
 	 */
 	public boolean doWallAvoidance(){
-		//Start polling ultrasonic sensor and check which side wall avoidance should be done, then start wall avoidance
-		scanning = true;
-		this.start();
+		//Check which side wall avoidance should be done, then start wall avoidance
 		direction();
 		//While wall avoidance running, run the PController algorithm and check if back on initial trajectory, if yes, end travel
 		filter = true;
