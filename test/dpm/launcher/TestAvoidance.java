@@ -17,8 +17,6 @@ public class TestAvoidance extends Thread{
 		Printer.getInstance().display("Press any button");
 		Button.waitForAnyPress();
 		Printer.getInstance().display("Running");
-		Repository.startNavigation();
-		Repository.startAvoidance();
 		Repository.travelTo(60, 60);
 	}
 }

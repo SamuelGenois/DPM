@@ -10,7 +10,7 @@ import lejos.utility.Delay;
 * @author Will Liang
 */
 public class Claw {
-    private final int CAPACITY = 1;
+    private final int CAPACITY = 2;
     private final RegulatedMotor    gripclawMotor, alignclawMotor;
     private final RegulatedMotor    liftMotor;
     private int gripStrength = -450;
@@ -44,10 +44,10 @@ public class Claw {
      */
     
     public void grab(){
-        //do the alignment by closing the claw
-        alignclawMotor.rotate(-alignment);
-        //release/open the claw
-        alignclawMotor.rotate(alignment+100);
+//        //do the alignment by closing the claw
+//        alignclawMotor.rotate(-alignment);
+//        //release/open the claw
+//        alignclawMotor.rotate(alignment+100);
         
         if(blockCount == 0){
             gripclawMotor.rotate(gripStrength);

@@ -11,7 +11,7 @@ import dpm.util.*;
 /**
  * A class containing methods related to obstacle avoidance
  * 
- * @author Emile Traoré
+ * @author Emile Traorï¿½
  * 
  */
 
@@ -60,10 +60,10 @@ public class ObstacleAvoidance extends Thread{
 		this.x_fin = x_fin;
 		this.y_fin = y_fin;
 		this.a = x_fin-x_init;
-		this.b = y_fin=y_init;
+		this.b = y_fin-y_init;
 		this.avoiding = true;
 		this.avoidanceStarted = false;
-		this.scanning = false;
+		this.scanning = true;
 		this.filter = false;
 	}
 	
@@ -92,7 +92,7 @@ public class ObstacleAvoidance extends Thread{
 			else{
 				this.distance = distance;
 			}
-			Printer.getInstance().display("   "+(int)Repository.getX()+"   "+(int)Repository.getY()+"    "+(int)(Math.abs((Repository.getX()-x_init)/a-(Repository.getY()-y_init)/b)));
+			Printer.getInstance().display("   "+(int)Repository.getX()+"   "+(int)Repository.getY()+"    "+(int)(Math.abs((Repository.getX()-x_init)/a-(Repository.getY()-y_init)/b)) + " " + usData[0]*100);
 		}
 	}
 	
@@ -103,13 +103,14 @@ public class ObstacleAvoidance extends Thread{
 	public void direction(){
 		int left_dist, right_dist;
 		//Check distance on the left
-		sensorMotor.rotate(-90);
+		sensorMotor.rotate(90, false);
 		left_dist = distance;
 		Delay.msDelay(100);
 		//Check distance on the right
-		sensorMotor.rotate(180);
+		sensorMotor.rotate(-180, false);
 		right_dist = distance;
 		Delay.msDelay(100);
+		System.out.println(""+left_dist+" "+right_dist);
 		//If largest distance on the left, align robot to be on left of wall
 		if (left_dist > right_dist){
 			left_direction = true;
@@ -119,7 +120,7 @@ public class ObstacleAvoidance extends Thread{
 		else{
 			left_direction = false;
 			Repository.turnTo(Repository.getAng()-90);
-			sensorMotor.rotate(-180);
+			sensorMotor.rotate(180);
 		}
 	}
 	
@@ -133,18 +134,18 @@ public class ObstacleAvoidance extends Thread{
 		if (left_direction){
 			side_dist = distance;
 			Delay.msDelay(50);
-			sensorMotor.rotate(-90);
+			sensorMotor.rotate(90);
 			fwd_dist = distance;
 			Delay.msDelay(50);
-			sensorMotor.rotate(90);
+			sensorMotor.rotate(-90);
 		}
 		else{
 			side_dist = distance;
 			Delay.msDelay(50);
-			sensorMotor.rotate(90);
+			sensorMotor.rotate(-90);
 			fwd_dist = distance;
 			Delay.msDelay(50);
-			sensorMotor.rotate(-90);
+			sensorMotor.rotate(90);
 		}
 		//Consider the minimum of these two as the distance from wall
 		actual_dist = fwd_dist > side_dist ? side_dist : fwd_dist;
@@ -200,7 +201,9 @@ public class ObstacleAvoidance extends Thread{
 	 * Method that controls the wall avoidance process
 	 * @return A boolean that determines whether robot needs to continue moving towards destination or it is close enough (for navigation to determine what to do)
 	 */
-	public void doWallAvoidance(){
+	public boolean doWallAvoidance(){
+		leftMotor.setSpeed(0);
+		rightMotor.setSpeed(0);
 		//Start polling ultrasonic sensor and check which side wall avoidance should be done, then start wall avoidance
 		scanning = true;
 		this.start();
@@ -220,8 +223,6 @@ public class ObstacleAvoidance extends Thread{
 		else{
 			keepMoving = true;
 		}
-		if (keepMoving){
-			Repository.travelTo(x_fin, y_fin);
-		}
+		return keepMoving;
 	}
 }

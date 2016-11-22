@@ -8,6 +8,7 @@ import dpm.util.Sensors;
 import lejos.hardware.Sound;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.SampleProvider;
+import dpm.navigation.ObstacleAvoidance;
 
 /**
  * File: Navigation.java
@@ -16,12 +17,12 @@ import lejos.robotics.SampleProvider;
  * Fall 2011
  * Ported to EV3 by: Francois Ouellet Delorme
  * Fall 2015
- * Modified by: Samuel Genois and Emile Traoré
+ * Modified by: Samuel Genois and Emile Traorï¿½
  * Fall 2016
  * 
  * Movement control class (turnTo, travelTo, flt, setSpeeds...)
  */
-public class Navigation extends Thread implements DPMConstants{
+public class Navigation implements DPMConstants{
 	private final static int FAST = 200, SLOW = 100;						//Motor speed parameters
 	private final static double DEG_ERR = 3.0, CM_ERR = 1.0;				//Tolerances for turnTo and travelTo
 	private final static int AVOIDANCE_THRESHOLD = 20;						//Distance below which obstacle avoidance engaged
@@ -31,7 +32,7 @@ public class Navigation extends Thread implements DPMConstants{
 	private boolean interrupted;											//Determines whether methods are interrupted or not
 	private int distance;													//US sensor distance in cm
 	private double travel_x, travel_y;										//Coordinates of current travel
-
+	
 	/**
 	 * Constructor
 	 */
@@ -50,17 +51,15 @@ public class Navigation extends Thread implements DPMConstants{
 	 * Thread method that polls the ultrasonic sensor
 	 * <br>If the ultrasonic sensor distance drops below a threshold, engage obstacle avoidance
 	 */
-	public void run(){
-		while (!interrupted) {
-			usSensor.fetchSample(usData,0);
-			distance=(int)(usData[0]*100.0);
-			/*if (distance < AVOIDANCE_THRESHOLD  && distance != 0){
-				this.interrupt();
-				Repository.doAvoidance(travel_x, travel_y);
-			}*/
-			try { Thread.sleep(50); } catch(Exception e){}
-			Printer.getInstance().display("   "+(int)Repository.getX()+"   "+(int)Repository.getY());
+	public boolean getDistance(){
+		usSensor.fetchSample(usData,0);
+		distance=(int)(usData[0]*100.0);
+		if (distance < AVOIDANCE_THRESHOLD  && distance != 0){
+			Sound.buzz();
+			return new ObstacleAvoidance(travel_x, travel_y).doWallAvoidance();
 		}
+		Printer.getInstance().display("   "+(int)Repository.getX()+"   "+(int)Repository.getY());
+		return true;
 	}
 
 	/*
@@ -105,9 +104,14 @@ public class Navigation extends Thread implements DPMConstants{
 			if (minAng < 0)
 				minAng += 360.0;
 			this.turnTo(minAng, false);
+			boolean keepMoving = getDistance();
+			if (keepMoving){
+				break;
+			}
 			this.setSpeeds(FAST, FAST);
 		}
 		this.setSpeeds(0, 0);
+		Sound.beep();
 	}
 
 	/**
@@ -118,7 +122,6 @@ public class Navigation extends Thread implements DPMConstants{
 	 * @param whether or not to stop the motors when the turn is completed
 	 */
 	public void turnTo(double angle, boolean stop) {
-		interrupted = true;
 		double error = angle - Repository.getAng();
 		if (error > 180){
 			error-=360;
@@ -142,7 +145,6 @@ public class Navigation extends Thread implements DPMConstants{
 		if (stop) {
 			this.setSpeeds(0, 0);
 		}
-		interrupted = false;
 	}
 	
 	/**
