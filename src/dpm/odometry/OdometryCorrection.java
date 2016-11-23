@@ -14,7 +14,7 @@ import lejos.robotics.SampleProvider;
 public class OdometryCorrection extends Thread implements DPMConstants{
 	
 	private static final long POLLING_DELAY = 50l;
-	private static final float LIGHT_THRESHOLD = 0.25f;
+	private static final float LIGHT_THRESHOLD = 0.3f;
 	private static final double CORRECTION_THRESHOLD = 2.0;
 	
 	private final Odometer odometer;
@@ -47,26 +47,42 @@ public class OdometryCorrection extends Thread implements DPMConstants{
 			if(sensorData[0] < LIGHT_THRESHOLD){
 				Sound.beep();
 				
-				double xDistanceFromGrid = odometer.getX()%SQUARE_SIZE;
-				if(xDistanceFromGrid > SQUARE_SIZE/2)
-					xDistanceFromGrid = SQUARE_SIZE - xDistanceFromGrid;
+				double xDistanceFromGrid, yDistanceFromGrid;
+				double	x = odometer.getX(),
+						y = odometer.getY();
 				
-				double yDistanceFromGrid = odometer.getY()%SQUARE_SIZE;
-				if(yDistanceFromGrid > SQUARE_SIZE/2)
-					yDistanceFromGrid = SQUARE_SIZE - yDistanceFromGrid;
+				if(x>0){
+					xDistanceFromGrid = x%SQUARE_SIZE;
+					if(xDistanceFromGrid > SQUARE_SIZE/2)
+						xDistanceFromGrid = SQUARE_SIZE - xDistanceFromGrid;
+				}
+				else
+					xDistanceFromGrid = -x;
+				
+				if(y>0){
+					yDistanceFromGrid = y%SQUARE_SIZE;
+					if(yDistanceFromGrid > SQUARE_SIZE/2)
+						yDistanceFromGrid = SQUARE_SIZE - yDistanceFromGrid;
+				}
+				else
+					yDistanceFromGrid = -y;
 				
 				if(xDistanceFromGrid < CORRECTION_THRESHOLD){
 					if(!(yDistanceFromGrid < CORRECTION_THRESHOLD))
-						odometer.setPosition(new double[] {Math.floor(odometer.getX()/SQUARE_SIZE)*SQUARE_SIZE, odometer.getY(),odometer.getAng()},
-												new boolean[] {true, true, true});
+						if(x>0)
+							odometer.setPosition(new double[] {Math.floor(x/SQUARE_SIZE)*SQUARE_SIZE, 0, 0},
+												new boolean[] {true, false, false});
+						else
+							odometer.setPosition(new double[] {0, 0, 0}, new boolean[] {true, false, false});
 				}
 				else if(yDistanceFromGrid < CORRECTION_THRESHOLD)
-					odometer.setPosition(new double[] {odometer.getX(), Math.floor(odometer.getY()/SQUARE_SIZE)*SQUARE_SIZE, odometer.getAng()},
-						new boolean[] {true, true, true});
+					if(y>0)
+						odometer.setPosition(new double[] {0, Math.floor(y/SQUARE_SIZE)*SQUARE_SIZE, 0},
+								new boolean[] {false, true, false});
+					else
+						odometer.setPosition(new double[] {0, 0, 0}, new boolean[] {false, true, false});
 				
 				else{
-					Sound.buzz();
-					Sound.buzz();
 					Sound.buzz();
 				}
 					

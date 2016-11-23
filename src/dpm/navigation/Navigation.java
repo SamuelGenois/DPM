@@ -3,11 +3,7 @@ package dpm.navigation;
 import dpm.repository.Repository;
 import dpm.util.DPMConstants;
 import dpm.util.Motors;
-import dpm.util.Printer;
-import dpm.util.Sensors;
-import lejos.hardware.Sound;
 import lejos.robotics.RegulatedMotor;
-import lejos.robotics.SampleProvider;
 
 /**
  * File: Navigation.java
@@ -21,15 +17,11 @@ import lejos.robotics.SampleProvider;
  * 
  * Movement control class (turnTo, travelTo, flt, setSpeeds...)
  */
-public class Navigation extends Thread implements DPMConstants{
+public class Navigation implements DPMConstants{
 	private final static int FAST = 200, SLOW = 100;						//Motor speed parameters
 	private final static double DEG_ERR = 3.0, CM_ERR = 1.0;				//Tolerances for turnTo and travelTo
-	private final static int AVOIDANCE_THRESHOLD = 20;						//Distance below which obstacle avoidance engaged
 	private RegulatedMotor leftMotor, rightMotor;							//Motor objects
-	private SampleProvider usSensor;										//Sensor object
-	private float[] usData;													//Sensor data array	
-	private boolean interrupted;											//Determines whether methods are interrupted or not
-	private int distance;													//US sensor distance in cm
+	boolean interrupted;													//Determines whether methods are interrupted or not
 	private double travel_x, travel_y;										//Coordinates of current travel
 
 	/**
@@ -39,34 +31,15 @@ public class Navigation extends Thread implements DPMConstants{
 
 		this.leftMotor = Motors.getMotor(Motors.LEFT);
 		this.rightMotor = Motors.getMotor(Motors.RIGHT);
-		this.usSensor = Sensors.getSensor(Sensors.US_ACTIVE);
-		this.usData = new float[usSensor.sampleSize()];
 		// set acceleration
 		this.leftMotor.setAcceleration(WHEEL_MOTOR_ACCELERATION);
 		this.rightMotor.setAcceleration(WHEEL_MOTOR_ACCELERATION);
-	}
-	
-	/**
-	 * Thread method that polls the ultrasonic sensor
-	 * <br>If the ultrasonic sensor distance drops below a threshold, engage obstacle avoidance
-	 */
-	public void run(){
-		while (!interrupted) {
-			usSensor.fetchSample(usData,0);
-			distance=(int)(usData[0]*100.0);
-			/*if (distance < AVOIDANCE_THRESHOLD  && distance != 0){
-				this.interrupt();
-				Repository.doAvoidance(travel_x, travel_y);
-			}*/
-			try { Thread.sleep(50); } catch(Exception e){}
-			Printer.getInstance().display("   "+(int)Repository.getX()+"   "+(int)Repository.getY());
-		}
 	}
 
 	/*
 	 * Functions to set the motor speeds jointly
 	 */
-	private void setSpeeds(int lSpd, int rSpd) {
+	void setSpeeds(int lSpd, int rSpd) {
 		this.leftMotor.setSpeed(lSpd);
 		this.rightMotor.setSpeed(rSpd);
 	}
@@ -95,7 +68,7 @@ public class Navigation extends Thread implements DPMConstants{
 	 * @param x x coordinate of destination
 	 * @param y y coordinate of destination
 	 */
-	public void travelTo(double x, double y) {
+	public boolean travelTo(double x, double y) {
 		travel_x = x;
 		travel_y = y;
 		double minAng;
@@ -106,8 +79,14 @@ public class Navigation extends Thread implements DPMConstants{
 				minAng += 360.0;
 			this.turnTo(minAng, false);
 			this.setSpeeds(FAST, FAST);
+			if(ObstacleAvoidanceSam.travelPathIsBlocked()){
+				if(!(new ObstacleAvoidanceSam(this, travel_x, travel_y).avoid()))
+					return false;
+			}
+			
 		}
 		this.setSpeeds(0, 0);
+		return true;
 	}
 
 	/**
@@ -154,14 +133,13 @@ public class Navigation extends Thread implements DPMConstants{
 		turnTo(angle, true);
 	}
 	
-	/**
+	/*
 	 * Go forward a set distance in cm
 	 * 
 	 * @param distance the forward distance to travel
 	 */
-	public void goForward(double distance) {
+	private void goForward(double distance) {
 		this.travelTo(Math.cos(Math.toRadians(Repository.getAng())) * distance, Math.cos(Math.toRadians(Repository.getAng())) * distance);
-
 	}
 	
 	/**
@@ -170,7 +148,11 @@ public class Navigation extends Thread implements DPMConstants{
 	 * @param y The y coordinate of the destination
 	 * @return The euclidean distance
 	 */
-	public double calculateDistance(double x, double y){
+	double calculateDistance(double x, double y){
 		return Math.sqrt(Math.pow(y-Repository.getY(), 2.0)+Math.pow(x-Repository.getX(), 2.0));
+	}
+	
+	double[] getPosition(){
+		return Repository.getPosition();
 	}
 }

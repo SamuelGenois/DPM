@@ -29,6 +29,7 @@ public class BlockSearch implements DPMConstants{
 								COLOR_SENSOR_RANGE = 2;
 	
 	private int currentRegion;
+	private int currentScanPoint;
 	
 	private int[] regionOrder;
 	
@@ -68,20 +69,17 @@ public class BlockSearch implements DPMConstants{
 		
 		greenZoneSearchable = true;
 		currentRegion = 0;
+		currentScanPoint = LOWER_LEFT;
 		currentOrientation = 90.0;
 		
-		//For the Demo
-		goodZoneRegions = new ArrayList<Integer>();
-		badZoneRegions = new ArrayList<Integer>();
-		
-		/*if(Repository.getRole() == BUILDER){
+		if(Repository.getRole() == BUILDER){
 			goodZoneRegions = getRegions(Repository.getGreenZone());
 			badZoneRegions = getRegions(Repository.getRedZone());
 		}
 		else {
 			goodZoneRegions = getRegions(Repository.getRedZone());
 			badZoneRegions = getRegions(Repository.getGreenZone());
-		}*/
+		}
 	}
 	
 	private void createRegionOrder(){
@@ -104,7 +102,7 @@ public class BlockSearch implements DPMConstants{
 	public void search(){
 		interrupted = false;
 		
-		//For demo
+		//For testing
 		if (!interrupted)
 			searchRegion(0);
 		if (!interrupted)
@@ -141,6 +139,38 @@ public class BlockSearch implements DPMConstants{
 	
 	private void searchRegion(int region){
 		double[] scanPoint = new double[2];
+		
+		if(currentScanPoint == LOWER_LEFT){
+			scanPoint[0] = (region%4)* 3 * SQUARE_SIZE;
+			scanPoint[1] = (region/4)* 3 * SQUARE_SIZE;
+			
+			Repository.travelTo(scanPoint[0], scanPoint[1]);
+			
+			Repository.turnTo(currentOrientation);
+			
+			while(!interrupted && Repository.getAng() < 180){
+				leftMotor.setSpeed(MOTOR_SCAN_SPEED);
+				rightMotor.setSpeed(-MOTOR_SCAN_SPEED);
+				usSensor.fetchSample(usData, 0);
+				if((int)(usData[0]*100) < SCAN_RANGE){
+					Sound.beep();
+					leftMotor.stop(true);
+					rightMotor.stop();
+					currentOrientation = Repository.getAng();
+					checkObject(scanPoint);
+				}
+			}
+			
+			leftMotor.stop(true);
+			rightMotor.stop();
+			
+			Sound.beep();
+			Sound.beep();
+			
+			currentOrientation = 270;
+			currentRegion = UPPER_RIGHT;
+		}
+		
 		scanPoint[0] = (region%4)* 3 * SQUARE_SIZE;
 		scanPoint[1] = (region/4)* 3 * SQUARE_SIZE;
 		
@@ -168,21 +198,13 @@ public class BlockSearch implements DPMConstants{
 		Sound.beep();
 		
 		currentOrientation = 90;
+		currentRegion = LOWER_LEFT;
+		
 	}
 	
 	private void checkObject(double[] scanPoint){
 		Repository.travelTo((usData[0]*100-COLOR_SENSOR_RANGE)*Math.cos(Math.toRadians(currentOrientation))+scanPoint[0], 
 				(usData[0]*100-COLOR_SENSOR_RANGE)*Math.sin(Math.toRadians(currentOrientation))+scanPoint[1]);
-		/*do{
-			leftMotor.setSpeed(150);
-			rightMotor.setSpeed(150);
-			usSensor.fetchSample(usData, 0);
-			
-		} while((int)(usData[0]*100) > COLOR_SENSOR_RANGE 
-				&& Repository.calculateDistance(scanPoint[0],scanPoint[1]) < SCAN_RANGE);
-		
-		leftMotor.stop(true);
-		rightMotor.stop();*/
 		
 		if(identify() == 0){
 			Sound.beep();

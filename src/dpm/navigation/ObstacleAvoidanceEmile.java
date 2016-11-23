@@ -15,7 +15,7 @@ import dpm.util.*;
  * 
  */
 
-public class ObstacleAvoidance extends Thread{
+public class ObstacleAvoidanceEmile extends Thread{
 	
 	
 	private final int bandCenter = 22;		//The nominal distance from the wall
@@ -48,7 +48,7 @@ public class ObstacleAvoidance extends Thread{
 	 * @param x_fin	The x coordinate of the destination
 	 * @param y_fin	The y coordinate of the destination
 	 */
-	public ObstacleAvoidance(double x_fin, double y_fin) {
+	public ObstacleAvoidanceEmile(double x_fin, double y_fin) {
 		//Default Constructor
 		this.leftMotor = Motors.getMotor(Motors.LEFT);
 		this.rightMotor = Motors.getMotor(Motors.RIGHT);

@@ -5,9 +5,7 @@ import dpm.claw.Claw;
 import dpm.finalization.Finalization;
 import dpm.localization.Localization;
 import dpm.navigation.Navigation;
-import dpm.navigation.ObstacleAvoidance;
 import dpm.odometry.Odometer;
-import java.util.HashMap;
 import dpm.launcher.Launcher;
 /**
  * Repository class that allows any subsystem to interact with any other subsystem indirectly
@@ -23,7 +21,6 @@ public class Repository {
 	private static Localization localization;
 	private static Navigation navigation;
 	private static Odometer odometry;
-	private static ObstacleAvoidance avoidance;
 	private static Claw pincer;
 	private static Launcher launcher;
 	
@@ -50,8 +47,8 @@ public class Repository {
 	 * @param x the x coordinate of the destination
 	 * @param y the y coordinate of the destination
 	 */
-	public static void travelTo(double x, double y){
-		getNavigation().travelTo(x, y);
+	public static boolean travelTo(double x, double y){
+		return getNavigation().travelTo(x, y);
 	}
 	
 	/**
@@ -69,9 +66,9 @@ public class Repository {
 	 * @param x The x coordinate of the point
 	 * @param y The y coordinate of the point
 	 */
-	public static double calculateDistance(double x, double y){
+	/*public static double calculateDistance(double x, double y){
 		return getNavigation().calculateDistance(x, y);
-	}
+	}*/
 	
 	/**
 	 * Interrupts a running travel operation
@@ -125,29 +122,6 @@ public class Repository {
 		getOdometer().setPosition(position, whichOne);
 	}
 	
-	/**
-	 * Performs obstacle avoidance
-	 * @param x The x coordinate of current travel
-	 * @param y The y coordinate of current travel
-	 */
-	public static void doAvoidance(double x, double y){
-		getAvoidance(x,y).doWallAvoidance();
-	}
-	
-	/**
-	 * Starts the thread in Navigation.java
-	 */
-	public static void startNavigation(){
-		getNavigation().start();
-	}
-	
-	/**
-	 * Starts the thread in ObstacleAvoidance.java
-	 */
-	public static void startAvoidance(){
-		getAvoidance(0,0).start();
-	}
-	
 	//This is private because no subsystem should
 	//require direct access to the Odometer object
 	private static Odometer getOdometer(){
@@ -162,14 +136,6 @@ public class Repository {
 		if(navigation == null)
 			navigation = new Navigation();
 		return navigation;
-	}
-	
-	//This is private because no subsystem should
-	//require direct access to the ObstacleAvoidance object
-	//It always creates a new object because parameters are different for each instance
-	private static ObstacleAvoidance getAvoidance(double x, double y){
-		avoidance = new ObstacleAvoidance(x, y);
-		return avoidance;
 	}
 	
 	//This is private because no subsystem should
