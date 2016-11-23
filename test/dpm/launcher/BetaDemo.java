@@ -20,6 +20,9 @@ public class BetaDemo implements Launcher, DPMConstants{
 	private final int[] greenZone, redZone;
 	private final int startingCorner, role;
 	
+	/**
+	 * The main method
+	 */
 	public static void main (String[] args){
 		(new Thread() {
 			public void run() {

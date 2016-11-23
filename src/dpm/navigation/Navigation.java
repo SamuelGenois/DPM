@@ -3,6 +3,7 @@ package dpm.navigation;
 import dpm.repository.Repository;
 import dpm.util.DPMConstants;
 import dpm.util.Motors;
+import lejos.hardware.Sound;
 import lejos.robotics.RegulatedMotor;
 
 /**
@@ -36,24 +37,16 @@ public class Navigation implements DPMConstants{
 		this.rightMotor.setAcceleration(WHEEL_MOTOR_ACCELERATION);
 	}
 
-	/*
-	 * Functions to set the motor speeds jointly
+	/**
+	 * Function to set the motor speeds jointly
+	 * @param lSpd the speed of the left motor
+	 * @param rSpd the speed of the right motor
 	 */
 	void setSpeeds(int lSpd, int rSpd) {
 		this.leftMotor.setSpeed(lSpd);
 		this.rightMotor.setSpeed(rSpd);
 	}
 
-	/**
-	 * Float the two motors jointly
-	 */
-	public void setFloat() {
-		this.leftMotor.stop();
-		this.rightMotor.stop();
-		this.leftMotor.flt(true);
-		this.rightMotor.flt(true);
-	}
-	
 	/**
 	 * Interrupts currently running travelTo or turnTo methods.
 	 */
@@ -79,9 +72,14 @@ public class Navigation implements DPMConstants{
 				minAng += 360.0;
 			this.turnTo(minAng, false);
 			this.setSpeeds(FAST, FAST);
-			if(ObstacleAvoidanceSam.travelPathIsBlocked()){
-				if(!(new ObstacleAvoidanceSam(this, travel_x, travel_y).avoid()))
+			
+			int obstacleDistance = ObstacleAvoidance.look();
+			if(obstacleDistance < calculateDistance(x, y) && obstacleDistance < AVOIDANCE_THRESHOLD){
+				this.setSpeeds(0, 0);
+				if(!(new ObstacleAvoidance(this, travel_x, travel_y).avoid())){
+					Sound.buzz();
 					return false;
+				}
 			}
 			
 		}
@@ -133,17 +131,9 @@ public class Navigation implements DPMConstants{
 		turnTo(angle, true);
 	}
 	
-	/*
-	 * Go forward a set distance in cm
-	 * 
-	 * @param distance the forward distance to travel
-	 */
-	private void goForward(double distance) {
-		this.travelTo(Math.cos(Math.toRadians(Repository.getAng())) * distance, Math.cos(Math.toRadians(Repository.getAng())) * distance);
-	}
-	
 	/**
 	 * Calculates the euclidean distance between point (x,y) and the robot's current location
+	 * 
 	 * @param x The x coordinate of the destination
 	 * @param y The y coordinate of the destination
 	 * @return The euclidean distance
@@ -152,6 +142,11 @@ public class Navigation implements DPMConstants{
 		return Math.sqrt(Math.pow(y-Repository.getY(), 2.0)+Math.pow(x-Repository.getX(), 2.0));
 	}
 	
+	/**
+	 * Returns the position of the robot.
+	 * 
+	 * @return the position of the robot
+	 */
 	double[] getPosition(){
 		return Repository.getPosition();
 	}

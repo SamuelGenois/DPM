@@ -1,53 +1,78 @@
 package dpm.navigation;
 
 import dpm.repository.Repository;
+import dpm.util.DPMConstants;
 import dpm.util.Motors;
+import dpm.util.Printer;
 import dpm.util.Sensors;
 
-public class ObstacleAvoidanceSam {
+/**
+ * This class handles the routines Navigation uses to avoid obstacles in its path.
+ * 
+ * @author Samuel Genois, Emile Traoré
+ *
+ */
+public class ObstacleAvoidance implements DPMConstants{
 	
-	private final static double	propConstant = 8.5,			//The proportional constant by which the error is multiplied
+	private final static double	PROB_CONSTANT = 4,					//The proportional constant by which the error is multiplied
 								MINIMUM_DETOUR_LENGTH = 10;
 
-	private final static int	AVOIDANCE_THRESHOLD = 20,	//Distance below which obstacle avoidance engaged
-								FORWARD = 0,
+	private final static int	FORWARD = 0,
 								LEFT = 1,
 								RIGHT = 2,
 								SENSOR_TURN_ANGLE = 60,
-								MOTOR_STRAIGHT = 150,		//The default speed of a motor
-								MAX_VALUE = 100,			//The maximum offset that can be added or removed from a motor's speed
-								bandCenter = 22,			//The nominal distance from the wall
-								bandwidth = 5;				//The maximum deviation from the nominal distance before adjustment
+								MOTOR_STRAIGHT = 150,				//The default speed of a motor
+								MAX_VALUE = 50,						//The maximum offset that can be added or removed from a motor's speed
+								BAND_CENTER = AVOIDANCE_THRESHOLD,	//The nominal distance from the wall
+								BAND_WIDTH = 5;						//The maximum deviation from the nominal distance before adjustment
 	
-	Navigation navigation;
+	private Navigation navigation;
 	
 	private int direction;
-	private double x_init, y_init, x_fin, y_fin, initialDistanceFromDestination;
+	private double x_init, y_init, a, b, initialDistanceFromDestination;
 	
 	/**
 	 * Constructor
 	 * 
+	 * @param navigation the Navigation object using this ObstacleAvoidance
 	 * @param x_fin	The x coordinate of the destination
 	 * @param y_fin	The y coordinate of the destination
 	 */
-	public ObstacleAvoidanceSam(Navigation navigation, double x_fin, double y_fin) {
+	public ObstacleAvoidance(Navigation navigation, double x_fin, double y_fin) {
 		this.navigation = navigation;
 		this.x_init = this.navigation.getPosition()[0];
 		this.y_init = this.navigation.getPosition()[1];
-		this.x_fin = x_fin;
-		this.y_fin = y_fin;
-		this.initialDistanceFromDestination = navigation.calculateDistance(this.x_fin, this.y_fin);
+		this.a = (x_fin-x_init)/Math.sqrt((x_fin-x_init)*(x_fin-x_init)+b*b);
+		this.b = (y_fin-y_init)/Math.sqrt((x_fin-x_init)*(x_fin-x_init)+(y_fin-y_init)*(y_fin-y_init));
+		this.initialDistanceFromDestination = navigation.calculateDistance(x_fin, y_fin);
 	}
 	
+	/*
+	 * Returns true as long as the robot is not done avoiding the obstacle
+	 */
 	private boolean avoiding(){
+		
+		if(a == 0){
+			Printer.getInstance().display(
+					Double.toString(Math.abs(navigation.getPosition()[1]-y_init)/b));
+			return Math.abs(navigation.getPosition()[1]-y_init)/b < 2.0;
+		}
+		
+		if(b == 0){
+			Printer.getInstance().display(
+					Double.toString(Math.abs(navigation.getPosition()[0]-x_init)/a));
+			return Math.abs(navigation.getPosition()[0]-x_init)/a < 2.0;
+		}
+		
+		Printer.getInstance().display(
+				Double.toString(Math.abs((Repository.getX()-x_init)/a-(Repository.getY()-y_init)/b)));	
 		return navigation.calculateDistance(x_init, y_init) < MINIMUM_DETOUR_LENGTH
-				//This part of the logic was taken from Emile's original ObstacleAvoidance. I do not understand it yet.
-				|| Math.abs((Repository.getX()-x_init)/(x_fin-x_init)-(Repository.getY()-y_init)/(y_fin-y_init)) < 2.0;
+				|| Math.abs((Repository.getX()-x_init)/a-(Repository.getY()-y_init)/b) < 2.0;
 	}
 	
 	/*
 	 * Direction method
-	 * <br>Determines whether the robot will avoid the wall from the left or the right depending on whether there is more space on the left or the right
+	 * Determines whether the robot will avoid the wall from the left or the right depending on whether there is more space on the left or the right
 	 */
 	private void direction(){
 		int left_dist, right_dist;
@@ -63,10 +88,14 @@ public class ObstacleAvoidanceSam {
 		//If largest distance on the right, align robot to be on right of wall
 		else{
 			direction = RIGHT;
-			navigation.turnTo(navigation.getPosition()[2]-90);
+			navigation.turnTo(navigation.getPosition()[2]+270);
 		}
 	}
 	
+	/*
+	 * Process ultrasonic sensor distance method
+	 * Adjusts motor speeds based on distance to the wall using PController algorithm
+	 */
 	private void processUSDistance(){
 		int fwd_dist, side_dist, actual_dist;
 		//Get distance from wall on the side of the robot, rotate sensor, and get distance in front of the robot
@@ -76,10 +105,10 @@ public class ObstacleAvoidanceSam {
 		//Consider the minimum of these two as the distance from wall
 		actual_dist = fwd_dist > side_dist ? side_dist : fwd_dist;
 		//Compute error, check if error within bandwidth tolerance
-		int error = actual_dist-bandCenter;
+		int error = actual_dist-BAND_CENTER;
 		//If not within tolerance, calculate adjustment to each motor by multiplying error by proportionality constant and clamp adjustment if higher than maximum value
-		if (Math.abs(error) >= bandwidth){
-			int adjustment = (int)(error*propConstant);
+		if (Math.abs(error) >= BAND_WIDTH){
+			int adjustment = (int)(error*PROB_CONSTANT);
 			if (adjustment > MAX_VALUE){
 				adjustment = MAX_VALUE;
 			}
@@ -101,17 +130,27 @@ public class ObstacleAvoidanceSam {
 		}
 	}
 	
+	/**
+	 * Executes the obstacle avoidance routine
+	 * @return false if the obstacle avoided is occupying Navigation's destination
+	 */
 	public boolean avoid(){
 		direction();
 		while (avoiding() && !navigation.interrupted){
 			processUSDistance();
 		}
+		navigation.setSpeeds(0, 0);
 		
 		return navigation.calculateDistance(x_init, y_init) > initialDistanceFromDestination;
 	}
 	
-	public static boolean travelPathIsBlocked(){
-		return look(FORWARD) < AVOIDANCE_THRESHOLD;
+	/**
+	 * A convenience for Navigation. Returns the distance read by the ultrasonic sensor 
+	 * when the sensor is facing forward.
+	 * @return
+	 */
+	public static int look(){
+		return look(FORWARD);
 	}
 	
 	//Returns the distance read by the ultrasonic sensor when the sensor is facing the specified direction.

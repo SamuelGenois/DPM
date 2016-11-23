@@ -92,12 +92,13 @@ public class Claw {
             gripclawMotor.rotate(-gripStrength);
             blockCount = 0;
         }
+        reset();
     }
     
-    /**
+    /*
      * Resets the claw back to the initial position
      */
-    public void reset(){
+    private void reset(){
     	 liftMotor.rotate(height*3);
     	 gripclawMotor.rotate(gripStrength);
     }

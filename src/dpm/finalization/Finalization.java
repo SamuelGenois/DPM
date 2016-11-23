@@ -18,24 +18,6 @@ public class Finalization implements DPMConstants{
 	 * Constructor
 	 */
 	public Finalization(){}
-
-	//Code to delete
-	/*
-	
-	/**
-	 * Executes the final tasks the robot must do
-	 * before the end of the round.
-	 * <br> So far: temporary version for beta demo (only travels to green zone after picking up one block)
-	 *
-	
-	public void doFinalization(double targetX, double targetY){
-		Repository.interruptBlockSearch();
-		Repository.interruptNavigation();
-		Repository.travelTo(targetX, targetY);
-		Repository.turnTo(Repository.getAng()+180);
-		Repository.drop();
-	}
-	*/
 	
 	/**
 	 * Executes the final tasks the robot must do
@@ -59,8 +41,6 @@ public class Finalization implements DPMConstants{
 			Repository.travelTo((Repository.getGreenZone()[0] + Repository.getGreenZone()[2])*SQUARE_SIZE/2,
 								(Repository.getGreenZone()[1] + Repository.getGreenZone()[3])*SQUARE_SIZE/2);
 			Repository.drop();
-			Repository.clawReset();
-			System.exit(0);
 		}
 		
 		switch(Repository.getStartZone()){
@@ -74,6 +54,7 @@ public class Finalization implements DPMConstants{
 				Repository.travelTo(10*SQUARE_SIZE + FINAL_POSITON_OFFSET, 10*SQUARE_SIZE + FINAL_POSITON_OFFSET);
 			default:
 		}
+		System.exit(0);
 	}
 
 }

@@ -48,6 +48,7 @@ public class OdometryCorrection extends Thread implements DPMConstants{
 				Sound.beep();
 				
 				double xDistanceFromGrid, yDistanceFromGrid;
+				
 				double	x = odometer.getX(),
 						y = odometer.getY();
 				

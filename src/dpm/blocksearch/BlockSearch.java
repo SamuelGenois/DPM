@@ -26,7 +26,10 @@ public class BlockSearch implements DPMConstants{
 	private static final int MOTOR_SCAN_SPEED = 90;
 	
 	private static final int	SCAN_RANGE = 61,
-								COLOR_SENSOR_RANGE = 2;
+								COLOR_SENSOR_RANGE = 2,
+								BLUE_BLOCK = 0,
+								WOODEN_BLOCK = 1,
+								FLOOR = 2;
 	
 	private int currentRegion;
 	private int currentScanPoint;
@@ -82,6 +85,9 @@ public class BlockSearch implements DPMConstants{
 		}
 	}
 	
+	/*
+	 * Constructs an array containing the order in witch the regions must be scanned
+	 */
 	private void createRegionOrder(){
 		//Stub
 		for(int i=1; i<16 ;i++)
@@ -123,6 +129,9 @@ public class BlockSearch implements DPMConstants{
 		}*/
 	}
 	
+	/*
+	 * returns an ArrayList of all of the 3 square x 3 square regions that overlap with the specified zone
+	 */
 	private static ArrayList<Integer> getRegions(int[] zone){
 		ArrayList<Integer> regions = new ArrayList<>();
 		
@@ -137,6 +146,9 @@ public class BlockSearch implements DPMConstants{
 		return regions;
 	}
 	
+	/*
+	 * Scans a 3 square x 3 square region, picking up any blue blocks it finds in the process.
+	 */
 	private void searchRegion(int region){
 		double[] scanPoint = new double[2];
 		
@@ -171,8 +183,8 @@ public class BlockSearch implements DPMConstants{
 			currentRegion = UPPER_RIGHT;
 		}
 		
-		scanPoint[0] = (region%4)* 3 * SQUARE_SIZE;
-		scanPoint[1] = (region/4)* 3 * SQUARE_SIZE;
+		scanPoint[0] = ((region%4)* 3 + 2) * SQUARE_SIZE;
+		scanPoint[1] = ((region/4)* 3 + 2) * SQUARE_SIZE;
 		
 		Repository.travelTo(scanPoint[0], scanPoint[1]);
 		
@@ -202,28 +214,17 @@ public class BlockSearch implements DPMConstants{
 		
 	}
 	
+	/*
+	 * Approaches a detected object, does appropriate interactions with it (i.e if the object is a blue foam block, picks it up),
+	 * and returns to the scan point with the appropriate orientation.
+	 */
 	private void checkObject(double[] scanPoint){
 		Repository.travelTo((usData[0]*100-COLOR_SENSOR_RANGE)*Math.cos(Math.toRadians(currentOrientation))+scanPoint[0], 
 				(usData[0]*100-COLOR_SENSOR_RANGE)*Math.sin(Math.toRadians(currentOrientation))+scanPoint[1]);
 		
-		if(identify() == 0){
-			Sound.beep();
-			leftMotor.setSpeed(-150);
-			rightMotor.setSpeed(-150);
-			try{Thread.sleep(BACKUP_TIME);} catch(InterruptedException e){}
-			leftMotor.stop(true);
-			rightMotor.stop();
-			Repository.turnTo(Repository.getAng()+180);
-			Repository.drop();
-			Repository.grab();
-			if(Repository.clawIsFull()){
-				greenZoneSearchable = false;
-				this.interrupt();
-			}
-		}
-		else{
-			Repository.turnTo(Repository.getAng()-15);
-			if(identify() == 0){
+		for(int i=0; i<2; i++){
+		
+			if(identify() == BLUE_BLOCK){
 				Sound.beep();
 				leftMotor.setSpeed(-150);
 				rightMotor.setSpeed(-150);
@@ -236,29 +237,29 @@ public class BlockSearch implements DPMConstants{
 				if(Repository.clawIsFull()){
 					greenZoneSearchable = false;
 					this.interrupt();
-					return;
 				}
+				break;
 			}
-			else{         
-				if (identify() == 1){
-					Sound.twoBeeps();
-					currentOrientation -= 30.0;
-					if(currentOrientation < 0.0)
-						currentOrientation += 360.0;
-					leftMotor.setSpeed(-150);
-					rightMotor.setSpeed(-150);
-					try{Thread.sleep(BACKUP_TIME);} catch(InterruptedException e){}
-				}
-				else{
-					Sound.buzz();
-					currentOrientation -= 10.0;
-					if(currentOrientation < 0.0)
-						currentOrientation += 360.0;
-					leftMotor.setSpeed(-150);
-					rightMotor.setSpeed(-150);
-					try{Thread.sleep(BACKUP_TIME);} catch(InterruptedException e){}
-				}
-			}
+			else if(i<1)
+				Repository.turnTo(Repository.getAng()-15);
+		}
+		if (identify() == WOODEN_BLOCK){
+			Sound.twoBeeps();
+			currentOrientation -= 30.0;
+			if(currentOrientation < 0.0)
+				currentOrientation += 360.0;
+			leftMotor.setSpeed(-150);
+			rightMotor.setSpeed(-150);
+			try{Thread.sleep(BACKUP_TIME);} catch(InterruptedException e){}
+		}
+		else{
+			Sound.buzz();
+			currentOrientation -= 10.0;
+			if(currentOrientation < 0.0)
+				currentOrientation += 360.0;
+			leftMotor.setSpeed(-150);
+			rightMotor.setSpeed(-150);
+			try{Thread.sleep(BACKUP_TIME);} catch(InterruptedException e){}
 		}
 		
 		leftMotor.stop(true);
@@ -267,16 +268,19 @@ public class BlockSearch implements DPMConstants{
 		Repository.turnTo(currentOrientation);	
 	}
 	
+	/*
+	 * Determines if the object under the light sensor is a blue foam block, a wooden block or nothing (the floor).
+	 */
 	private int identify(){
 		colorSensor.fetchSample(colorData, 0);
 		if (colorData[1] > colorData[0] && 1000*(colorData[0]+colorData[1]+colorData[2]) > 10){
-			return 0;
+			return BLUE_BLOCK;
 		}
 		else if (colorData[0] > colorData[1] && colorData[1] > 2*colorData[2] && 1000*(colorData[0]+colorData[1]+colorData[2]) > 100){
-			return 1;
+			return WOODEN_BLOCK;
 		}
 		else{
-			return 2;
+			return FLOOR;
 		}
 	}
 }

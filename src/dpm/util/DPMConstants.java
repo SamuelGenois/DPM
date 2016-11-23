@@ -25,6 +25,8 @@ public interface DPMConstants {
 	
 	public static final int UPPER_RIGHT = 3;
 	
+	public static final int AVOIDANCE_THRESHOLD = 25;	//Distance below which obstacle avoidance engaged
+	
 	//Motors
 	/**
 	 * The id of the motor operating the left wheel
