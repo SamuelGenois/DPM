@@ -103,22 +103,24 @@ public class Navigation implements DPMConstants{
 		if (error <= -180){
 			error +=360;
 		}
-		while (Math.abs(error) > DEG_ERR) {
-			error = angle - Repository.getAng();
-			if (error > 180){
-				error-=360;
-			}
-			if (error <= -180){
-				error +=360;
-			}
-			if (error < -180.0) {
-				this.setSpeeds(-SLOW, SLOW);
-			} else if (error < 0.0) {
-				this.setSpeeds(SLOW, -SLOW);
-			} else if (error > 180.0) {
-				this.setSpeeds(SLOW, -SLOW);
-			} else {
-				this.setSpeeds(-SLOW, SLOW);
+		if (Math.abs(error) > 2*DEG_ERR){
+			while (Math.abs(error) > DEG_ERR) {
+				error = angle - Repository.getAng();
+				if (error > 180){
+					error-=360;
+				}
+				if (error <= -180){
+					error +=360;
+				}
+				if (error < -180.0) {
+					this.setSpeeds(-SLOW, SLOW);
+				} else if (error < 0.0) {
+					this.setSpeeds(SLOW, -SLOW);
+				} else if (error > 180.0) {
+					this.setSpeeds(SLOW, -SLOW);
+				} else {
+					this.setSpeeds(-SLOW, SLOW);
+				}
 			}
 		}
 
