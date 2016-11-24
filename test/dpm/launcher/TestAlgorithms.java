@@ -6,8 +6,8 @@ public class TestAlgorithms {
 	
 	public static void main(String[] args){
 		//testScanPoint();
-		testOdoCorr();
-		//testCreateRegionOrder();
+		//testOdoCorr();
+		testCreateRegionOrder();
 	}
 	
 	private static void testScanPoint(){
@@ -65,17 +65,18 @@ public class TestAlgorithms {
 	private static void testCreateRegionOrder(){
 		int[] regionOrder = createRegionOrder(15, new int[]{1, 1, 3, 2}, null, true);
 		
-		/*for(int i=0; i<16; i++){
-			System.out.print(regionOrder[i] + " ");
-		}*/
-		
 		for(int i=3; i>=0; i--){
 			for(int j=0; j<4; j++){
-				for(int a=0; a<16; a++)
+				boolean orderFound = false;
+				for(int a=0; a<16; a++){
 					if(regionOrder[a] == i*4+j){
 						System.out.print(a);
+						orderFound = true;
 						break;
 					}
+				}
+				if(!orderFound)
+					System.out.print("-");
 				System.out.print("\t");
 			}
 			System.out.println();
