@@ -1,6 +1,7 @@
 package dpm.odometry;
 
 import dpm.util.DPMConstants;
+import dpm.util.Printer;
 import dpm.util.Sensors;
 import lejos.hardware.Sound;
 import lejos.robotics.SampleProvider;
@@ -8,13 +9,13 @@ import lejos.robotics.SampleProvider;
 /**
  * OdometryCorrection uses grid lines on the field to correct the odometer's (x,y) position
  * 
- * @author Samuel Genois
+ * @author Samuel Genois, Emile Traoré
  *
  */
 public class OdometryCorrection extends Thread implements DPMConstants{
 	
-	private static final long POLLING_DELAY = 50l;
-	private static final float LIGHT_THRESHOLD = 0.3f;
+	private static final long POLLING_DELAY = 150l;
+	private static final float LIGHT_THRESHOLD = 0.25f;
 	private static final double CORRECTION_THRESHOLD = 2.0;
 	
 	private final Odometer odometer;
@@ -42,6 +43,7 @@ public class OdometryCorrection extends Thread implements DPMConstants{
 	@Override
 	public void run(){
 		while(true){
+			Printer.getInstance().display(""+(int)odometer.getX()+"\n"+(int)odometer.getY());
 			sensor.fetchSample(sensorData, 0);
 			
 			if(sensorData[0] < LIGHT_THRESHOLD){
@@ -79,13 +81,9 @@ public class OdometryCorrection extends Thread implements DPMConstants{
 					yDistanceFromGrid = -y;
 				}
 				
-				//For debugging purposes, indicates where correction may occur
-				if (xDistanceFromGrid < CORRECTION_THRESHOLD || yDistanceFromGrid < CORRECTION_THRESHOLD){
-					Sound.beep();
-				}
-				
 				//If vertical line (x distance from grid is within correction threshold, not y distance): correct x coordinate
 				if(xDistanceFromGrid < CORRECTION_THRESHOLD && !(yDistanceFromGrid < CORRECTION_THRESHOLD)){
+					Sound.beep();
 						if(x>0){
 							//If x was not set to be increased, decrease it to the position of the previous vertical line
 							if (!increaseX){
@@ -106,6 +104,7 @@ public class OdometryCorrection extends Thread implements DPMConstants{
 				//If horizontal line (y distance from grid is within correction threshold, not x distance): correct y coordinate
 				//Same logic as for x
 				else if(yDistanceFromGrid < CORRECTION_THRESHOLD && !(xDistanceFromGrid < CORRECTION_THRESHOLD)){
+					Sound.beep();
 					if(y>0){
 						if (!increaseY){
 							odometer.setPosition(new double[] {0, Math.floor(y/SQUARE_SIZE)*SQUARE_SIZE, 0},
@@ -129,5 +128,4 @@ public class OdometryCorrection extends Thread implements DPMConstants{
 			try{Thread.sleep(POLLING_DELAY);}catch(InterruptedException e){}
 		}
 	}
-	
 }
