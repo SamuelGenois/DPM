@@ -10,22 +10,21 @@ import lejos.utility.Delay;
 * @author Will Liang
 */
 public class Claw {
-    private final int CAPACITY = 2;
-    private final RegulatedMotor    gripclawMotor, alignclawMotor;
+    private static final int	CAPACITY = 2,
+    							GRIP_STRENGTH = -450,
+    							HEIGHT = -200;
+    
+    private final RegulatedMotor    gripclawMotor;
     private final RegulatedMotor    liftMotor;
-    private int gripStrength = -450;
-    private int alignment = 300;
-    private int height = -200;
-    private static int blockCount = 0; //number of block currently on robot
+    
+    private int blockCount = 0; //number of block currently on robot
     
     
     /**
      * Constructor
      */
     public Claw(){
-        
         gripclawMotor = Motors.getMotor(Motors.LOWER_CLAW);
-        alignclawMotor = Motors.getMotor(Motors.UPPER_CLAW);
         liftMotor = Motors.getMotor(Motors.LIFT);
     }
     
@@ -41,19 +40,19 @@ public class Claw {
     
     public void grab(){        
         if(blockCount == 0){
-            gripclawMotor.rotate(gripStrength);
+            gripclawMotor.rotate(GRIP_STRENGTH);
             Delay.msDelay(10);
-            liftMotor.rotate(height*3);
+            liftMotor.rotate(HEIGHT*3);
             
         }else if(blockCount == 1){
-            gripclawMotor.rotate(gripStrength);
+            gripclawMotor.rotate(GRIP_STRENGTH);
             Delay.msDelay(10);
-            liftMotor.rotate(height*2);
+            liftMotor.rotate(HEIGHT*2);
             
         }else if(blockCount == 2){
-            gripclawMotor.rotate(gripStrength);
+            gripclawMotor.rotate(GRIP_STRENGTH);
             Delay.msDelay(10);
-            liftMotor.rotate(height);
+            liftMotor.rotate(HEIGHT);
         }
         blockCount++;
     }
@@ -66,21 +65,21 @@ public class Claw {
      */
     public void drop(){
         if(blockCount == 0){
-            gripclawMotor.rotate(-gripStrength);
-            liftMotor.rotate(-height*3);
+            gripclawMotor.rotate(-GRIP_STRENGTH);
+            liftMotor.rotate(-HEIGHT*3);
             
         }else if(blockCount == 1){
-            liftMotor.rotate(-height*2);
-            gripclawMotor.rotate(-gripStrength);
-            liftMotor.rotate(-height*1);
+            liftMotor.rotate(-HEIGHT*2);
+            gripclawMotor.rotate(-GRIP_STRENGTH);
+            liftMotor.rotate(-HEIGHT*1);
             
         }else if(blockCount == 2){
-            liftMotor.rotate(-height);
-            gripclawMotor.rotate(-gripStrength);
-            liftMotor.rotate(-height);
+            liftMotor.rotate(-HEIGHT);
+            gripclawMotor.rotate(-GRIP_STRENGTH);
+            liftMotor.rotate(-HEIGHT);
             
         }else if(blockCount == 3){ //when it's fully loaded with 3 blocks and ready to drop it in the GZ.
-            gripclawMotor.rotate(-gripStrength);
+            gripclawMotor.rotate(-GRIP_STRENGTH);
             blockCount = 0;
         }
         reset();
@@ -90,8 +89,8 @@ public class Claw {
      * Resets the claw back to the initial position
      */
     private void reset(){
-    	 liftMotor.rotate(height*3);
-    	 gripclawMotor.rotate(gripStrength);
+    	 liftMotor.rotate(HEIGHT*3);
+    	 gripclawMotor.rotate(GRIP_STRENGTH);
     }
     
     /**

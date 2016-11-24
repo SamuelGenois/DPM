@@ -1,10 +1,8 @@
 package dpm.launcher;
 
-import dpm.navigation.ObstacleAvoidance;
 import dpm.repository.Repository;
 import dpm.util.Printer;
 import lejos.hardware.Button;
-import lejos.hardware.Sound;
 
 public class TestAvoidance extends Thread{
 	public static void main(String[] args){
