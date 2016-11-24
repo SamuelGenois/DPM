@@ -121,7 +121,7 @@ public class Localization implements DPMConstants{
         
         // Travel to the origin, and then face North
 
-		Repository.travelTo(0, 0, false);
+		Repository.travelTo(0, 0, NO_AVOIDANCE);
 		Repository.turnTo(90);
 		Repository.setRT(2.1, 12.5); //Set the radius and track to navigation-expected values
 		Delay.msDelay(3000); // Delay

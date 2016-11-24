@@ -40,16 +40,14 @@ public class BlockSearch implements DPMConstants{
 	
 	private double currentOrientation;
 	
-	private float[] usData,
-					colorData;
+	private float[] usData;
 	
 	private boolean interrupted, greenZoneSearchable;
 	
 	private RegulatedMotor	leftMotor,
 							rightMotor;
 	
-	private final SampleProvider	usSensor,
-									colorSensor;
+	private final SampleProvider	usSensor;
 	
 	/**
 	 * Constructor
@@ -58,9 +56,6 @@ public class BlockSearch implements DPMConstants{
 		
 		usSensor = Sensors.getSensor(Sensors.US_ACTIVE);
 		usData = new float[usSensor.sampleSize()];
-		
-		colorSensor = Sensors.getSensor(Sensors.COLOR_BLOCK_ID);
-		colorData = new float[colorSensor.sampleSize()];
 		
 		leftMotor = Motors.getMotor(Motors.LEFT);
 		rightMotor = Motors.getMotor(Motors.RIGHT);
@@ -156,7 +151,7 @@ public class BlockSearch implements DPMConstants{
 			scanPoint[0] = (region%4)* 3 * SQUARE_SIZE;
 			scanPoint[1] = (region/4)* 3 * SQUARE_SIZE;
 			
-			Repository.travelTo(scanPoint[0], scanPoint[1], true);
+			Repository.travelTo(scanPoint[0], scanPoint[1], AVOID_OR_PICKUP);
 			
 			Repository.turnTo(currentOrientation);
 			
@@ -186,7 +181,7 @@ public class BlockSearch implements DPMConstants{
 		scanPoint[0] = ((region%4)* 3 + 2) * SQUARE_SIZE;
 		scanPoint[1] = ((region/4)* 3 + 2) * SQUARE_SIZE;
 		
-		Repository.travelTo(scanPoint[0], scanPoint[1], true);
+		Repository.travelTo(scanPoint[0], scanPoint[1], AVOID_OR_PICKUP);
 		
 		Repository.turnTo(currentOrientation);
 		
@@ -214,6 +209,43 @@ public class BlockSearch implements DPMConstants{
 		
 	}
 	
+	public boolean quickPickup(double distance){
+		double x = Repository.getX();
+		double y = Repository.getY();
+		double angle = Repository.getAng();
+		
+		Repository.travelTo(x + (distance-COLOR_SENSOR_RANGE) * Math.cos(Math.toRadians(angle)), y + (distance-COLOR_SENSOR_RANGE) * Math.sin(Math.toRadians(angle)), NO_AVOIDANCE);
+		
+		boolean blockPickedUp;
+		
+		if(identify() == BLUE_BLOCK){
+			Sound.beep();
+			leftMotor.setSpeed(-150);
+			rightMotor.setSpeed(-150);
+			try{Thread.sleep(BACKUP_TIME);} catch(InterruptedException e){}
+			leftMotor.stop(true);
+			rightMotor.stop();
+			Repository.turnTo(Repository.getAng()+180);
+			Repository.drop();
+			Repository.grab();
+			if(Repository.clawIsFull()){
+				greenZoneSearchable = false;
+				this.interrupt();
+			}
+			blockPickedUp = true;
+		}
+		else{
+			leftMotor.setSpeed(-150);
+			rightMotor.setSpeed(-150);
+			try{Thread.sleep(BACKUP_TIME);} catch(InterruptedException e){}
+			blockPickedUp = false;
+		}
+		
+		Repository.travelTo(x, y, NO_AVOIDANCE);
+		Repository.turnTo(angle);
+		return blockPickedUp;
+	}
+	
 	/*
 	 * Approaches a detected object, does appropriate interactions with it (i.e if the object is a blue foam block, picks it up),
 	 * and returns to the scan point with the appropriate orientation.
@@ -222,7 +254,7 @@ public class BlockSearch implements DPMConstants{
 	private void checkObject(double[] scanPoint){
 		//Moving towards where object was seen
 		Repository.travelTo((usData[0]*100-COLOR_SENSOR_RANGE)*Math.cos(Math.toRadians(currentOrientation))+scanPoint[0], 
-				(usData[0]*100-COLOR_SENSOR_RANGE)*Math.sin(Math.toRadians(currentOrientation))+scanPoint[1], false);
+				(usData[0]*100-COLOR_SENSOR_RANGE)*Math.sin(Math.toRadians(currentOrientation))+scanPoint[1], NO_AVOIDANCE);
 		
 		//Loop to check multiple points around object
 		for(int i=0; i<7; i++){
@@ -279,14 +311,18 @@ public class BlockSearch implements DPMConstants{
 		//Return to scanning point and keep scanning
 		leftMotor.stop(true);
 		rightMotor.stop();
-		Repository.travelTo(scanPoint[0], scanPoint[1], true);
+		Repository.travelTo(scanPoint[0], scanPoint[1], NO_AVOIDANCE);
 		Repository.turnTo(currentOrientation);	
 	}
 	
 	/*
 	 * Determines if the object under the light sensor is a blue foam block, a wooden block or nothing (the floor).
 	 */
-	private int identify(){
+	private static int identify(){
+		
+		SampleProvider colorSensor = Sensors.getSensor(Sensors.COLOR_BLOCK_ID);
+		float[] colorData = new float[colorSensor.sampleSize()];
+		
 		colorSensor.fetchSample(colorData, 0);
 		if (colorData[1] > colorData[0] && 1000*(colorData[0]+colorData[1]+colorData[2]) > 10){
 			return BLUE_BLOCK;

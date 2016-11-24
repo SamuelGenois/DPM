@@ -9,6 +9,12 @@ public interface DPMConstants {
 	
 	public static final double SQUARE_SIZE = 30.48;
 	
+	//Travel to modes
+	
+	public static final int NO_AVOIDANCE = 0,
+							AVOID_ALL = 1,
+							AVOID_OR_PICKUP = 2;
+	
 	//Roles
 	public static final int BUILDER = 0;
 	

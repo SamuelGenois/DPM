@@ -39,19 +39,19 @@ public class Finalization implements DPMConstants{
 		
 		if(!Repository.clawIsEmpty()){
 			Repository.travelTo((Repository.getGreenZone()[0] + Repository.getGreenZone()[2])*SQUARE_SIZE/2,
-								(Repository.getGreenZone()[1] + Repository.getGreenZone()[3])*SQUARE_SIZE/2, true);
+								(Repository.getGreenZone()[1] + Repository.getGreenZone()[3])*SQUARE_SIZE/2, AVOID_ALL);
 			Repository.drop();
 		}
 		
 		switch(Repository.getStartZone()){
 			case LOWER_LEFT:
-				Repository.travelTo(-FINAL_POSITON_OFFSET, -FINAL_POSITON_OFFSET, true);
+				Repository.travelTo(-FINAL_POSITON_OFFSET, -FINAL_POSITON_OFFSET, AVOID_ALL);
 			case LOWER_RIGHT:
-				Repository.travelTo(10*SQUARE_SIZE + FINAL_POSITON_OFFSET, -FINAL_POSITON_OFFSET, true);
+				Repository.travelTo(10*SQUARE_SIZE + FINAL_POSITON_OFFSET, -FINAL_POSITON_OFFSET, AVOID_ALL);
 			case UPPER_LEFT:
-				Repository.travelTo(-FINAL_POSITON_OFFSET, 10*SQUARE_SIZE + FINAL_POSITON_OFFSET, true);
+				Repository.travelTo(-FINAL_POSITON_OFFSET, 10*SQUARE_SIZE + FINAL_POSITON_OFFSET, AVOID_ALL);
 			case UPPER_RIGHT:
-				Repository.travelTo(10*SQUARE_SIZE + FINAL_POSITON_OFFSET, 10*SQUARE_SIZE + FINAL_POSITON_OFFSET, true);
+				Repository.travelTo(10*SQUARE_SIZE + FINAL_POSITON_OFFSET, 10*SQUARE_SIZE + FINAL_POSITON_OFFSET, AVOID_ALL);
 			default:
 		}
 		System.exit(0);

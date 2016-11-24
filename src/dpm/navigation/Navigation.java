@@ -61,7 +61,7 @@ public class Navigation implements DPMConstants{
 	 * @param x x coordinate of destination
 	 * @param y y coordinate of destination
 	 */
-	public boolean travelTo(double x, double y, boolean enableAvoidance) {
+	public boolean travelTo(double x, double y, int avoidanceSetting) {
 		travel_x = x;
 		travel_y = y;
 		double minAng;
@@ -73,13 +73,22 @@ public class Navigation implements DPMConstants{
 			this.turnTo(minAng, false);
 			this.setSpeeds(FAST, FAST);
 			
-			if(enableAvoidance){
+			if(avoidanceSetting != NO_AVOIDANCE){
 				int obstacleDistance = ObstacleAvoidance.look();
 				if(obstacleDistance < calculateDistance(x, y) && obstacleDistance < AVOIDANCE_THRESHOLD){
 					this.setSpeeds(0, 0);
-					if(!(new ObstacleAvoidance(this, travel_x, travel_y).avoid())){
-						Sound.buzz();
-						return false;
+					if(avoidanceSetting == AVOID_ALL){
+						if(!(new ObstacleAvoidance(this, travel_x, travel_y).avoid())){
+							Sound.buzz();
+							return false;
+						}
+					}
+					if(avoidanceSetting == AVOID_OR_PICKUP){
+						if(!Repository.quickPickup(obstacleDistance))
+							if(!(new ObstacleAvoidance(this, travel_x, travel_y).avoid())){
+								Sound.buzz();
+								return false;
+							}
 					}
 				}
 			}

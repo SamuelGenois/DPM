@@ -6,13 +6,14 @@ import dpm.finalization.Finalization;
 import dpm.localization.Localization;
 import dpm.navigation.Navigation;
 import dpm.odometry.Odometer;
+import dpm.util.DPMConstants;
 import dpm.launcher.Launcher;
 /**
  * Repository class that allows any subsystem to interact with any other subsystem indirectly
  * @author Samuel Genois, Emile Traoré
  *
  */
-public class Repository {
+public class Repository implements DPMConstants{
 
 	private static final long	INTERRUPT_DELAY = 5000l;
 	
@@ -47,8 +48,20 @@ public class Repository {
 	 * @param x the x coordinate of the destination
 	 * @param y the y coordinate of the destination
 	 */
-	public static boolean travelTo(double x, double y, boolean enableAvoidance){
-		return getNavigation().travelTo(x, y, enableAvoidance);
+	public static boolean travelTo(double x, double y, int avoidanceSetting){
+		return getNavigation().travelTo(x, y, avoidanceSetting);
+	}
+	
+	/**
+	 * Travels to the specified (x,y) coordinates, avoiding
+	 * obstacles along the way. Initializes the subsystem 
+	 * if it is not yet initialized.
+	 * 
+	 * @param x the x coordinate of the destination
+	 * @param y the y coordinate of the destination
+	 */
+	public static boolean travelTo(double x, double y){
+		return getNavigation().travelTo(x, y, AVOID_ALL);
 	}
 	
 	/**
@@ -248,5 +261,9 @@ public class Repository {
 		getOdometer().leftRadius = r;
 		getOdometer().rightRadius = r;
 		getOdometer().width = t;
+	}
+	
+	public static boolean quickPickup(double distance){
+		return getBlockSearch().quickPickup(distance);
 	}
 }

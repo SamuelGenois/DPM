@@ -1,12 +1,13 @@
 package dpm.launcher;
 
 import dpm.repository.Repository;
+import dpm.util.DPMConstants;
 import dpm.util.Printer;
 import dpm.util.RemoteBrickManager;
 import lejos.hardware.Button;
 import lejos.hardware.Sound;
 
-public class TestNavigation {
+public class TestNavigation implements DPMConstants{
 
 	private static final int	TEST_DELAY = 1000;
 	
@@ -55,19 +56,19 @@ public class TestNavigation {
 	private static void testTravelTo(){
 		Repository.setPosition(new double[] {0.0, 0.0, 0.0}, new boolean[] {true, true, true});
 		
-		Repository.travelTo(30, 30, false);
+		Repository.travelTo(30, 30, NO_AVOIDANCE);
 		Sound.beep();
 		try {Thread.sleep(TEST_DELAY);} catch (InterruptedException e) {}
 		
-		Repository.travelTo(0, 30, false);
+		Repository.travelTo(0, 30, NO_AVOIDANCE);
 		Sound.beep();
 		try {Thread.sleep(TEST_DELAY);} catch (InterruptedException e) {}
 		
-		Repository.travelTo(30, 0, false);
+		Repository.travelTo(30, 0, NO_AVOIDANCE);
 		Sound.beep();
 		try {Thread.sleep(TEST_DELAY);} catch (InterruptedException e) {}
 		
-		Repository.travelTo(0, 0, false);
+		Repository.travelTo(0, 0, NO_AVOIDANCE);
 		Sound.beep();
 		try {Thread.sleep(TEST_DELAY);} catch (InterruptedException e) {}
 		
