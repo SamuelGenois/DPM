@@ -47,8 +47,8 @@ public class Repository {
 	 * @param x the x coordinate of the destination
 	 * @param y the y coordinate of the destination
 	 */
-	public static boolean travelTo(double x, double y){
-		return getNavigation().travelTo(x, y);
+	public static boolean travelTo(double x, double y, boolean enableAvoidance){
+		return getNavigation().travelTo(x, y, enableAvoidance);
 	}
 	
 	/**

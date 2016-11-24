@@ -93,7 +93,9 @@ public class TestAlgorithms {
 		
 		ArrayList<Integer[]> edges = new ArrayList<>();
 		
+		//For every region i...
 		for(int i=0; i<16; i++){
+			//If 
 			if(!badZoneRegions.contains(i)){
 				if(i<12 && !badZoneRegions.contains(i+4)){
 					if((i%4)<3 && !badZoneRegions.contains(i+5))

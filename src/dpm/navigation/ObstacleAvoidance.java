@@ -1,6 +1,5 @@
 package dpm.navigation;
 
-import dpm.repository.Repository;
 import dpm.util.DPMConstants;
 import dpm.util.Motors;
 import dpm.util.Printer;
@@ -58,7 +57,7 @@ public class ObstacleAvoidance implements DPMConstants{
 		if (b == 0){
 			return Math.abs(navigation.getPosition()[0]-x_init)/a;
 		}
-		return Math.abs((Repository.getX()-x_init)/a-(Repository.getY()-y_init)/b);
+		return Math.abs((navigation.getPosition()[0]-x_init)/a-(navigation.getPosition()[1]-y_init)/b);
 	}
 	
 	/*

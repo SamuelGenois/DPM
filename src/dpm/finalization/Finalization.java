@@ -39,19 +39,19 @@ public class Finalization implements DPMConstants{
 		
 		if(!Repository.clawIsEmpty()){
 			Repository.travelTo((Repository.getGreenZone()[0] + Repository.getGreenZone()[2])*SQUARE_SIZE/2,
-								(Repository.getGreenZone()[1] + Repository.getGreenZone()[3])*SQUARE_SIZE/2);
+								(Repository.getGreenZone()[1] + Repository.getGreenZone()[3])*SQUARE_SIZE/2, true);
 			Repository.drop();
 		}
 		
 		switch(Repository.getStartZone()){
 			case LOWER_LEFT:
-				Repository.travelTo(-FINAL_POSITON_OFFSET, -FINAL_POSITON_OFFSET);
+				Repository.travelTo(-FINAL_POSITON_OFFSET, -FINAL_POSITON_OFFSET, true);
 			case LOWER_RIGHT:
-				Repository.travelTo(10*SQUARE_SIZE + FINAL_POSITON_OFFSET, -FINAL_POSITON_OFFSET);
+				Repository.travelTo(10*SQUARE_SIZE + FINAL_POSITON_OFFSET, -FINAL_POSITON_OFFSET, true);
 			case UPPER_LEFT:
-				Repository.travelTo(-FINAL_POSITON_OFFSET, 10*SQUARE_SIZE + FINAL_POSITON_OFFSET);
+				Repository.travelTo(-FINAL_POSITON_OFFSET, 10*SQUARE_SIZE + FINAL_POSITON_OFFSET, true);
 			case UPPER_RIGHT:
-				Repository.travelTo(10*SQUARE_SIZE + FINAL_POSITON_OFFSET, 10*SQUARE_SIZE + FINAL_POSITON_OFFSET);
+				Repository.travelTo(10*SQUARE_SIZE + FINAL_POSITON_OFFSET, 10*SQUARE_SIZE + FINAL_POSITON_OFFSET, true);
 			default:
 		}
 		System.exit(0);

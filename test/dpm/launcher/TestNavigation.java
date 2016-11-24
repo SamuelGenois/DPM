@@ -55,19 +55,19 @@ public class TestNavigation {
 	private static void testTravelTo(){
 		Repository.setPosition(new double[] {0.0, 0.0, 0.0}, new boolean[] {true, true, true});
 		
-		Repository.travelTo(30, 30);
+		Repository.travelTo(30, 30, false);
 		Sound.beep();
 		try {Thread.sleep(TEST_DELAY);} catch (InterruptedException e) {}
 		
-		Repository.travelTo(0, 30);
+		Repository.travelTo(0, 30, false);
 		Sound.beep();
 		try {Thread.sleep(TEST_DELAY);} catch (InterruptedException e) {}
 		
-		Repository.travelTo(30, 0);
+		Repository.travelTo(30, 0, false);
 		Sound.beep();
 		try {Thread.sleep(TEST_DELAY);} catch (InterruptedException e) {}
 		
-		Repository.travelTo(0, 0);
+		Repository.travelTo(0, 0, false);
 		Sound.beep();
 		try {Thread.sleep(TEST_DELAY);} catch (InterruptedException e) {}
 		

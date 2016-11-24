@@ -156,7 +156,7 @@ public class BlockSearch implements DPMConstants{
 			scanPoint[0] = (region%4)* 3 * SQUARE_SIZE;
 			scanPoint[1] = (region/4)* 3 * SQUARE_SIZE;
 			
-			Repository.travelTo(scanPoint[0], scanPoint[1]);
+			Repository.travelTo(scanPoint[0], scanPoint[1], true);
 			
 			Repository.turnTo(currentOrientation);
 			
@@ -186,7 +186,7 @@ public class BlockSearch implements DPMConstants{
 		scanPoint[0] = ((region%4)* 3 + 2) * SQUARE_SIZE;
 		scanPoint[1] = ((region/4)* 3 + 2) * SQUARE_SIZE;
 		
-		Repository.travelTo(scanPoint[0], scanPoint[1]);
+		Repository.travelTo(scanPoint[0], scanPoint[1], true);
 		
 		Repository.turnTo(currentOrientation);
 		
@@ -222,7 +222,8 @@ public class BlockSearch implements DPMConstants{
 	private void checkObject(double[] scanPoint){
 		//Moving towards where object was seen
 		Repository.travelTo((usData[0]*100-COLOR_SENSOR_RANGE)*Math.cos(Math.toRadians(currentOrientation))+scanPoint[0], 
-				(usData[0]*100-COLOR_SENSOR_RANGE)*Math.sin(Math.toRadians(currentOrientation))+scanPoint[1]);
+				(usData[0]*100-COLOR_SENSOR_RANGE)*Math.sin(Math.toRadians(currentOrientation))+scanPoint[1], false);
+		
 		//Loop to check multiple points around object
 		for(int i=0; i<7; i++){
 			//Check if object is block, if it is: back up, turn around, grab block, then exit object identification
@@ -278,7 +279,7 @@ public class BlockSearch implements DPMConstants{
 		//Return to scanning point and keep scanning
 		leftMotor.stop(true);
 		rightMotor.stop();
-		Repository.travelTo(scanPoint[0], scanPoint[1]);
+		Repository.travelTo(scanPoint[0], scanPoint[1], true);
 		Repository.turnTo(currentOrientation);	
 	}
 	
