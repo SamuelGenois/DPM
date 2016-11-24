@@ -10,7 +10,7 @@ import lejos.utility.Delay;
 * @author Will Liang
 */
 public class Claw {
-    private final int CAPACITY = 1;
+    private final int CAPACITY = 2;
     private final RegulatedMotor    gripclawMotor, alignclawMotor;
     private final RegulatedMotor    liftMotor;
     private int gripStrength = -450;
@@ -32,10 +32,6 @@ public class Claw {
     /**
      * Executes the following sequence of actions to acquire new block:
      * <br>
-     * <br> Alignment:
-     * <br> - close align claw
-     * <br> - open align claw
-     * <br> 
      * <br> Grab n Carry:
      * <br> - open the grip claw (slightly)
      * <br> - lower the grip claw
@@ -43,12 +39,7 @@ public class Claw {
      * <br> - lift the grip claw to height x
      */
     
-    public void grab(){
-        //do the alignment by closing the claw
-        alignclawMotor.rotate(-alignment);
-        //release/open the claw
-        alignclawMotor.rotate(alignment+100);
-        
+    public void grab(){        
         if(blockCount == 0){
             gripclawMotor.rotate(gripStrength);
             Delay.msDelay(10);

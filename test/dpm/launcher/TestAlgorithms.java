@@ -20,9 +20,9 @@ public class TestAlgorithms {
 	
 	private static void testOdoCorr(){
 		odoCorr(15, 15); //No correction expected
-		odoCorr(-1.999, 61.999); //No correction expected
+		odoCorr(30, 61.999); //No correction expected
 		odoCorr(31.999, 27.999); //x correction expected
-		odoCorr(7, 118.001); //y correction expected
+		odoCorr(7, 118.1); //y correction expected
 	}
 	
 	private static void odoCorr(double x, double y){
@@ -30,23 +30,13 @@ public class TestAlgorithms {
 		final double SQUARE_SIZE = 30.0;
 		final double CORRECTION_THRESHOLD = 2.0;
 		
-		double xDistanceFromGrid, yDistanceFromGrid;
+		double xDistanceFromGrid = x%SQUARE_SIZE;
+		if(xDistanceFromGrid > SQUARE_SIZE/2)
+			xDistanceFromGrid = SQUARE_SIZE - xDistanceFromGrid;
 		
-		if(x>0){
-			xDistanceFromGrid = x%SQUARE_SIZE;
-			if(xDistanceFromGrid > SQUARE_SIZE/2)
-				xDistanceFromGrid = SQUARE_SIZE - xDistanceFromGrid;
-		}
-		else
-			xDistanceFromGrid = -x;
-		
-		if(y>0){
-			yDistanceFromGrid = y%SQUARE_SIZE;
-			if(yDistanceFromGrid > SQUARE_SIZE/2)
-				yDistanceFromGrid = SQUARE_SIZE - yDistanceFromGrid;
-		}
-		else
-			yDistanceFromGrid = -y;
+		double yDistanceFromGrid = y%SQUARE_SIZE;
+		if(yDistanceFromGrid > SQUARE_SIZE/2)
+			yDistanceFromGrid = SQUARE_SIZE - yDistanceFromGrid;
 		
 		if(xDistanceFromGrid < CORRECTION_THRESHOLD){
 			if(!(yDistanceFromGrid < CORRECTION_THRESHOLD))

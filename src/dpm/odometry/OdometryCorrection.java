@@ -45,51 +45,87 @@ public class OdometryCorrection extends Thread implements DPMConstants{
 			sensor.fetchSample(sensorData, 0);
 			
 			if(sensorData[0] < LIGHT_THRESHOLD){
-				Sound.beep();
 				
+				boolean increaseX = false, increaseY = false;
 				double xDistanceFromGrid, yDistanceFromGrid;
-				
+				//Get x and y coordinates
 				double	x = odometer.getX(),
 						y = odometer.getY();
-				
+				//Calculate distance from grid
+				//If x-position positive, distance is x-position mod spacing between lines
+				//If this is larger than half the distance between lines, distance is spacing between lines - value calculated above
+				//and set that x will be increased during adjustment, not decreased
 				if(x>0){
 					xDistanceFromGrid = x%SQUARE_SIZE;
-					if(xDistanceFromGrid > SQUARE_SIZE/2)
+					if(xDistanceFromGrid > SQUARE_SIZE/2){
 						xDistanceFromGrid = SQUARE_SIZE - xDistanceFromGrid;
+						increaseX = true;
+					}
 				}
-				else
+				//If x-position negative, only possible distance from a line is negative of x-position
+				else{
 					xDistanceFromGrid = -x;
+				}
 				
+				//Same logic for y coordinate as for x
 				if(y>0){
 					yDistanceFromGrid = y%SQUARE_SIZE;
-					if(yDistanceFromGrid > SQUARE_SIZE/2)
+					if(yDistanceFromGrid > SQUARE_SIZE/2){
 						yDistanceFromGrid = SQUARE_SIZE - yDistanceFromGrid;
+						increaseY = true;
+					}
 				}
-				else
-					yDistanceFromGrid = -y;
-				
-				if(xDistanceFromGrid < CORRECTION_THRESHOLD){
-					if(!(yDistanceFromGrid < CORRECTION_THRESHOLD))
-						if(x>0)
-							odometer.setPosition(new double[] {Math.floor(x/SQUARE_SIZE)*SQUARE_SIZE, 0, 0},
-												new boolean[] {true, false, false});
-						else
-							odometer.setPosition(new double[] {0, 0, 0}, new boolean[] {true, false, false});
-				}
-				else if(yDistanceFromGrid < CORRECTION_THRESHOLD)
-					if(y>0)
-						odometer.setPosition(new double[] {0, Math.floor(y/SQUARE_SIZE)*SQUARE_SIZE, 0},
-								new boolean[] {false, true, false});
-					else
-						odometer.setPosition(new double[] {0, 0, 0}, new boolean[] {false, true, false});
-				
 				else{
+					yDistanceFromGrid = -y;
+				}
+				
+				//For debugging purposes, indicates where correction may occur
+				if (xDistanceFromGrid < CORRECTION_THRESHOLD || yDistanceFromGrid < CORRECTION_THRESHOLD){
+					Sound.beep();
+				}
+				
+				//If vertical line (x distance from grid is within correction threshold, not y distance): correct x coordinate
+				if(xDistanceFromGrid < CORRECTION_THRESHOLD && !(yDistanceFromGrid < CORRECTION_THRESHOLD)){
+						if(x>0){
+							//If x was not set to be increased, decrease it to the position of the previous vertical line
+							if (!increaseX){
+								odometer.setPosition(new double[] {Math.floor(x/SQUARE_SIZE)*SQUARE_SIZE, 0, 0},
+												new boolean[] {true, false, false});
+							}
+							//If x was set to be increased, increase it to the position of the next vertical line
+							else{
+								odometer.setPosition(new double[] {Math.ceil(x/SQUARE_SIZE)*SQUARE_SIZE, 0, 0},
+										new boolean[] {true, false, false});
+							}
+						}
+						//If x is negative, only correction that makes sense is 0
+						else{
+							odometer.setPosition(new double[] {0, 0, 0}, new boolean[] {true, false, false});
+						}
+				}
+				//If horizontal line (y distance from grid is within correction threshold, not x distance): correct y coordinate
+				//Same logic as for x
+				else if(yDistanceFromGrid < CORRECTION_THRESHOLD && !(xDistanceFromGrid < CORRECTION_THRESHOLD)){
+					if(y>0){
+						if (!increaseY){
+							odometer.setPosition(new double[] {0, Math.floor(y/SQUARE_SIZE)*SQUARE_SIZE, 0},
+								new boolean[] {false, true, false});
+						}
+						else{
+							odometer.setPosition(new double[] {0, Math.ceil(y/SQUARE_SIZE)*SQUARE_SIZE, 0},
+									new boolean[] {false, true, false});
+						}
+					}
+					else{
+						odometer.setPosition(new double[] {0, 0, 0}, new boolean[] {false, true, false});
+					}
+				}
+				//If line crossing (both x distance or y distance from grid are within correction threshold): skip correction to prevent mistakes
+				//For debugging purposes, indicates where correction has not occurred due to line crossing
+				else if (yDistanceFromGrid < CORRECTION_THRESHOLD && xDistanceFromGrid < CORRECTION_THRESHOLD){
 					Sound.buzz();
 				}
-					
 			}
-				
-			
 			try{Thread.sleep(POLLING_DELAY);}catch(InterruptedException e){}
 		}
 	}

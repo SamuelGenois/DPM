@@ -14,8 +14,7 @@ import dpm.util.Sensors;
  */
 public class ObstacleAvoidance implements DPMConstants{
 	
-	private final static double	PROB_CONSTANT = 4,					//The proportional constant by which the error is multiplied
-								MINIMUM_DETOUR_LENGTH = 10;
+	private final static double	PROB_CONSTANT = 4;					//The proportional constant by which the error is multiplied
 
 	private final static int	FORWARD = 0,
 								LEFT = 1,
@@ -30,6 +29,7 @@ public class ObstacleAvoidance implements DPMConstants{
 	
 	private int direction;
 	private double x_init, y_init, a, b, initialDistanceFromDestination;
+	private boolean startedAvoidance;
 	
 	/**
 	 * Constructor
@@ -42,32 +42,38 @@ public class ObstacleAvoidance implements DPMConstants{
 		this.navigation = navigation;
 		this.x_init = this.navigation.getPosition()[0];
 		this.y_init = this.navigation.getPosition()[1];
-		this.a = (x_fin-x_init)/Math.sqrt((x_fin-x_init)*(x_fin-x_init)+b*b);
+		this.a = (x_fin-x_init)/Math.sqrt((x_fin-x_init)*(x_fin-x_init)+(y_fin-y_init)*(y_fin-y_init));
 		this.b = (y_fin-y_init)/Math.sqrt((x_fin-x_init)*(x_fin-x_init)+(y_fin-y_init)*(y_fin-y_init));
 		this.initialDistanceFromDestination = navigation.calculateDistance(x_fin, y_fin);
+		this.startedAvoidance = false;
+	}
+	
+	/*
+	 * Calculates the error (deviation of robot from its initial path)
+	 */
+	private double calculateError(){
+		if (a == 0){
+			return Math.abs(navigation.getPosition()[1]-y_init)/b;
+		}
+		if (b == 0){
+			return Math.abs(navigation.getPosition()[0]-x_init)/a;
+		}
+		return Math.abs((Repository.getX()-x_init)/a-(Repository.getY()-y_init)/b);
 	}
 	
 	/*
 	 * Returns true as long as the robot is not done avoiding the obstacle
 	 */
 	private boolean avoiding(){
-		
-		if(a == 0){
-			Printer.getInstance().display(
-					Double.toString(Math.abs(navigation.getPosition()[1]-y_init)/b));
-			return Math.abs(navigation.getPosition()[1]-y_init)/b < 2.0;
+		Printer.getInstance().display(""+calculateError());
+		if (calculateError() > 8.0){
+			startedAvoidance = true;
 		}
 		
-		if(b == 0){
-			Printer.getInstance().display(
-					Double.toString(Math.abs(navigation.getPosition()[0]-x_init)/a));
-			return Math.abs(navigation.getPosition()[0]-x_init)/a < 2.0;
+		if(startedAvoidance && calculateError() < 4.0){
+			return false;
 		}
-		
-		Printer.getInstance().display(
-				Double.toString(Math.abs((Repository.getX()-x_init)/a-(Repository.getY()-y_init)/b)));	
-		return navigation.calculateDistance(x_init, y_init) < MINIMUM_DETOUR_LENGTH
-				|| Math.abs((Repository.getX()-x_init)/a-(Repository.getY()-y_init)/b) < 2.0;
+		return true;
 	}
 	
 	/*

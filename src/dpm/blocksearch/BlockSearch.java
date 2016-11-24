@@ -75,14 +75,14 @@ public class BlockSearch implements DPMConstants{
 		currentScanPoint = LOWER_LEFT;
 		currentOrientation = 90.0;
 		
-		if(Repository.getRole() == BUILDER){
+		/*if(Repository.getRole() == BUILDER){
 			goodZoneRegions = getRegions(Repository.getGreenZone());
 			badZoneRegions = getRegions(Repository.getRedZone());
 		}
 		else {
 			goodZoneRegions = getRegions(Repository.getRedZone());
 			badZoneRegions = getRegions(Repository.getGreenZone());
-		}
+		}*/
 	}
 	
 	/*
@@ -217,13 +217,15 @@ public class BlockSearch implements DPMConstants{
 	/*
 	 * Approaches a detected object, does appropriate interactions with it (i.e if the object is a blue foam block, picks it up),
 	 * and returns to the scan point with the appropriate orientation.
+	 * Checks in a 90 degree cone in front of robot to avoid false positives due to sensor's wide cone 
 	 */
 	private void checkObject(double[] scanPoint){
+		//Moving towards where object was seen
 		Repository.travelTo((usData[0]*100-COLOR_SENSOR_RANGE)*Math.cos(Math.toRadians(currentOrientation))+scanPoint[0], 
 				(usData[0]*100-COLOR_SENSOR_RANGE)*Math.sin(Math.toRadians(currentOrientation))+scanPoint[1]);
-		
-		for(int i=0; i<2; i++){
-		
+		//Loop to check multiple points around object
+		for(int i=0; i<7; i++){
+			//Check if object is block, if it is: back up, turn around, grab block, then exit object identification
 			if(identify() == BLUE_BLOCK){
 				Sound.beep();
 				leftMotor.setSpeed(-150);
@@ -240,28 +242,40 @@ public class BlockSearch implements DPMConstants{
 				}
 				break;
 			}
-			else if(i<1)
-				Repository.turnTo(Repository.getAng()-15);
+			//Check if object is obstacle, if it is: back up, then exit object identification
+			//Also do not scan the next 30 degrees to avoid seeing block again
+			else if (identify() == WOODEN_BLOCK){
+				Sound.twoBeeps();
+				currentOrientation -= 30.0;
+				if(currentOrientation < 0.0)
+					currentOrientation += 360.0;
+				leftMotor.setSpeed(-150);
+				rightMotor.setSpeed(-150);
+				try{Thread.sleep(BACKUP_TIME);} catch(InterruptedException e){}
+				break;
+			}
+			//If no object has been identified, move in a cone of 90 degrees centered around the object and try to identify again
+			else if(i<6){
+				if (i == 3){
+					Repository.turnTo(Repository.getAng()+15*6);
+				}
+				else{
+					Repository.turnTo(Repository.getAng()-15);
+				}
+			}
+			//If no object identified for the whole 90 degree sweep, definite false positive: back up, then exit object identification
+			//Also do not scan the next 10 degrees to avoid seeing the same false positive again
+			else{
+				Sound.buzz();
+				currentOrientation -= 10.0;
+				if(currentOrientation < 0.0)
+					currentOrientation += 360.0;
+				leftMotor.setSpeed(-150);
+				rightMotor.setSpeed(-150);
+				try{Thread.sleep(BACKUP_TIME);} catch(InterruptedException e){}
+			}
 		}
-		if (identify() == WOODEN_BLOCK){
-			Sound.twoBeeps();
-			currentOrientation -= 30.0;
-			if(currentOrientation < 0.0)
-				currentOrientation += 360.0;
-			leftMotor.setSpeed(-150);
-			rightMotor.setSpeed(-150);
-			try{Thread.sleep(BACKUP_TIME);} catch(InterruptedException e){}
-		}
-		else{
-			Sound.buzz();
-			currentOrientation -= 10.0;
-			if(currentOrientation < 0.0)
-				currentOrientation += 360.0;
-			leftMotor.setSpeed(-150);
-			rightMotor.setSpeed(-150);
-			try{Thread.sleep(BACKUP_TIME);} catch(InterruptedException e){}
-		}
-		
+		//Return to scanning point and keep scanning
 		leftMotor.stop(true);
 		rightMotor.stop();
 		Repository.travelTo(scanPoint[0], scanPoint[1]);
