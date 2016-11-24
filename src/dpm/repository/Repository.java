@@ -6,7 +6,6 @@ import dpm.finalization.Finalization;
 import dpm.localization.Localization;
 import dpm.navigation.Navigation;
 import dpm.odometry.Odometer;
-import java.util.HashMap;
 import dpm.launcher.Launcher;
 /**
  * Repository class that allows any subsystem to interact with any other subsystem indirectly
@@ -48,8 +47,8 @@ public class Repository {
 	 * @param x the x coordinate of the destination
 	 * @param y the y coordinate of the destination
 	 */
-	public static void travelTo(double x, double y){
-		getNavigation().travelTo(x, y);
+	public static boolean travelTo(double x, double y){
+		return getNavigation().travelTo(x, y);
 	}
 	
 	/**
@@ -67,9 +66,9 @@ public class Repository {
 	 * @param x The x coordinate of the point
 	 * @param y The y coordinate of the point
 	 */
-	public static double calculateDistance(double x, double y){
+	/*public static double calculateDistance(double x, double y){
 		return getNavigation().calculateDistance(x, y);
-	}
+	}*/
 	
 	/**
 	 * Interrupts a running travel operation
@@ -243,13 +242,6 @@ public class Repository {
 	 */
 	public static boolean clawIsFull(){
 		return pincer.clawIsFull();
-	}
-	
-	/**
-	 * Resets the claw position
-	 */
-	public static void clawReset(){
-		pincer.reset();
 	}
 	
 	public static void setRT(double r, double t){

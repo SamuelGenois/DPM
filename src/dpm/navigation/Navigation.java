@@ -3,12 +3,8 @@ package dpm.navigation;
 import dpm.repository.Repository;
 import dpm.util.DPMConstants;
 import dpm.util.Motors;
-import dpm.util.Printer;
-import dpm.util.Sensors;
 import lejos.hardware.Sound;
 import lejos.robotics.RegulatedMotor;
-import lejos.robotics.SampleProvider;
-import dpm.navigation.ObstacleAvoidance;
 
 /**
  * File: Navigation.java
@@ -17,7 +13,7 @@ import dpm.navigation.ObstacleAvoidance;
  * Fall 2011
  * Ported to EV3 by: Francois Ouellet Delorme
  * Fall 2015
- * Modified by: Samuel Genois and Emile Traorï¿½
+ * Modified by: Samuel Genois and Emile Traoré
  * Fall 2016
  * 
  * Movement control class (turnTo, travelTo, flt, setSpeeds...)
@@ -25,14 +21,10 @@ import dpm.navigation.ObstacleAvoidance;
 public class Navigation implements DPMConstants{
 	private final static int FAST = 200, SLOW = 100;						//Motor speed parameters
 	private final static double DEG_ERR = 3.0, CM_ERR = 1.0;				//Tolerances for turnTo and travelTo
-	private final static int AVOIDANCE_THRESHOLD = 20;						//Distance below which obstacle avoidance engaged
 	private RegulatedMotor leftMotor, rightMotor;							//Motor objects
-	private SampleProvider usSensor;										//Sensor object
-	private float[] usData;													//Sensor data array	
-	private boolean interrupted;											//Determines whether methods are interrupted or not
-	private int distance;													//US sensor distance in cm
+	boolean interrupted;													//Determines whether methods are interrupted or not
 	private double travel_x, travel_y;										//Coordinates of current travel
-	
+
 	/**
 	 * Constructor
 	 */
@@ -40,47 +32,21 @@ public class Navigation implements DPMConstants{
 
 		this.leftMotor = Motors.getMotor(Motors.LEFT);
 		this.rightMotor = Motors.getMotor(Motors.RIGHT);
-		this.usSensor = Sensors.getSensor(Sensors.US_ACTIVE);
-		this.usData = new float[usSensor.sampleSize()];
 		// set acceleration
 		this.leftMotor.setAcceleration(WHEEL_MOTOR_ACCELERATION);
 		this.rightMotor.setAcceleration(WHEEL_MOTOR_ACCELERATION);
 	}
-	
-	/**
-	 * Thread method that polls the ultrasonic sensor
-	 * <br>If the ultrasonic sensor distance drops below a threshold, engage obstacle avoidance
-	 */
-	public boolean getDistance(){
-		usSensor.fetchSample(usData,0);
-		distance=(int)(usData[0]*100.0);
-		if (distance < AVOIDANCE_THRESHOLD  && distance != 0){
-			this.setSpeeds(0,0);
-			Sound.buzz();
-			return new ObstacleAvoidance(travel_x, travel_y).doWallAvoidance();
-		}
-		Printer.getInstance().display("   "+(int)Repository.getX()+"   "+(int)Repository.getY());
-		return true;
-	}
 
-	/*
-	 * Functions to set the motor speeds jointly
+	/**
+	 * Function to set the motor speeds jointly
+	 * @param lSpd the speed of the left motor
+	 * @param rSpd the speed of the right motor
 	 */
-	private void setSpeeds(int lSpd, int rSpd) {
+	void setSpeeds(int lSpd, int rSpd) {
 		this.leftMotor.setSpeed(lSpd);
 		this.rightMotor.setSpeed(rSpd);
 	}
 
-	/**
-	 * Float the two motors jointly
-	 */
-	public void setFloat() {
-		this.leftMotor.stop();
-		this.rightMotor.stop();
-		this.leftMotor.flt(true);
-		this.rightMotor.flt(true);
-	}
-	
 	/**
 	 * Interrupts currently running travelTo or turnTo methods.
 	 */
@@ -95,7 +61,7 @@ public class Navigation implements DPMConstants{
 	 * @param x x coordinate of destination
 	 * @param y y coordinate of destination
 	 */
-	public void travelTo(double x, double y) {
+	public boolean travelTo(double x, double y) {
 		travel_x = x;
 		travel_y = y;
 		double minAng;
@@ -105,14 +71,20 @@ public class Navigation implements DPMConstants{
 			if (minAng < 0)
 				minAng += 360.0;
 			this.turnTo(minAng, false);
-			boolean keepMoving = getDistance();
-			if (!keepMoving){
-				break;
-			}
 			this.setSpeeds(FAST, FAST);
+			
+			int obstacleDistance = ObstacleAvoidance.look();
+			if(obstacleDistance < calculateDistance(x, y) && obstacleDistance < AVOIDANCE_THRESHOLD){
+				this.setSpeeds(0, 0);
+				if(!(new ObstacleAvoidance(this, travel_x, travel_y).avoid())){
+					Sound.buzz();
+					return false;
+				}
+			}
+			
 		}
 		this.setSpeeds(0, 0);
-		Sound.beep();
+		return true;
 	}
 
 	/**
@@ -123,33 +95,37 @@ public class Navigation implements DPMConstants{
 	 * @param whether or not to stop the motors when the turn is completed
 	 */
 	public void turnTo(double angle, boolean stop) {
+		interrupted = true;
 		double error = angle - Repository.getAng();
 		if (error > 180){
 			error-=360;
 		}
 		if (error <= -180){
-			error+=360;
+			error +=360;
 		}
-		if (Math.abs(error) > 2*DEG_ERR){
-			while (Math.abs(error) > DEG_ERR) {
-					error = angle - Repository.getAng();
-					if (error > 180){
-						error-=360;
-					}
-					if (error < -180.0) {
-						this.setSpeeds(-SLOW, SLOW);
-					} else if (error < 0.0) {
-						this.setSpeeds(SLOW, -SLOW);
-					} else if (error > 180.0) {
-						this.setSpeeds(SLOW, -SLOW);
-					} else {
-						this.setSpeeds(-SLOW, SLOW);
-					}
+		while (Math.abs(error) > DEG_ERR) {
+			error = angle - Repository.getAng();
+			if (error > 180){
+				error-=360;
+			}
+			if (error <= -180){
+				error +=360;
+			}
+			if (error < -180.0) {
+				this.setSpeeds(-SLOW, SLOW);
+			} else if (error < 0.0) {
+				this.setSpeeds(SLOW, -SLOW);
+			} else if (error > 180.0) {
+				this.setSpeeds(SLOW, -SLOW);
+			} else {
+				this.setSpeeds(-SLOW, SLOW);
 			}
 		}
+
 		if (stop) {
 			this.setSpeeds(0, 0);
 		}
+		interrupted = false;
 	}
 	
 	/**
@@ -162,22 +138,22 @@ public class Navigation implements DPMConstants{
 	}
 	
 	/**
-	 * Go forward a set distance in cm
-	 * 
-	 * @param distance the forward distance to travel
-	 */
-	public void goForward(double distance) {
-		this.travelTo(Math.cos(Math.toRadians(Repository.getAng())) * distance, Math.cos(Math.toRadians(Repository.getAng())) * distance);
-
-	}
-	
-	/**
 	 * Calculates the euclidean distance between point (x,y) and the robot's current location
+	 * 
 	 * @param x The x coordinate of the destination
 	 * @param y The y coordinate of the destination
 	 * @return The euclidean distance
 	 */
-	public double calculateDistance(double x, double y){
+	double calculateDistance(double x, double y){
 		return Math.sqrt(Math.pow(y-Repository.getY(), 2.0)+Math.pow(x-Repository.getX(), 2.0));
+	}
+	
+	/**
+	 * Returns the position of the robot.
+	 * 
+	 * @return the position of the robot
+	 */
+	double[] getPosition(){
+		return Repository.getPosition();
 	}
 }

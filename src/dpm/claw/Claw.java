@@ -32,10 +32,6 @@ public class Claw {
     /**
      * Executes the following sequence of actions to acquire new block:
      * <br>
-     * <br> Alignment:
-     * <br> - close align claw
-     * <br> - open align claw
-     * <br> 
      * <br> Grab n Carry:
      * <br> - open the grip claw (slightly)
      * <br> - lower the grip claw
@@ -43,12 +39,7 @@ public class Claw {
      * <br> - lift the grip claw to height x
      */
     
-    public void grab(){
-//        //do the alignment by closing the claw
-//        alignclawMotor.rotate(-alignment);
-//        //release/open the claw
-//        alignclawMotor.rotate(alignment+100);
-        
+    public void grab(){        
         if(blockCount == 0){
             gripclawMotor.rotate(gripStrength);
             Delay.msDelay(10);
@@ -92,12 +83,13 @@ public class Claw {
             gripclawMotor.rotate(-gripStrength);
             blockCount = 0;
         }
+        reset();
     }
     
-    /**
+    /*
      * Resets the claw back to the initial position
      */
-    public void reset(){
+    private void reset(){
     	 liftMotor.rotate(height*3);
     	 gripclawMotor.rotate(gripStrength);
     }

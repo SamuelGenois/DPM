@@ -76,7 +76,7 @@ public class Odometer implements TimerListener {
 			this.timer.start();
 		} else
 			this.timer = null;
-		new OdometryCorrection(this);
+		//new OdometryCorrection(this);
 	}
 	
 	// functions to start/stop the timerlistener

@@ -1,158 +1,120 @@
 package dpm.navigation;
 
-
-import lejos.hardware.Sound;
-import lejos.robotics.RegulatedMotor;
-import lejos.robotics.SampleProvider;
-import lejos.utility.Delay;
 import dpm.repository.Repository;
-import dpm.util.*;
+import dpm.util.DPMConstants;
+import dpm.util.Motors;
+import dpm.util.Printer;
+import dpm.util.Sensors;
 
 /**
- * A class containing methods related to obstacle avoidance
+ * This class handles the routines Navigation uses to avoid obstacles in its path.
  * 
- * @author Emile Traoré
- * 
+ * @author Samuel Genois, Emile Traoré
+ *
  */
+public class ObstacleAvoidance implements DPMConstants{
+	
+	private final static double	PROB_CONSTANT = 4;					//The proportional constant by which the error is multiplied
 
-public class ObstacleAvoidance{
+	private final static int	FORWARD = 0,
+								LEFT = 1,
+								RIGHT = 2,
+								SENSOR_TURN_ANGLE = 60,
+								MOTOR_STRAIGHT = 150,				//The default speed of a motor
+								MAX_VALUE = 50,						//The maximum offset that can be added or removed from a motor's speed
+								BAND_CENTER = AVOIDANCE_THRESHOLD,	//The nominal distance from the wall
+								BAND_WIDTH = 5;						//The maximum deviation from the nominal distance before adjustment
 	
+	private Navigation navigation;
 	
-	private final int bandCenter_left = 22;		//The nominal distance from the wall (for right side avoid)
-	private final int bandCenter_right = 22;	//The nominal distance from the wall (for right side avoid)
-	private final int bandwidth = 8;		//The maximum deviation from the nominal distance before adjustment
-	private double propConstant = 8;		//The proportional constant by which the error is multiplied
-	private final int MOTOR_STRAIGHT = 150;	//The default speed of a motor
-	private final int MAX_VALUE = 100;		//The maximum offset that can be added or removed from a motor's speed/
-	private int distance;					//Current distance from the wall
-	private int bandCenter;
-	
-	private RegulatedMotor leftMotor, rightMotor, sensorMotor;	//Motor variables
-	private SampleProvider usSensor;							//Sensor variable
-	private float[] usData;										//Sensor return array
-	private double x_init, y_init, x_fin, y_fin;				//Initial/final position in x/y coordinate
-	private double a, b;									//Parameter for slope of the line in symmetric form
-	
-	private int filterControl = 0;			//Variable for the filter, when incremented past FILTER_MAX the actual distance is adjusted to sensor distance
-	private final int FILTER_OUT = 4;		//Variable for the filter, sets the maximum number of samples before actual distance is adjusted to sensor distance
-	private final int MIN_DISTANCE = 100;	//Minimum distance considered for filtering
-	
-	
-	private boolean left_direction;			//Determines whether the wall is avoided from the left (true) or right (false)
-	private boolean avoidanceStarted;		//Determines if wall avoidance has started (robot started maneuvering)
-	private boolean avoiding;				//Determines if wall avoidance is currently running
-	private boolean scanning;				//Determines if US sensor should be scanning
-	private boolean filter;					//Determines if filtering of US data is enabled
+	private int direction;
+	private double x_init, y_init, a, b, initialDistanceFromDestination;
+	private boolean startedAvoidance;
 	
 	/**
 	 * Constructor
+	 * 
+	 * @param navigation the Navigation object using this ObstacleAvoidance
 	 * @param x_fin	The x coordinate of the destination
 	 * @param y_fin	The y coordinate of the destination
 	 */
-	public ObstacleAvoidance(double x_fin, double y_fin) {
-		//Default Constructor
-		this.leftMotor = Motors.getMotor(Motors.LEFT);
-		this.rightMotor = Motors.getMotor(Motors.RIGHT);
-		this.sensorMotor = Motors.getMotor(Motors.SENSOR);
-		this.usSensor = Sensors.getSensor(Sensors.US_ACTIVE);
-		this.usData = new float[usSensor.sampleSize()];
-		this.x_init = Repository.getX();
-		this.y_init = Repository.getY();
-		this.x_fin = x_fin;
-		this.y_fin = y_fin;
-		this.a = x_fin-x_init;
-		this.b = y_fin-y_init;
-		this.a = a/Math.sqrt(a*a+b*b);
-		this.b = b/Math.sqrt(a*a+b*b);
-		this.avoiding = true;
-		this.avoidanceStarted = false;
-		this.scanning = true;
-		this.filter = false;
+	public ObstacleAvoidance(Navigation navigation, double x_fin, double y_fin) {
+		this.navigation = navigation;
+		this.x_init = this.navigation.getPosition()[0];
+		this.y_init = this.navigation.getPosition()[1];
+		this.a = (x_fin-x_init)/Math.sqrt((x_fin-x_init)*(x_fin-x_init)+(y_fin-y_init)*(y_fin-y_init));
+		this.b = (y_fin-y_init)/Math.sqrt((x_fin-x_init)*(x_fin-x_init)+(y_fin-y_init)*(y_fin-y_init));
+		this.initialDistanceFromDestination = navigation.calculateDistance(x_fin, y_fin);
+		this.startedAvoidance = false;
 	}
 	
-	/**
-	 * Run method
-	 * <br>Polls the ultrasonic sensor every 50ms to get the distance as an integer
-	 * <br>Also filters out the reported distance if it is very large compared to the current distance and a large distance has not been reported enough times
+	/*
+	 * Calculates the error (deviation of robot from its initial path)
 	 */
-	public int getDistance(){
-		int distance_temp;
-		usSensor.fetchSample(usData,0);
-		distance_temp=(int)(usData[0]*100.0);
-		if (filter){
-			if (distance_temp < MIN_DISTANCE || this.distance > bandCenter+bandwidth || filterControl > FILTER_OUT){
-				filterControl = 0;
-				this.distance = distance_temp;
-			}
-			else{
-				filterControl++;
-			}
+	private double calculateError(){
+		if (a == 0){
+			return Math.abs(navigation.getPosition()[1]-y_init)/b;
 		}
-		else{
-			this.distance = distance_temp;
+		if (b == 0){
+			return Math.abs(navigation.getPosition()[0]-x_init)/a;
 		}
-		return this.distance;
+		return Math.abs((Repository.getX()-x_init)/a-(Repository.getY()-y_init)/b);
+	}
+	
+	/*
+	 * Returns true as long as the robot is not done avoiding the obstacle
+	 */
+	private boolean avoiding(){
+		Printer.getInstance().display(""+calculateError());
+		if (calculateError() > 8.0){
+			startedAvoidance = true;
+		}
+		
+		if(startedAvoidance && calculateError() < 4.0){
+			return false;
+		}
+		return true;
 	}
 	
 	/*
 	 * Direction method
-	 * <br>Determines whether the robot will avoid the wall from the left or the right depending on whether there is more space on the left or the right
+	 * Determines whether the robot will avoid the wall from the left or the right depending on whether there is more space on the left or the right
 	 */
 	private void direction(){
 		int left_dist, right_dist;
 		//Check distance on the left
-		sensorMotor.rotate(90, false);
-		left_dist = getDistance();
-		Delay.msDelay(100);
+		left_dist = look(LEFT);
 		//Check distance on the right
-		sensorMotor.rotate(-180, false);
-		right_dist = getDistance();
-		Delay.msDelay(100);
+		right_dist = look(RIGHT);
 		//If largest distance on the left, align robot to be on left of wall
 		if (left_dist > right_dist){
-			left_direction = true;
-			bandCenter = bandCenter_left;
-			Repository.turnTo(Repository.getAng()+90);
+			direction = LEFT;
+			navigation.turnTo(navigation.getPosition()[2]+90);
 		}
 		//If largest distance on the right, align robot to be on right of wall
 		else{
-			left_direction = false;
-			bandCenter = bandCenter_right;
-			Repository.turnTo(Repository.getAng()+270);
-			sensorMotor.rotate(180, false);
+			direction = RIGHT;
+			navigation.turnTo(navigation.getPosition()[2]+270);
 		}
 	}
 	
 	/*
 	 * Process ultrasonic sensor distance method
-	 * <br>Set motor speeds based on distance to the wall, using PController algorithm
+	 * Adjusts motor speeds based on distance to the wall using PController algorithm
 	 */
-	private void processUSDistance() {
+	private void processUSDistance(){
 		int fwd_dist, side_dist, actual_dist;
 		//Get distance from wall on the side of the robot, rotate sensor, and get distance in front of the robot
-		if (left_direction){
-			side_dist = getDistance();
-			Delay.msDelay(10);
-			sensorMotor.rotate(90,false);
-			fwd_dist = getDistance();
-			Delay.msDelay(10);
-			sensorMotor.rotate(-90,false);
-		}
-		else{
-			side_dist = getDistance();
-			Delay.msDelay(10);
-			sensorMotor.rotate(-90,false);
-			fwd_dist = getDistance();
-			Delay.msDelay(10);
-			sensorMotor.rotate(90,false);
-		}
+		side_dist = look(direction);
+		fwd_dist = look(FORWARD);
+			
 		//Consider the minimum of these two as the distance from wall
 		actual_dist = fwd_dist > side_dist ? side_dist : fwd_dist;
 		//Compute error, check if error within bandwidth tolerance
-		int error = actual_dist-bandCenter;
+		int error = actual_dist-BAND_CENTER;
 		//If not within tolerance, calculate adjustment to each motor by multiplying error by proportionality constant and clamp adjustment if higher than maximum value
-		if (Math.abs(error) >= bandwidth){
-			int adjustment = (int)(error*propConstant);
+		if (Math.abs(error) >= BAND_WIDTH){
+			int adjustment = (int)(error*PROB_CONSTANT);
 			if (adjustment > MAX_VALUE){
 				adjustment = MAX_VALUE;
 			}
@@ -160,81 +122,63 @@ public class ObstacleAvoidance{
 				adjustment = -1*MAX_VALUE;
 			}
 			//If robot on left of wall, add adjustment to left motor speed and remove from right motor speed
-			if (left_direction){
-				leftMotor.setSpeed(MOTOR_STRAIGHT+adjustment);
-				rightMotor.setSpeed(MOTOR_STRAIGHT-adjustment);
+			if (direction == LEFT){
+				navigation.setSpeeds(MOTOR_STRAIGHT+adjustment, MOTOR_STRAIGHT-adjustment);
 			}
 			//If robot on right of wall, add adjustment to right motor speed and remove from right motor speed
 			else{
-				leftMotor.setSpeed(MOTOR_STRAIGHT-adjustment);
-				rightMotor.setSpeed(MOTOR_STRAIGHT+adjustment);
+				navigation.setSpeeds(MOTOR_STRAIGHT-adjustment, MOTOR_STRAIGHT+adjustment);
 			}
 		}
 		//If within tolerance, set both motors to move forward (no adjustment)
 		else{
-			rightMotor.setSpeed(MOTOR_STRAIGHT);
-			leftMotor.setSpeed(MOTOR_STRAIGHT);
-		}
-	}
-	
-	/*
-	 * Calculate error method
-	 * Calculates the distance the robot has moved from the initial travelTo path while doing obstacle avoidance
-	 */
-	private double calculateError(){
-		double dist_error;
-		if (a != 0 && b != 0){
-			dist_error = Math.abs((Repository.getX()-x_init)/a-(Repository.getY()-y_init)/b);
-		}
-		else if (a == 0){
-			dist_error = Math.abs((Repository.getY()-y_init)/b);
-		}
-		else{
-			dist_error = Math.abs((Repository.getX()-x_init)/a);
-		}
-		return dist_error;
-	}
-	
-	/*
-	 * End travel method
-	 * <br>Stops wall avoidance if avoidanceStarted is true (robot already moved away from its expected trajectory) and it has returned to the same trajectory behind the obstacle
-	 */
-	private void endTravel(){
-		if (calculateError() > 4.0){
-			if (!avoidanceStarted){
-				Sound.beep();
-			}
-			avoidanceStarted = true;
-		}
-		if (calculateError() < 4.0 && avoidanceStarted){
-			avoiding = false;
-			scanning = false;
-			Sound.twoBeeps();
+			navigation.setSpeeds(MOTOR_STRAIGHT, MOTOR_STRAIGHT);
 		}
 	}
 	
 	/**
-	 * Method that controls the wall avoidance process
-	 * @return A boolean that determines whether robot needs to continue moving towards destination or it is close enough (for navigation to determine what to do)
+	 * Executes the obstacle avoidance routine
+	 * @return false if the obstacle avoided is occupying Navigation's destination
 	 */
-	public boolean doWallAvoidance(){
-		//Check which side wall avoidance should be done, then start wall avoidance
+	public boolean avoid(){
 		direction();
-		//While wall avoidance running, run the PController algorithm and check if back on initial trajectory, if yes, end travel
-		filter = true;
-		while (avoiding){
+		while (avoiding() && !navigation.interrupted){
 			processUSDistance();
-			endTravel();
 		}
-		//If within 10cm of the original destination (from travelTo), cancel travelTo (keepMoving = false), else continue travelTo (keepMoving = true)
-		boolean keepMoving;
-		double dist_error = Repository.calculateDistance(x_fin, y_fin);
-		if (dist_error < 10.0){
-			keepMoving = false;
+		navigation.setSpeeds(0, 0);
+		
+		return navigation.calculateDistance(x_init, y_init) > initialDistanceFromDestination;
+	}
+	
+	/**
+	 * A convenience for Navigation. Returns the distance read by the ultrasonic sensor 
+	 * when the sensor is facing forward.
+	 * @return
+	 */
+	public static int look(){
+		return look(FORWARD);
+	}
+	
+	//Returns the distance read by the ultrasonic sensor when the sensor is facing the specified direction.
+	private static int look(int direction){
+		switch(direction){
+		case LEFT:
+			Motors.getMotor(Motors.SENSOR).rotateTo(-SENSOR_TURN_ANGLE);
+			return getDistance();
+		case RIGHT:
+			Motors.getMotor(Motors.SENSOR).rotateTo(SENSOR_TURN_ANGLE);
+			return getDistance();
+		case FORWARD:
+		default:
+			Motors.getMotor(Motors.SENSOR).rotateTo(0);
+			return getDistance();
 		}
-		else{
-			keepMoving = true;
-		}
-		return keepMoving;
+	}
+	
+	//Returns the distance read by the ultrasonic sensor.
+	private static int getDistance(){
+		float[] data = new float[Sensors.getSensor(Sensors.US_ACTIVE).sampleSize()];
+		Sensors.getSensor(Sensors.US_ACTIVE).fetchSample(data, 0);
+		return (int)(data[0]*100);
 	}
 }

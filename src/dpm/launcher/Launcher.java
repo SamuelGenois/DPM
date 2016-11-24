@@ -1,5 +1,11 @@
 package dpm.launcher;
 
+/**
+ * This interface defines the interaction between the class that launches the program
+ * (the class that carries the main method and the information provided via wifi) and Repository 
+ * @author Samuel Genois
+ *
+ */
 public interface Launcher {
 	
 	public static int TEAM_NUMBER = 8;
