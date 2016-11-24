@@ -133,12 +133,24 @@ public class TestAlgorithms {
 			}
 		}
 		
-		ArrayList<Integer> pathToGoodZone = getShortestPath(regionOrder[0], goodZoneRegions.get(0), edges);
+		ArrayList<Integer> pathToGoodZone;
 		ArrayList<Integer[]> leftovers = new ArrayList<Integer[]>();
 		
-		for(int i=0; i<16; i++){
-			if(!(pathToGoodZone.contains(i) || badZoneRegions.contains(i)))
-				leftovers.add(new Integer[]{i, getShortestPath(goodZoneRegions.get(0), i, edges).size()});
+		if(!goodZoneRegions.isEmpty()){
+		
+			pathToGoodZone = getShortestPath(regionOrder[0], goodZoneRegions.get(0), edges);
+			
+			for(int i=0; i<16; i++)
+				if(!(pathToGoodZone.contains(i) || badZoneRegions.contains(i)))
+					leftovers.add(new Integer[]{i, getShortestPath(goodZoneRegions.get(0), i, edges).size()});
+		}
+		
+		else{
+			pathToGoodZone = new ArrayList<>();
+			
+			for(int i=0; i<16; i++)
+				if(!badZoneRegions.contains(i))
+					leftovers.add(new Integer[]{i, getShortestPath(startingCorner, i, edges).size()});
 		}
 		
 		//Sort the leftovers in increasing order of shortest path from the green zone upper right region.

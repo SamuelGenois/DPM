@@ -62,31 +62,183 @@ public class BlockSearch implements DPMConstants{
 		leftMotor.setAcceleration(WHEEL_MOTOR_ACCELERATION);
 		rightMotor.setAcceleration(WHEEL_MOTOR_ACCELERATION);
 		
-		regionOrder = new int[16];
-		createRegionOrder();
-		
-		greenZoneSearchable = true;
-		currentRegion = 0;
-		currentScanPoint = LOWER_LEFT;
-		currentOrientation = 90.0;
-		
-		/*if(Repository.getRole() == BUILDER){
+		if(Repository.getRole() == BUILDER){
 			goodZoneRegions = getRegions(Repository.getGreenZone());
 			badZoneRegions = getRegions(Repository.getRedZone());
 		}
 		else {
 			goodZoneRegions = getRegions(Repository.getRedZone());
 			badZoneRegions = getRegions(Repository.getGreenZone());
-		}*/
+		}
+		
+		regionOrder = new int[16];
+		
+		switch(Repository.getStartZone()){
+			case LOWER_RIGHT:
+				createRegionOrder(3);
+				break;
+			case UPPER_LEFT:
+				createRegionOrder(12);
+				break;
+			case UPPER_RIGHT:
+				createRegionOrder(15);
+				break;
+			case LOWER_LEFT:
+			default:
+				createRegionOrder(0);
+		}
+		
+		greenZoneSearchable = true;
+		currentRegion = 0;
+		currentScanPoint = LOWER_LEFT;
+		currentOrientation = 90.0;
 	}
 	
 	/*
 	 * Constructs an array containing the order in witch the regions must be scanned
 	 */
-	private void createRegionOrder(){
+	private void createRegionOrder(int startingCorner){
+		
+		for(int i=0; i<16; i++)
+			regionOrder[i] = -1;
+		
+		regionOrder[0] = startingCorner;
+		
 		//Stub
+		/*
 		for(int i=1; i<16 ;i++)
 			regionOrder[i] = (i+regionOrder[0])%16;
+		return;
+		*/
+		
+		ArrayList<Integer[]> edges = new ArrayList<>();
+		
+		//For every region i...
+		for(int i=0; i<16; i++){
+			
+			//If i is not a bad zone region
+			if(!badZoneRegions.contains(i)){
+				
+				//If i is not in the topmost row of regions
+				if(i<12){
+					
+					//If i is not in the leftmost column of regions
+					//and if the upper left adjacent region is not a bad zone region,
+					//add the edge between it and i to edges.
+					if((i%4)>0 && !badZoneRegions.contains(i+3))
+						edges.add(new Integer[]{i, i+3});
+					
+					//If the upper adjacent region is not a bad zone region,
+					//add the edge between it and i to edges.
+					if(!badZoneRegions.contains(i+4))
+						edges.add(new Integer[]{i, i+4});
+					
+					//If i is not in the rightmost column of regions
+					//and if the upper right adjacent region is not a bad zone region,
+					//add the edge between it and i to edges.
+					if((i%4)<3 && !badZoneRegions.contains(i+5))
+						edges.add(new Integer[]{i, i+5});
+
+				}
+				
+				//If i is not in the rightmost column of regions
+				//and if the right adjacent region is not a bad zone region,
+				//add the edge between it and i to edges.
+				if((i%4)<3 && !badZoneRegions.contains(i+1))
+					edges.add(new Integer[]{i, i+1});
+				
+			}
+		}
+		
+		ArrayList<Integer> pathToGoodZone;
+		ArrayList<Integer[]> leftovers = new ArrayList<Integer[]>();
+		
+		if(!goodZoneRegions.isEmpty()){
+		
+			pathToGoodZone = getShortestPath(regionOrder[0], goodZoneRegions.get(0), edges);
+			
+			for(int i=0; i<16; i++)
+				if(!(pathToGoodZone.contains(i) || badZoneRegions.contains(i)))
+					leftovers.add(new Integer[]{i, getShortestPath(goodZoneRegions.get(0), i, edges).size()});
+		}
+		
+		else{
+			pathToGoodZone = new ArrayList<>();
+			
+			for(int i=0; i<16; i++)
+				if(!badZoneRegions.contains(i))
+					leftovers.add(new Integer[]{i, getShortestPath(startingCorner, i, edges).size()});
+		}
+		
+		//Sort the leftovers in increasing order of shortest path from the green zone upper right region.
+		for(int i=leftovers.size()-1; i>=0; i--){
+			int maxIndex = 0;
+			for(int j=0; j<i; j++)
+				if(leftovers.get(j)[1] >= leftovers.get(maxIndex)[1])
+					maxIndex = j;
+			Integer[] temp = leftovers.get(i);
+			leftovers.set(i, leftovers.get(maxIndex));
+			leftovers.set(maxIndex, temp);
+		}
+		
+		for(int i=1; i<pathToGoodZone.size(); i++)
+			regionOrder[i] = pathToGoodZone.get(i);
+		
+		for(int i=0; i<leftovers.size(); i++){
+			regionOrder[i+pathToGoodZone.size()] = leftovers.get(i)[0];
+		}
+	}
+	
+	private static ArrayList<Integer> getShortestPath(Integer start, Integer end, ArrayList<Integer[]> edges){
+		ArrayList<ArrayList<Integer[]>> edgesUsed = new ArrayList<>();
+		ArrayList<ArrayList<Integer>> nodesFound = new ArrayList<>();
+		boolean[] discovered = new boolean[16];
+		
+		int i = 0;
+		nodesFound.add(new ArrayList<Integer>());
+		nodesFound.get(i).add(start);
+		discovered[start] = true;
+		
+		while(!nodesFound.get(i).contains(end)){
+			
+			if(nodesFound.get(i).isEmpty())
+				return new ArrayList<Integer>();
+			
+			edgesUsed.add(new ArrayList<Integer[]>());
+			nodesFound.add(new ArrayList<Integer>());
+			
+			for(Integer node : nodesFound.get(i))
+				for(Integer[] edge: edges){
+					if(edge[0] == node && !discovered[edge[1]]){
+						nodesFound.get(i+1).add(edge[1]);
+						edgesUsed.get(i).add(edge);
+						discovered[edge[1]] = true;
+					}
+					if(edge[1] == node && !discovered[edge[0]]){
+						nodesFound.get(i+1).add(edge[0]);
+						edgesUsed.get(i).add(edge);
+						discovered[edge[0]] = true;
+					}
+				}
+			i++;
+		}
+		
+		ArrayList<Integer> path = new ArrayList<>();
+		Integer node = start;
+		path.add(node);
+		
+		for(int j=0; j<i; j++){
+			
+			for(Integer[] edge : edgesUsed.get(j)){
+				if(edge[0] == node)
+					node = edge[1];
+				if(edge[1] == node)
+					node = edge[0];
+			}
+			path.add(node);
+		}
+		
+		return path;
 	}
 	
 	/**

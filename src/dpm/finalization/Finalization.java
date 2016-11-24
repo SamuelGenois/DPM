@@ -34,8 +34,8 @@ public class Finalization implements DPMConstants{
 	 */
 	public void doFinalization(){
 		
-		Repository.interruptNavigation();
 		Repository.interruptBlockSearch();
+		Repository.interruptNavigation();
 		
 		if(!Repository.clawIsEmpty()){
 			Repository.travelTo((Repository.getGreenZone()[0] + Repository.getGreenZone()[2])*SQUARE_SIZE/2,
