@@ -51,11 +51,11 @@ public class ObstacleAvoidance implements DPMConstants{
 	 * Calculates the error (deviation of robot from its initial path)
 	 */
 	private double calculateError(){
-		if (a == 0){
-			return Math.abs(navigation.getPosition()[1]-y_init)/b;
+		if (a < 0.1){
+			return Math.abs(navigation.getPosition()[0]-x_init)/b;
 		}
-		if (b == 0){
-			return Math.abs(navigation.getPosition()[0]-x_init)/a;
+		if (b < 0.1){
+			return Math.abs(navigation.getPosition()[1]-y_init)/a;
 		}
 		return Math.abs((navigation.getPosition()[0]-x_init)/a-(navigation.getPosition()[1]-y_init)/b);
 	}
@@ -82,9 +82,9 @@ public class ObstacleAvoidance implements DPMConstants{
 	private void direction(){
 		int left_dist, right_dist;
 		//Check distance on the left
-		left_dist = look(LEFT);
+		left_dist = look(RIGHT);
 		//Check distance on the right
-		right_dist = look(RIGHT);
+		right_dist = look(LEFT);
 		//If largest distance on the left, align robot to be on left of wall
 		if (left_dist > right_dist){
 			direction = LEFT;

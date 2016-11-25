@@ -53,7 +53,19 @@ public class TestAlgorithms {
 	}
 	
 	private static void testCreateRegionOrder(){
-		int[] regionOrder = createRegionOrder(15, new int[]{-1, 1, 3, 2}, null, true);
+		
+		/*
+		for(Integer i : getRegions(new int[] {1, 6, 3, 4}))
+			System.out.print(i+", ");
+		
+		System.out.println();
+		
+		for(Integer i : getRegions(new int[] {6, 3, 7, 1}))
+			System.out.print(i+", ");
+		
+		System.exit(0);*/
+		
+		int[] regionOrder = createRegionOrder(3, new int[]{1, 6, 3, 4}, null/*new int[]{6, 3, 7, 1*/, true);
 		
 		for(int i=3; i>=0; i--){
 			for(int j=0; j<4; j++){
@@ -71,7 +83,6 @@ public class TestAlgorithms {
 			}
 			System.out.println();
 		}
-				
 		
 	}
 	
@@ -86,7 +97,7 @@ public class TestAlgorithms {
 		
 		if(isBuilder){
 			goodZoneRegions = getRegions(greenZone);
-			badZoneRegions = new ArrayList<Integer>();
+			badZoneRegions = new ArrayList<Integer>();//getRegions(redZone);
 		}
 		else {
 			goodZoneRegions = getRegions(redZone);
@@ -138,6 +149,7 @@ public class TestAlgorithms {
 		
 		if(!goodZoneRegions.isEmpty()){
 		
+			//System.out.println(regionOrder[0]);
 			pathToGoodZone = getShortestPath(regionOrder[0], goodZoneRegions.get(0), edges);
 			
 			for(int i=0; i<16; i++)
@@ -152,6 +164,13 @@ public class TestAlgorithms {
 				if(!badZoneRegions.contains(i))
 					leftovers.add(new Integer[]{i, getShortestPath(startingCorner, i, edges).size()});
 		}
+		/*
+		System.out.println();
+		
+		System.out.println(pathToGoodZone.size());
+		System.out.println(leftovers.size());
+		
+		System.exit(0);*/
 		
 		//Sort the leftovers in increasing order of shortest path from the green zone upper right region.
 		for(int i=leftovers.size()-1; i>=0; i--){
@@ -177,15 +196,18 @@ public class TestAlgorithms {
 	private static ArrayList<Integer> getRegions(int[] zone){
 		ArrayList<Integer> regions = new ArrayList<>();
 		
-		if(zone[0]<0 || zone[0]>15
-			|| zone[1]<0 || zone[1]>15
-			|| zone[2]<0 || zone[2]>15
-			|| zone[3]<0 || zone[3]>15
-			|| zone[2]<zone[0] || zone[3]<zone[1])
+		if(	   zone[0]<-1 || zone[0]>10
+			|| zone[1]<0 || zone[1]>11
+			|| zone[2]<0 || zone[2]>11
+			|| zone[3]<-1 || zone[3]>10
+			|| zone[1]<-1 || zone[1]>11
+			|| zone[2]<-1 || zone[2]>11
+			|| zone[3]<-1 || zone[3]>11
+			|| zone[2]<zone[0] || zone[3]>zone[1])
 				return new ArrayList<Integer>();
 		
-		regions.add(zone[0]/3 + 4*(zone[1]/3));
-		regions.add(zone[2]/3 + 4*(zone[3]/3));
+		regions.add(0, ((zone[0]+1)/3) + 4*(zone[1]/3));
+		regions.add(1, (zone[2]/3) + 4*((zone[3]+1)/3));
 		
 		if(regions.get(0)-3 == regions.get(1)){
 			regions.add(regions.get(0)+1);
@@ -243,6 +265,10 @@ public class TestAlgorithms {
 			}
 			path.add(node);
 		}
+		
+		for(Integer n : path)
+			System.out.print(n+", ");
+		System.out.println();
 		
 		return path;
 	}
