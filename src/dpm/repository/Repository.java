@@ -31,6 +31,14 @@ public class Repository {
 		getBlockSearch().search();
 	}
 	
+	/**
+	 * Checks for the presence of a block
+	 * @return True if a block is found
+	 */
+	public static boolean checkObject(){
+		return getBlockSearch().checkObject();
+	}
+	
 	//This is private because no subsystem should
 	//require direct access to the BlockSearch object
 	private static BlockSearch getBlockSearch(){
@@ -48,7 +56,19 @@ public class Repository {
 	 * @param y the y coordinate of the destination
 	 */
 	public static boolean travelTo(double x, double y){
-		return getNavigation().travelTo(x, y);
+		return getNavigation().travelTo(x, y, true);
+	}
+	
+	/**
+	 * Travels to the specified (x,y) coordinates, with possibility
+	 * of avoiding obstacles or not. Initializes the subsystem
+	 * if it is not yet initialized
+	 * @param x the x coordinate of the destination
+	 * @param y the y coordinate of destination
+	 * @param avoidance determines whether avoidance happens or not
+	 */
+	public static boolean travelTo(double x, double y, boolean avoidance){
+		return getNavigation().travelTo(x, y, avoidance);
 	}
 	
 	/**
@@ -159,6 +179,7 @@ public class Repository {
 	public static void drop(){
 		getPincer().drop();
 	}
+	
 		
 	/**
 	 * Interrupts the ongoing Block Search subsystem algorithm execution and

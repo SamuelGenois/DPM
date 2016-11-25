@@ -64,7 +64,19 @@ public class ObstacleAvoidance implements DPMConstants{
 	/*
 	 * Returns true as long as the robot is not done avoiding the obstacle
 	 */
-	private boolean avoiding(){
+	private boolean avoiding(double startOrientation){
+		double endAngle = Repository.getAng()-startOrientation;
+		if (endAngle > 180){
+			endAngle-=360;
+		}
+		else if (endAngle <= -180){
+			endAngle+=360;
+		}
+		if (Math.abs(endAngle) > 170){
+			return false;
+		}
+		return true;
+		/*
 		Printer.getInstance().display(""+calculateError());
 		if (calculateError() > 8.0){
 			startedAvoidance = true;
@@ -73,7 +85,7 @@ public class ObstacleAvoidance implements DPMConstants{
 		if(startedAvoidance && calculateError() < 4.0){
 			return false;
 		}
-		return true;
+		return true;*/
 	}
 	
 	/*
@@ -83,9 +95,9 @@ public class ObstacleAvoidance implements DPMConstants{
 	private void direction(){
 		int left_dist, right_dist;
 		//Check distance on the left
-		left_dist = look(LEFT);
+		left_dist = look(RIGHT);
 		//Check distance on the right
-		right_dist = look(RIGHT);
+		right_dist = look(LEFT);
 		//If largest distance on the left, align robot to be on left of wall
 		if (left_dist > right_dist){
 			direction = LEFT;
@@ -142,7 +154,8 @@ public class ObstacleAvoidance implements DPMConstants{
 	 */
 	public boolean avoid(){
 		direction();
-		while (avoiding() && !navigation.interrupted){
+		double startOrientation = Repository.getAng();
+		while (avoiding(startOrientation) && !navigation.interrupted){
 			processUSDistance();
 		}
 		navigation.setSpeeds(0, 0);
@@ -163,10 +176,10 @@ public class ObstacleAvoidance implements DPMConstants{
 	private static int look(int direction){
 		switch(direction){
 		case LEFT:
-			Motors.getMotor(Motors.SENSOR).rotateTo(-SENSOR_TURN_ANGLE);
+			Motors.getMotor(Motors.SENSOR).rotateTo(-SENSOR_TURN_ANGLE,false);
 			return getDistance();
 		case RIGHT:
-			Motors.getMotor(Motors.SENSOR).rotateTo(SENSOR_TURN_ANGLE);
+			Motors.getMotor(Motors.SENSOR).rotateTo(SENSOR_TURN_ANGLE,false);
 			return getDistance();
 		case FORWARD:
 		default:

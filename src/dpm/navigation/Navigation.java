@@ -5,6 +5,7 @@ import dpm.util.DPMConstants;
 import dpm.util.Motors;
 import lejos.hardware.Sound;
 import lejos.robotics.RegulatedMotor;
+import lejos.utility.Delay;
 
 /**
  * File: Navigation.java
@@ -61,7 +62,7 @@ public class Navigation implements DPMConstants{
 	 * @param x x coordinate of destination
 	 * @param y y coordinate of destination
 	 */
-	public boolean travelTo(double x, double y) {
+	public boolean travelTo(double x, double y, boolean enableAvoidance) {
 		travel_x = x;
 		travel_y = y;
 		double minAng;
@@ -72,16 +73,22 @@ public class Navigation implements DPMConstants{
 				minAng += 360.0;
 			this.turnTo(minAng, false);
 			this.setSpeeds(FAST, FAST);
-			
-			int obstacleDistance = ObstacleAvoidance.look();
-			if(obstacleDistance < calculateDistance(x, y) && obstacleDistance < AVOIDANCE_THRESHOLD){
-				this.setSpeeds(0, 0);
-				if(!(new ObstacleAvoidance(this, travel_x, travel_y).avoid())){
-					Sound.buzz();
-					return false;
+			if (enableAvoidance){
+				int obstacleDistance = ObstacleAvoidance.look();
+				if(obstacleDistance < calculateDistance(x, y) && obstacleDistance < 5){
+					Sound.beep();
+					this.setSpeeds(0, 0);
+					if (!Repository.checkObject()){
+						setSpeeds(-150,-150);
+						Delay.msDelay(3500);
+						setSpeeds(0,0);
+						if(!(new ObstacleAvoidance(this, travel_x, travel_y).avoid())){
+							Sound.buzz();
+							return false;
+						}
+					}
 				}
 			}
-			
 		}
 		this.setSpeeds(0, 0);
 		return true;
