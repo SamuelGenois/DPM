@@ -14,8 +14,9 @@ import lejos.robotics.SampleProvider;
 public class OdometryCorrection extends Thread implements DPMConstants{
 	
 	private static final long POLLING_DELAY = 50l;
-	private static final float LIGHT_THRESHOLD = 0.3f;
+	private static final float LIGHT_THRESHOLD = 0.5f;
 	private static final double CORRECTION_THRESHOLD = 2.0;
+	private static final double REJECTION_THRESHOLD = 5.0;
 	
 	private final Odometer odometer;
 	private final SampleProvider sensor;
@@ -85,7 +86,7 @@ public class OdometryCorrection extends Thread implements DPMConstants{
 				}
 				
 				//If vertical line (x distance from grid is within correction threshold, not y distance): correct x coordinate
-				if(xDistanceFromGrid < CORRECTION_THRESHOLD && !(yDistanceFromGrid < CORRECTION_THRESHOLD)){
+				if(xDistanceFromGrid < CORRECTION_THRESHOLD && yDistanceFromGrid > REJECTION_THRESHOLD){
 						if(x>0){
 							//If x was not set to be increased, decrease it to the position of the previous vertical line
 							if (!increaseX){
@@ -105,7 +106,7 @@ public class OdometryCorrection extends Thread implements DPMConstants{
 				}
 				//If horizontal line (y distance from grid is within correction threshold, not x distance): correct y coordinate
 				//Same logic as for x
-				else if(yDistanceFromGrid < CORRECTION_THRESHOLD && !(xDistanceFromGrid < CORRECTION_THRESHOLD)){
+				else if(yDistanceFromGrid < CORRECTION_THRESHOLD && xDistanceFromGrid > REJECTION_THRESHOLD){
 					if(y>0){
 						if (!increaseY){
 							odometer.setPosition(new double[] {0, Math.floor(y/SQUARE_SIZE)*SQUARE_SIZE, 0},
@@ -122,7 +123,7 @@ public class OdometryCorrection extends Thread implements DPMConstants{
 				}
 				//If line crossing (both x distance or y distance from grid are within correction threshold): skip correction to prevent mistakes
 				//For debugging purposes, indicates where correction has not occurred due to line crossing
-				else if (yDistanceFromGrid < CORRECTION_THRESHOLD && xDistanceFromGrid < CORRECTION_THRESHOLD){
+				else if (yDistanceFromGrid < REJECTION_THRESHOLD && xDistanceFromGrid < REJECTION_THRESHOLD){
 					Sound.buzz();
 				}
 			}

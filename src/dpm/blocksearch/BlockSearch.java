@@ -258,12 +258,12 @@ public class BlockSearch implements DPMConstants{
 		//For testing
 		if (!interrupted)
 			searchRegion(0);
-		if (!interrupted)
+		/*if (!interrupted)
 			searchRegion(1);
 		if (!interrupted)
 			searchRegion(5);
 		if (!interrupted)
-			searchRegion(4);
+			searchRegion(4);*/
 		
 		//Final
 		/*
@@ -281,6 +281,9 @@ public class BlockSearch implements DPMConstants{
 	 */
 	private static ArrayList<Integer> getRegions(int[] zone){
 		ArrayList<Integer> regions = new ArrayList<>();
+		
+		
+		
 		
 		regions.add(zone[0]/3 + 4*(zone[1]/3));
 		regions.add(zone[2]/3 + 4*(zone[3]/3));
@@ -368,8 +371,9 @@ public class BlockSearch implements DPMConstants{
 		
 		Repository.travelTo(x + (distance-COLOR_SENSOR_RANGE) * Math.cos(Math.toRadians(angle)), y + (distance-COLOR_SENSOR_RANGE) * Math.sin(Math.toRadians(angle)), NO_AVOIDANCE);
 		
-		boolean blockPickedUp;
-		
+		//TODO
+		boolean blockPickedUp = false;
+		/*
 		if(identify() == BLUE_BLOCK){
 			Sound.beep();
 			leftMotor.setSpeed(-150);
@@ -389,11 +393,57 @@ public class BlockSearch implements DPMConstants{
 		else{
 			leftMotor.setSpeed(-150);
 			rightMotor.setSpeed(-150);
-			try{Thread.sleep(BACKUP_TIME);} catch(InterruptedException e){}
+			try{Thread.sleep(BACKUP_TIME*4);} catch(InterruptedException e){}
 			blockPickedUp = false;
 		}
+		*/
 		
-		Repository.travelTo(x, y, NO_AVOIDANCE);
+		//Loop to check multiple points around object
+		for(int i=0; i<7; i++){
+			//Check if object is block, if it is: back up, turn around, grab block, then exit object identification
+			if(identify() == BLUE_BLOCK){
+				Sound.beep();
+				leftMotor.setSpeed(-150);
+				rightMotor.setSpeed(-150);
+				try{Thread.sleep(BACKUP_TIME);} catch(InterruptedException e){}
+				leftMotor.stop(true);
+				rightMotor.stop();
+				Repository.turnTo(Repository.getAng()+180);
+				Repository.drop();
+				Repository.grab();
+				if(Repository.clawIsFull()){
+					greenZoneSearchable = false;
+					this.interrupt();
+				}
+				break;
+			}
+			//Check if object is obstacle, if it is: back up, then exit object identification
+			//Also do not scan the next 30 degrees to avoid seeing block again
+			else if (identify() == WOODEN_BLOCK){
+				Sound.twoBeeps();
+				leftMotor.setSpeed(-150);
+				rightMotor.setSpeed(-150);
+				Repository.turnTo(angle);
+				try{Thread.sleep(BACKUP_TIME*4);} catch(InterruptedException e){}
+				break;
+			}
+			//If no object has been identified, move in a cone of 90 degrees centered around the object and try to identify again
+			else {
+				if (i == 3){
+					Repository.turnTo(Repository.getAng()+15*6);
+				}
+				else{
+					Repository.turnTo(Repository.getAng()-15);
+				}
+				if(i==6){
+					Sound.buzz();
+					leftMotor.setSpeed(-150);
+					rightMotor.setSpeed(-150);
+					try{Thread.sleep(BACKUP_TIME*4);} catch(InterruptedException e){}
+				}
+			}
+		}
+		
 		Repository.turnTo(angle);
 		return blockPickedUp;
 	}
