@@ -146,7 +146,7 @@ public class ObstacleAvoidance implements DPMConstants{
 		}
 		navigation.setSpeeds(0, 0);
 		
-		return navigation.calculateDistance(x_init, y_init) > initialDistanceFromDestination;
+		return navigation.calculateDistance(x_init, y_init) < initialDistanceFromDestination;
 	}
 	
 	/**

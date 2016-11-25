@@ -62,6 +62,7 @@ public class BlockSearch implements DPMConstants{
 		leftMotor.setAcceleration(WHEEL_MOTOR_ACCELERATION);
 		rightMotor.setAcceleration(WHEEL_MOTOR_ACCELERATION);
 		
+		/*
 		if(Repository.getRole() == BUILDER){
 			goodZoneRegions = getRegions(Repository.getGreenZone());
 			badZoneRegions = getRegions(Repository.getRedZone());
@@ -69,10 +70,11 @@ public class BlockSearch implements DPMConstants{
 		else {
 			goodZoneRegions = getRegions(Repository.getRedZone());
 			badZoneRegions = getRegions(Repository.getGreenZone());
-		}
+		}*/
 		
 		regionOrder = new int[16];
 		
+		/*
 		switch(Repository.getStartZone()){
 			case LOWER_RIGHT:
 				createRegionOrder(3);
@@ -86,7 +88,7 @@ public class BlockSearch implements DPMConstants{
 			case LOWER_LEFT:
 			default:
 				createRegionOrder(0);
-		}
+		}*/
 		
 		greenZoneSearchable = true;
 		currentRegion = 0;
@@ -369,7 +371,7 @@ public class BlockSearch implements DPMConstants{
 		double y = Repository.getY();
 		double angle = Repository.getAng();
 		
-		Repository.travelTo(x + (distance-COLOR_SENSOR_RANGE) * Math.cos(Math.toRadians(angle)), y + (distance-COLOR_SENSOR_RANGE) * Math.sin(Math.toRadians(angle)), NO_AVOIDANCE);
+		Repository.travelTo(x + (distance) * Math.cos(Math.toRadians(angle)), y + (distance) * Math.sin(Math.toRadians(angle)), NO_AVOIDANCE);
 		
 		//TODO
 		boolean blockPickedUp = false;

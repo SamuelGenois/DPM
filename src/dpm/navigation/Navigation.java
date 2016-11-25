@@ -114,7 +114,7 @@ public class Navigation implements DPMConstants{
 		if (error <= -180){
 			error +=360;
 		}
-		if (Math.abs(error) > 2*DEG_ERR){
+		if (Math.abs(error) > DEG_ERR){
 			while (Math.abs(error) > DEG_ERR) {
 				error = angle - Repository.getAng();
 				if (error > 180){
