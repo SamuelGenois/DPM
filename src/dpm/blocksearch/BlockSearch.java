@@ -372,8 +372,6 @@ public class BlockSearch implements DPMConstants{
 		double angle = Repository.getAng();
 		
 		Repository.travelTo(x + (distance) * Math.cos(Math.toRadians(angle)), y + (distance) * Math.sin(Math.toRadians(angle)), NO_AVOIDANCE);
-		
-		//TODO
 		boolean blockPickedUp = false;
 		/*
 		if(identify() == BLUE_BLOCK){
@@ -411,6 +409,7 @@ public class BlockSearch implements DPMConstants{
 				leftMotor.stop(true);
 				rightMotor.stop();
 				Repository.turnTo(Repository.getAng()+180);
+				Repository.turnTo(Repository.getAng()+20);
 				Repository.drop();
 				Repository.grab();
 				if(Repository.clawIsFull()){
@@ -423,9 +422,9 @@ public class BlockSearch implements DPMConstants{
 			//Also do not scan the next 30 degrees to avoid seeing block again
 			else if (identify() == WOODEN_BLOCK){
 				Sound.twoBeeps();
+				Repository.turnTo(angle);
 				leftMotor.setSpeed(-150);
 				rightMotor.setSpeed(-150);
-				Repository.turnTo(angle);
 				try{Thread.sleep(BACKUP_TIME*4);} catch(InterruptedException e){}
 				break;
 			}
@@ -439,6 +438,7 @@ public class BlockSearch implements DPMConstants{
 				}
 				if(i==6){
 					Sound.buzz();
+					Repository.turnTo(angle);
 					leftMotor.setSpeed(-150);
 					rightMotor.setSpeed(-150);
 					try{Thread.sleep(BACKUP_TIME*4);} catch(InterruptedException e){}

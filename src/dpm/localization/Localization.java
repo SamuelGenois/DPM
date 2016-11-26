@@ -19,7 +19,7 @@ public class Localization implements DPMConstants{
 	private RegulatedMotor leftMotor, rightMotor;
 	private SampleProvider usSensor;
 	private float[] usData;
-	private double wallDist = 35;
+	private double wallDist = 55;
 	boolean initialWall;
 	private double angleA, angleB;
 	private double distanceA, distanceB, correctedX, correctedY;
@@ -43,7 +43,6 @@ public class Localization implements DPMConstants{
 	 */
 	public void doLocalization() {
 		Repository.setRT(2.14,12.9);
-		double tolerance = 0.1;
 		boolean startWithWall = getFilteredData() <= wallDist;
         angleA = angleB = 0;
 		Sound.setVolume(20);
@@ -57,38 +56,52 @@ public class Localization implements DPMConstants{
         	double data = getFilteredData();
         	double angle = Repository.getAng();
         	
-            if (data <= wallDist + tolerance) // adjust tolerance
-                seenAWall = true;
+        	if (startWithWall){
+        		if (data <= wallDist)
+        			seenAWall = true;
             
-            if (seenAWall && data >= wallDist - tolerance) {
-                Sound.beep();
-                angleA = angle;
-                break; // Break out of the loop
-            }
+        		if (seenAWall && data >= wallDist) {
+        			Sound.beep();
+                	angleA = angle;
+                	break;
+        		}
+        	}
         }
         
         
         // Move on to the other side
-        if (startWithWall)
+        if (startWithWall){
+        	leftMotor.stop(true);
+        	rightMotor.stop();
+        	Delay.msDelay(100);
         	cwRotation(); 
+        }
         
         seenAWall = false;
-        Delay.msDelay(4000);
+        Delay.msDelay(5000);
+        
+        
         while (true) {
         	double data = getFilteredData();
         	double angle = Repository.getAng();
         	
-            if (data <= wallDist + tolerance)
+            if (data <= wallDist )
                 seenAWall = true;
             
-            if (seenAWall && data >= wallDist - tolerance) {
+            if (seenAWall && data >= wallDist) {
                 Sound.beep();
                 angleB = angle;
-                break; // Again, break out of the infinite loop
+                break;
             }
         }
         
-        double correctedTheta = 45 + Math.abs(angleA - angleB)/2;
+        double correctedTheta = 0;
+        if (startWithWall){
+        	correctedTheta = 35 + Math.abs(angleA - angleB)/2;
+        }
+        else{
+        	correctedTheta = 220 + Math.abs(angleA-angleB)/2;
+        }
         
         // Find the corrected angle and set it using odo.setPosition(x, y, theta)!
         double[] newPositions = { 0.0, 0.0, correctedTheta };
@@ -99,8 +112,10 @@ public class Localization implements DPMConstants{
         // the wall and the tile, which will give us the correctedX
         
         Repository.turnTo(180);
-        distanceA = getFilteredData();
+        leftMotor.stop(true);
+        rightMotor.stop();
         Sound.buzz();
+        distanceA = getFilteredData();
         correctedX = distanceA + sensorDist - 30.48;
         
         newPositions = new double[] { correctedX, Repository.getY(), Repository.getAng() };
@@ -112,8 +127,10 @@ public class Localization implements DPMConstants{
         // correctedY when we subtract the distance from the tile distance
 
 		Repository.turnTo(270);
-		distanceB = getFilteredData();
-		Sound.buzz();
+		leftMotor.stop(true);
+        rightMotor.stop();
+        Sound.buzz();
+        distanceB = getFilteredData();
 		correctedY = distanceB + sensorDist - 30.48;
         newPositions = new double[] { Repository.getX(), correctedY, Repository.getAng() };
         bools = new boolean[] { false, true, false };

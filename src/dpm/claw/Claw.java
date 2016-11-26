@@ -1,5 +1,7 @@
 package dpm.claw;
 
+import dpm.repository.Repository;
+import dpm.util.DPMConstants;
 import dpm.util.Motors;
 import lejos.robotics.RegulatedMotor;
 import lejos.utility.Delay;
@@ -9,16 +11,13 @@ import lejos.utility.Delay;
 * <br>Grabbed blocks are kept at least a block's height above floor level.
 * @author Will Liang
 */
-public class Claw {
-    private static final int	CAPACITY = 2,
-    							GRIP_STRENGTH = -450,
-    							HEIGHT = -200;
-    
+public class Claw implements DPMConstants{
+    private final int CAPACITY = 4;
     private final RegulatedMotor    gripclawMotor;
     private final RegulatedMotor    liftMotor;
-    
-    private int blockCount = 0; //number of block currently on robot
-    
+    private int gripStrength = -450;
+    private int height = -170;
+    private static int blockCount = 0; //number of block currently on robot
     
     /**
      * Constructor
@@ -38,59 +37,56 @@ public class Claw {
      * <br> - lift the grip claw to height x
      */
     
-    public void grab(){        
-        if(blockCount == 0){
-            gripclawMotor.rotate(GRIP_STRENGTH);
-            Delay.msDelay(10);
-            liftMotor.rotate(HEIGHT*3);
-            
-        }else if(blockCount == 1){
-            gripclawMotor.rotate(GRIP_STRENGTH);
-            Delay.msDelay(10);
-            liftMotor.rotate(HEIGHT*2);
-            
-        }else if(blockCount == 2){
-            gripclawMotor.rotate(GRIP_STRENGTH);
-            Delay.msDelay(10);
-            liftMotor.rotate(HEIGHT);
-        }
-        blockCount++;
-    }
-	/**
+    public void grab(){
+		if(blockCount == 0){
+			gripclawMotor.rotate(gripStrength);
+			Delay.msDelay(10);
+			liftMotor.rotate(height*3);
+			
+		}else if(blockCount < CAPACITY){
+			gripclawMotor.rotate(gripStrength);
+			Delay.msDelay(10);
+			liftMotor.rotate(height*3);
+			
+		}
+		blockCount++;
+	}
+	
+    /**
 	 *  Executes the following sequence of actions to acquire new block:
  	 * <br>Drop n Stack:
      * <br> - lower the grip claw
      * <br> - open the grip claw
      * <br> - low the grip claw to ground level
      */
-    public void drop(){
-        if(blockCount == 0){
-            gripclawMotor.rotate(-GRIP_STRENGTH);
-            liftMotor.rotate(-HEIGHT*3);
-            
-        }else if(blockCount == 1){
-            liftMotor.rotate(-HEIGHT*2);
-            gripclawMotor.rotate(-GRIP_STRENGTH);
-            liftMotor.rotate(-HEIGHT*1);
-            
-        }else if(blockCount == 2){
-            liftMotor.rotate(-HEIGHT);
-            gripclawMotor.rotate(-GRIP_STRENGTH);
-            liftMotor.rotate(-HEIGHT);
-            
-        }else if(blockCount == 3){ //when it's fully loaded with 3 blocks and ready to drop it in the GZ.
-            gripclawMotor.rotate(-GRIP_STRENGTH);
-            blockCount = 0;
-        }
-        reset();
-    }
     
-    /*
+	public void drop(){
+		//alignment
+		Repository.turnTo(Repository.getAng()+15);
+		
+		if(blockCount == 0){
+			gripclawMotor.rotate(-gripStrength);
+			liftMotor.rotate(-height*3);
+			
+		}else if(blockCount < CAPACITY && blockCount != 0){
+			liftMotor.rotate(-height*4/3);
+			gripclawMotor.rotate(-gripStrength);
+			liftMotor.rotate(-height*3/2);
+			
+		}else{ //when it's fully loaded with 3 blocks and ready to drop it in the GZ.
+			liftMotor.rotate(-height*5/3);
+			gripclawMotor.rotate(-gripStrength);
+			blockCount = 0;
+		}
+	}
+
+    
+    /**
      * Resets the claw back to the initial position
      */
-    private void reset(){
-    	 liftMotor.rotate(HEIGHT*3);
-    	 gripclawMotor.rotate(GRIP_STRENGTH);
+    public void reset(){
+    	 liftMotor.rotate(height*3);
+    	 gripclawMotor.rotate(gripStrength);
     }
     
     /**
