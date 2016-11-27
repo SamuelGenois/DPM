@@ -28,6 +28,7 @@ public class ObstacleAvoidance implements DPMConstants{
 	
 	private int direction;
 	private double x_init, y_init, a, b, initialDistanceFromDestination;
+	private double[] badZone;
 	private boolean startedAvoidance;
 	
 	/**
@@ -37,12 +38,13 @@ public class ObstacleAvoidance implements DPMConstants{
 	 * @param x_fin	The x coordinate of the destination
 	 * @param y_fin	The y coordinate of the destination
 	 */
-	public ObstacleAvoidance(Navigation navigation, double x_fin, double y_fin) {
+	public ObstacleAvoidance(Navigation navigation, double x_fin, double y_fin, double[] badZone) {
 		this.navigation = navigation;
 		this.x_init = this.navigation.getPosition()[0];
 		this.y_init = this.navigation.getPosition()[1];
 		this.a = (x_fin-x_init)/Math.sqrt((x_fin-x_init)*(x_fin-x_init)+(y_fin-y_init)*(y_fin-y_init));
 		this.b = (y_fin-y_init)/Math.sqrt((x_fin-x_init)*(x_fin-x_init)+(y_fin-y_init)*(y_fin-y_init));
+		this.badZone = badZone;
 		this.initialDistanceFromDestination = navigation.calculateDistance(x_fin, y_fin);
 		this.startedAvoidance = false;
 	}
@@ -154,12 +156,12 @@ public class ObstacleAvoidance implements DPMConstants{
 	 * when the sensor is facing forward.
 	 * @return
 	 */
-	public static int look(){
+	public int look(){
 		return look(FORWARD);
 	}
 	
 	//Returns the distance read by the ultrasonic sensor when the sensor is facing the specified direction.
-	private static int look(int direction){
+	private int look(int direction){
 		switch(direction){
 		case LEFT:
 			Motors.getMotor(Motors.SENSOR).rotateTo(-SENSOR_TURN_ANGLE);
@@ -175,9 +177,74 @@ public class ObstacleAvoidance implements DPMConstants{
 	}
 	
 	//Returns the distance read by the ultrasonic sensor.
-	private static int getDistance(){
+	private int getDistance(){
 		float[] data = new float[Sensors.getSensor(Sensors.US_ACTIVE).sampleSize()];
 		Sensors.getSensor(Sensors.US_ACTIVE).fetchSample(data, 0);
-		return (int)(data[0]*100);
+		int distance = (int)(data[0]*100);
+		
+		int distanceFromEdge;
+		double[] position = navigation.getPosition();
+		
+		//If the robot is facing right and the left side of the bad zone is at the robot's right
+		if((position[2]<90 || position[2]>270) && badZone[0]-position[0] >= 0){
+			//Calculate the y value of the intersection of the robot's direction and the vertical line
+			double yIntercept = Math.tan(Math.toRadians(position[2]))*(badZone[0]-position[0])+position[1];
+			System.out.println("Case1: y = " + yIntercept);
+			//If the intersection point is within the left edge of the badZone
+			if(yIntercept <= badZone[1] && yIntercept >= badZone[3]){
+				//Calculate the distance from the left badZone as seen by the us sensor
+				distanceFromEdge = (int)navigation.calculateDistance(badZone[0], yIntercept);
+				//If that calculated distance is lesser than the current output, set the current output to the calculated distance
+				if(distanceFromEdge < distance)
+					distance = distanceFromEdge;
+			}
+		}
+		
+		//If the robot is facing up and the bottom side of the bad zone is above the robot 
+		if((position[2]<180 && position[2]>0) && badZone[3]-position[1] >= 0){
+			//Calculate the x value of the intersection of the robot's direction and the horizontal line
+			double xIntercept = (badZone[3]-position[1])/Math.tan(Math.toRadians(position[2]))+position[0];
+			System.out.println("Case2: x = " + xIntercept);
+			//If the intersection point is within the bottom edge of the badZone
+			if(xIntercept <= badZone[2] && xIntercept >= badZone[0]){
+				//Calculate the distance from the left badZone as seen by the us sensor
+				distanceFromEdge = (int)navigation.calculateDistance(xIntercept, badZone[3]);
+				//If that calculated distance is lesser than the current output, set the current output to the calculated distance
+				if(distanceFromEdge < distance)
+					distance = distanceFromEdge;
+			}
+		}
+		
+		//If the robot is facing left and the right side of the bad zone is at the robot's left
+		if((position[2]<270 && position[2]>90) && badZone[2]-position[0] <= 0){
+			//Calculate the y value of the intersection of the robot's direction and the vertical line
+			double yIntercept = Math.tan(Math.toRadians(position[2]))*(badZone[2]-position[0])+position[1];
+			System.out.println("Case3: y = " + yIntercept);
+			//If the intersection point is within the right edge of the badZone
+			if(yIntercept <= badZone[1] && yIntercept >= badZone[3]){
+				//Calculate the distance from the left badZone as seen by the us sensor
+				distanceFromEdge = (int)navigation.calculateDistance(badZone[2], yIntercept);
+				//If that calculated distance is lesser than the current output, set the current output to the calculated distance
+				if(distanceFromEdge < distance)
+					distance = distanceFromEdge;
+			}
+		}
+		
+		//If the robot is facing down and the top side of the bad zone is below the robots 
+		if((position[2]<360 && position[2]>180) && badZone[1]-position[1] <= 0){
+			//Calculate the x value of the intersection of the robot's direction and the horizontal line
+			double xIntercept = (badZone[1]-position[1])/Math.tan(Math.toRadians(position[2]))+position[0];
+			System.out.println("Case4: x = " + xIntercept);
+			//If the intersection point is within the top edge of the badZone
+			if(xIntercept <= badZone[2] && xIntercept >= badZone[0]){
+				//Calculate the distance from the left badZone as seen by the us sensor
+				distanceFromEdge = (int)navigation.calculateDistance(xIntercept, badZone[1]);
+				//If that calculated distance is lesser than the current output, set the current output to the calculated distance
+				if(distanceFromEdge < distance)
+					distance = distanceFromEdge;
+			}
+		}
+		
+		return distance;
 	}
 }

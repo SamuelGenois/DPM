@@ -34,11 +34,14 @@ public class BlockSearch implements DPMConstants{
 	private int currentRegion;
 	private int currentScanPoint;
 	
-	private int[] regionOrder;
+	private int[]	goodZone,
+					regionOrder;
 	
 	private ArrayList<Integer> goodZoneRegions, badZoneRegions;
 	
 	private double currentOrientation;
+	
+	private double[] nextDumpZone;
 	
 	private float[] usData;
 	
@@ -62,19 +65,23 @@ public class BlockSearch implements DPMConstants{
 		leftMotor.setAcceleration(WHEEL_MOTOR_ACCELERATION);
 		rightMotor.setAcceleration(WHEEL_MOTOR_ACCELERATION);
 		
-		/*
 		if(Repository.getRole() == BUILDER){
-			goodZoneRegions = getRegions(Repository.getGreenZone());
+			goodZone = Repository.getGreenZone();
+			goodZoneRegions = getRegions(goodZone);
 			badZoneRegions = getRegions(Repository.getRedZone());
 		}
 		else {
-			goodZoneRegions = getRegions(Repository.getRedZone());
+			goodZone = Repository.getRedZone();
+			goodZoneRegions = getRegions(goodZone);
 			badZoneRegions = getRegions(Repository.getGreenZone());
-		}*/
+		}
+		
+		nextDumpZone = new double[2];
+		nextDumpZone[0] = (goodZone[0]+0.5)*SQUARE_SIZE;
+		nextDumpZone[1] = (goodZone[1]-0.5)*SQUARE_SIZE;
 		
 		regionOrder = new int[16];
 		
-		/*
 		switch(Repository.getStartZone()){
 			case LOWER_RIGHT:
 				createRegionOrder(3);
@@ -88,7 +95,7 @@ public class BlockSearch implements DPMConstants{
 			case LOWER_LEFT:
 			default:
 				createRegionOrder(0);
-		}*/
+		}
 		
 		greenZoneSearchable = true;
 		currentRegion = 0;
@@ -105,13 +112,17 @@ public class BlockSearch implements DPMConstants{
 			regionOrder[i] = -1;
 		
 		regionOrder[0] = startingCorner;
+		ArrayList<Integer> goodZoneRegions, badZoneRegions;
 		
-		//Stub
-		/*
-		for(int i=1; i<16 ;i++)
-			regionOrder[i] = (i+regionOrder[0])%16;
-		return;
-		*/
+		if(Repository.getRole() == BUILDER){
+			goodZoneRegions = getRegions(Repository.getGreenZone());
+			badZoneRegions = getRegions(Repository.getRedZone());
+		}
+		else {
+			goodZoneRegions = getRegions(Repository.getRedZone());
+			badZoneRegions = getRegions(Repository.getGreenZone());
+		}
+		
 		
 		ArrayList<Integer[]> edges = new ArrayList<>();
 		
@@ -157,6 +168,7 @@ public class BlockSearch implements DPMConstants{
 		
 		if(!goodZoneRegions.isEmpty()){
 		
+			//System.out.println(regionOrder[0]);
 			pathToGoodZone = getShortestPath(regionOrder[0], goodZoneRegions.get(0), edges);
 			
 			for(int i=0; i<16; i++)
@@ -192,6 +204,7 @@ public class BlockSearch implements DPMConstants{
 	}
 	
 	private static ArrayList<Integer> getShortestPath(Integer start, Integer end, ArrayList<Integer[]> edges){
+		
 		ArrayList<ArrayList<Integer[]>> edgesUsed = new ArrayList<>();
 		ArrayList<ArrayList<Integer>> nodesFound = new ArrayList<>();
 		boolean[] discovered = new boolean[16];
@@ -226,18 +239,22 @@ public class BlockSearch implements DPMConstants{
 		}
 		
 		ArrayList<Integer> path = new ArrayList<>();
-		Integer node = start;
+		Integer node = end;
 		path.add(node);
 		
 		for(int j=0; j<i; j++){
 			
-			for(Integer[] edge : edgesUsed.get(j)){
-				if(edge[0] == node)
+			for(Integer[] edge : edgesUsed.get(i-1-j)){
+				if(edge[0] == node){
 					node = edge[1];
-				if(edge[1] == node)
+					break;
+				}
+				if(edge[1] == node){
 					node = edge[0];
+					break;
+				}
 			}
-			path.add(node);
+			path.add(0, node);
 		}
 		
 		return path;
@@ -280,12 +297,26 @@ public class BlockSearch implements DPMConstants{
 	private static ArrayList<Integer> getRegions(int[] zone){
 		ArrayList<Integer> regions = new ArrayList<>();
 		
-		regions.add(zone[0]/3 + 4*(zone[1]/3));
-		regions.add(zone[2]/3 + 4*(zone[3]/3));
+		if(	   zone[0]<-1 || zone[0]>10
+			|| zone[1]<0 || zone[1]>11
+			|| zone[2]<0 || zone[2]>11
+			|| zone[3]<-1 || zone[3]>10
+			|| zone[1]<-1 || zone[1]>11
+			|| zone[2]<-1 || zone[2]>11
+			|| zone[3]<-1 || zone[3]>11
+			|| zone[2]<zone[0] || zone[3]>zone[1])
+				return new ArrayList<Integer>();
 		
-		if(regions.get(0)-3 == regions.get(1)){
+		regions.add(0, ((zone[0]+1)/3) + 4*(zone[1]/3));
+		regions.add(1, (zone[2]/3) + 4*((zone[3]+1)/3));
+		
+		if(regions.get(0)%4 != regions.get(1)%4){
 			regions.add(regions.get(0)+1);
 			regions.add(regions.get(1)-1);
+		}
+		if(regions.get(0)/4 != regions.get(1)/4){
+			regions.add(regions.get(0)-4);
+			regions.add(regions.get(1)+4);
 		}
 		
 		return regions;
@@ -382,10 +413,7 @@ public class BlockSearch implements DPMConstants{
 				Repository.grab();
 				if(Repository.clawIsFull()){
 					greenZoneSearchable = false;
-					this.interrupt();
-					Repository.travelToDest();
-					Repository.turnTo(180);
-					Repository.drop();
+					goDumpBlocks();
 				}
 				break;
 			}
@@ -454,9 +482,7 @@ public class BlockSearch implements DPMConstants{
 				if(Repository.clawIsFull()){
 					greenZoneSearchable = false;
 					this.interrupt();
-					Repository.travelToDest();
-					Repository.turnTo(180);
-					Repository.drop();
+					goDumpBlocks();
 				}
 				break;
 			}
@@ -510,5 +536,45 @@ public class BlockSearch implements DPMConstants{
 		else{
 			return FLOOR;
 		}
+	}
+	
+	/*
+	 * Travels to the destination where blocks are to be dropped off and drop blocks.
+	 */
+	private void goDumpBlocks(){
+		
+		boolean foundDumpLocation;
+		
+		do{
+			double[] dumpZone = getNextDumpZone();
+			foundDumpLocation = Repository.travelTo(dumpZone[0], dumpZone[1], AVOID_ALL);
+		}while (!foundDumpLocation);
+		
+		Repository.turnTo(180);
+		Repository.drop();
+	}
+	
+	/**
+	 * TODO
+	 * @return
+	 */
+	public double[] getNextDumpZone(){
+		double[] currentDumpZone = nextDumpZone;
+		
+		if(nextDumpZone[0]+SQUARE_SIZE < goodZone[2]*SQUARE_SIZE)
+			nextDumpZone[0] += SQUARE_SIZE;
+		
+		else if(nextDumpZone[1]-SQUARE_SIZE > goodZone[3]*SQUARE_SIZE){
+			nextDumpZone[1] -= SQUARE_SIZE;
+			nextDumpZone[0] = (goodZone[0]+0.5)*SQUARE_SIZE;
+		}
+		
+		//If all dump zones have been used, cycle back to first dump zone (this should never happen)
+		else{
+			nextDumpZone[0] = (goodZone[0]+0.5)*SQUARE_SIZE;
+			nextDumpZone[1] = (goodZone[1]-0.5)*SQUARE_SIZE;
+		}
+		
+		return currentDumpZone;
 	}
 }

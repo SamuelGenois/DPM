@@ -6,7 +6,9 @@ import java.util.TimerTask;
 
 import dpm.repository.Repository;
 import dpm.util.DPMConstants;
+import dpm.util.Motors;
 import dpm.util.Printer;
+import dpm.util.Sensors;
 import lejos.hardware.Button;
 
 /**
@@ -33,10 +35,19 @@ public class FinalDemo implements Launcher, DPMConstants{
 			}
 		}).start();
 		
+		//Initialize all hardware
+		Motors.getMotor(Motors.LEFT);
+		Motors.getMotor(Motors.RIGHT);
+		Motors.getMotor(Motors.LIFT);
+		Motors.getMotor(Motors.LOWER_CLAW);
+		Sensors.getSensor(US_ACTIVE);
+		Sensors.getSensor(COLOR_BLOCK_ID);
+		Sensors.getSensor(COLOR_ODO_CORR);
+		Sensors.getSensor(US_ACTIVE);
+		
+		//Wait for the press of a button
 		Printer.getInstance().display("Ready");
-		
 		Button.waitForAnyPress();
-		
 		Printer.getInstance().display("Running");
 		
 		//A launcher subsystem holding round specific data is created 
@@ -45,12 +56,6 @@ public class FinalDemo implements Launcher, DPMConstants{
 		//The repository is given a reference to a launcher subsystem
 		Repository.launch(launcher);
 		
-		//The localization routine is performed
-		Repository.localize();
-		
-		//The block searching routine is performed
-		Repository.search();
-		
 		//After 4 minutes, the finalization routine is performed.
 		(new Timer()).schedule(new TimerTask() {
 			public void run() {
@@ -58,6 +63,12 @@ public class FinalDemo implements Launcher, DPMConstants{
 				Printer.getInstance().display("Finished");
 			}
 		}, FOUR_MINUTES);
+		
+		//The localization routine is performed
+		Repository.localize();
+		
+		//The block searching routine is performed
+		Repository.search();
 	}
 	
 	private static FinalDemo createFinalDemo(){

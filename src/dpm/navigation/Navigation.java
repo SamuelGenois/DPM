@@ -24,7 +24,8 @@ public class Navigation implements DPMConstants{
 	private RegulatedMotor leftMotor, rightMotor;							//Motor objects
 	boolean interrupted;													//Determines whether methods are interrupted or not
 	private double travel_x, travel_y;										//Coordinates of current travel
-
+	private double[] badZone;
+	
 	/**
 	 * Constructor
 	 */
@@ -35,6 +36,19 @@ public class Navigation implements DPMConstants{
 		// set acceleration
 		this.leftMotor.setAcceleration(WHEEL_MOTOR_ACCELERATION);
 		this.rightMotor.setAcceleration(WHEEL_MOTOR_ACCELERATION);
+		
+		//Get absolute coordinates of the zone to avoid
+		int[] badZoneSquareCoordinates;
+		if(Repository.getRole() == BUILDER)
+			badZoneSquareCoordinates = Repository.getGreenZone();
+		else
+			badZoneSquareCoordinates = Repository.getRedZone();
+		
+		badZone = new double[badZoneSquareCoordinates.length];
+		for(int i=0; i<badZone.length; i++)
+			badZone[i] = badZoneSquareCoordinates[i] * SQUARE_SIZE;
+			
+			
 	}
 
 	/**
@@ -74,18 +88,19 @@ public class Navigation implements DPMConstants{
 			this.setSpeeds(FAST, FAST);
 			
 			if(avoidanceSetting != NO_AVOIDANCE){
-				int obstacleDistance = ObstacleAvoidance.look();
+				ObstacleAvoidance avoidance = new ObstacleAvoidance(this, travel_x, travel_y, badZone);
+				int obstacleDistance = avoidance.look();
 				if(obstacleDistance < calculateDistance(x, y) && obstacleDistance < AVOIDANCE_THRESHOLD){
 					this.setSpeeds(0, 0);
 					if(avoidanceSetting == AVOID_ALL){
-						if(!(new ObstacleAvoidance(this, travel_x, travel_y).avoid())){
+						if(!avoidance.avoid()){
 							Sound.buzz();
 							return false;
 						}
 					}
 					if(avoidanceSetting == AVOID_OR_PICKUP){
 						if(!Repository.quickPickup(obstacleDistance))
-							if(!(new ObstacleAvoidance(this, travel_x, travel_y).avoid())){
+							if(!avoidance.avoid()){
 								Sound.buzz();
 								return false;
 							}

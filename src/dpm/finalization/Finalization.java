@@ -36,21 +36,46 @@ public class Finalization implements DPMConstants{
 		
 		Repository.interruptBlockSearch();
 		Repository.interruptNavigation();
+		
+		
+		
 		if(!Repository.clawIsEmpty()){
-			Repository.travelToDest();
+			
+			boolean foundDumpLocation;
+			
+			do{
+				double[] dumpZone = Repository.getNextDumpZone();
+				foundDumpLocation = Repository.travelTo(dumpZone[0], dumpZone[1], AVOID_ALL);
+			}while (!foundDumpLocation);
+			
+			Repository.turnTo(180);
 			Repository.drop();
 		}
 		
+		boolean destinationReached;
+		
 		switch(Repository.getStartZone()){
-			case LOWER_LEFT:
-				Repository.travelTo(-FINAL_POSITON_OFFSET, -FINAL_POSITON_OFFSET, AVOID_ALL);
+			
 			case LOWER_RIGHT:
-				Repository.travelTo(10*SQUARE_SIZE + FINAL_POSITON_OFFSET, -FINAL_POSITON_OFFSET, AVOID_ALL);
+				do{
+					destinationReached = Repository.travelTo(10*SQUARE_SIZE + FINAL_POSITON_OFFSET, -FINAL_POSITON_OFFSET, AVOID_ALL);
+				}while (!destinationReached);
+				break;
 			case UPPER_LEFT:
-				Repository.travelTo(-FINAL_POSITON_OFFSET, 10*SQUARE_SIZE + FINAL_POSITON_OFFSET, AVOID_ALL);
+				do{
+					destinationReached = Repository.travelTo(-FINAL_POSITON_OFFSET, 10*SQUARE_SIZE + FINAL_POSITON_OFFSET, AVOID_ALL);
+				}while (!destinationReached);
+				break;
 			case UPPER_RIGHT:
-				Repository.travelTo(10*SQUARE_SIZE + FINAL_POSITON_OFFSET, 10*SQUARE_SIZE + FINAL_POSITON_OFFSET, AVOID_ALL);
+				do{
+					destinationReached = Repository.travelTo(10*SQUARE_SIZE + FINAL_POSITON_OFFSET, 10*SQUARE_SIZE + FINAL_POSITON_OFFSET, AVOID_ALL);
+				}while (!destinationReached);
+				break;
+			case LOWER_LEFT:
 			default:
+				do{
+					destinationReached = Repository.travelTo(-FINAL_POSITON_OFFSET, -FINAL_POSITON_OFFSET, AVOID_ALL);
+				}while (!destinationReached);
 		}
 		System.exit(0);
 	}

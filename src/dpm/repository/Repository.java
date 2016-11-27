@@ -65,26 +65,6 @@ public class Repository implements DPMConstants{
 	}
 	
 	/**
-	 * Travels to the destination where blocks are to be dropped off
-	 */
-	public static void travelToDest(){
-		double x = 0, y = 0;
-		if (getRole() == BUILDER){
-			x = (getGreenZone()[0]+getGreenZone()[2])*SQUARE_SIZE/2;
-			y = (getGreenZone()[1]+getGreenZone()[3])*SQUARE_SIZE/2;
-			
-		}
-		else if (getRole() == GARBAGE_COLLECTOR){
-			x = (getRedZone()[0]+getRedZone()[2])*SQUARE_SIZE/2;
-			y = (getRedZone()[1]+getRedZone()[3])*SQUARE_SIZE/2;
-		}
-		boolean success = false;
-		while (!success){
-			success = travelTo(x, y, AVOID_ALL);
-		}
-	}
-	
-	/**
 	 * Rotates the robot to the specified angle. The angle is in degrees.
 	 * Angles are counter clockwise from the positive x axis.
 	 * 
@@ -93,15 +73,6 @@ public class Repository implements DPMConstants{
 	public static void turnTo(double angle){
 		getNavigation().turnTo(angle);
 	}
-	
-	/**
-	 * Calculates the euclidean distance between point (x,y) and the robot's current location
-	 * @param x The x coordinate of the point
-	 * @param y The y coordinate of the point
-	 */
-	/*public static double calculateDistance(double x, double y){
-		return getNavigation().calculateDistance(x, y);
-	}*/
 	
 	/**
 	 * Interrupts a running travel operation
@@ -220,6 +191,14 @@ public class Repository implements DPMConstants{
 		if(finalization == null)
 			finalization = new Finalization();
 		finalization.doFinalization();
+	}
+	
+	/**
+	 * TODO
+	 * @return
+	 */
+	public static double[] getNextDumpZone(){
+		return getBlockSearch().getNextDumpZone();
 	}
 	
 	 /** Returns the coordinates of the top left and bottom right corners of the green zone.
