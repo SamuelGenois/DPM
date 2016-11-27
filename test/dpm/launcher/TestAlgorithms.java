@@ -2,14 +2,27 @@ package dpm.launcher;
 
 import java.util.ArrayList;
 
-public class TestAlgorithms {
+public class TestAlgorithms{
 	
 	public static void main(String[] args){
 		//testScanPoint();
 		//testOdoCorr();
-		testCreateRegionOrder();
+		//testGetRegion();
+		//testShortestPath();
+		//testCreateRegionOrder();
+		testGetDistance();
 	}
 	
+	private static void testGetDistance() {
+		double	distance = 100,
+				x = 5*30,
+				y = 4*30,
+				angle = 315;
+		double[] badZone = {1*30, 3*30, 6*30, 1*30};
+		
+		System.out.println(Integer.toString(getDistance(distance, x, y, angle, badZone)));
+	}
+
 	private static void testScanPoint(){
 		for(int region = 0; region<16; region++){
 			double x = (region%4)*3;
@@ -52,9 +65,8 @@ public class TestAlgorithms {
 		}
 	}
 	
-	private static void testCreateRegionOrder(){
+	private static void testGetRegion(){
 		
-		/*
 		for(Integer i : getRegions(new int[] {1, 6, 3, 4}))
 			System.out.print(i+", ");
 		
@@ -63,9 +75,65 @@ public class TestAlgorithms {
 		for(Integer i : getRegions(new int[] {6, 3, 7, 1}))
 			System.out.print(i+", ");
 		
-		System.exit(0);*/
+		System.out.println();
+	}
+	
+	private static void testShortestPath(){
 		
-		int[] regionOrder = createRegionOrder(3, new int[]{1, 6, 3, 4}, null/*new int[]{6, 3, 7, 1*/, true);
+		ArrayList<Integer> badZoneRegions = new ArrayList<>();
+		ArrayList<Integer[]> edges = new ArrayList<>();
+		badZoneRegions.add(2);
+		badZoneRegions.add(6);
+		
+		//For every region i...
+		for(int i=0; i<16; i++){
+			
+			//If i is not a bad zone region
+			if(!badZoneRegions.contains(i)){
+				
+				//If i is not in the topmost row of regions
+				if(i<12){
+					
+					//If i is not in the leftmost column of regions
+					//and if the upper left adjacent region is not a bad zone region,
+					//add the edge between it and i to edges.
+					if((i%4)>0 && !badZoneRegions.contains(i+3))
+						edges.add(new Integer[]{i, i+3});
+					
+					//If the upper adjacent region is not a bad zone region,
+					//add the edge between it and i to edges.
+					if(!badZoneRegions.contains(i+4))
+						edges.add(new Integer[]{i, i+4});
+					
+					//If i is not in the rightmost column of regions
+					//and if the upper right adjacent region is not a bad zone region,
+					//add the edge between it and i to edges.
+					if((i%4)<3 && !badZoneRegions.contains(i+5))
+						edges.add(new Integer[]{i, i+5});
+
+				}
+				
+				//If i is not in the rightmost column of regions
+				//and if the right adjacent region is not a bad zone region,
+				//add the edge between it and i to edges.
+				if((i%4)<3 && !badZoneRegions.contains(i+1))
+					edges.add(new Integer[]{i, i+1});
+				
+			}
+		}
+		
+		ArrayList<Integer> path = getShortestPath(3, 8, edges);
+		
+		System.out.println();
+		
+		for(Integer n : path)
+			System.out.print(n+", ");
+		System.out.println();
+	}
+	
+	private static void testCreateRegionOrder(){
+		
+		int[] regionOrder = createRegionOrder(3, new int[]{1, 6, 3, 4}, new int[] {6, 3, 7, 1}, true);
 		
 		for(int i=3; i>=0; i--){
 			for(int j=0; j<4; j++){
@@ -97,7 +165,7 @@ public class TestAlgorithms {
 		
 		if(isBuilder){
 			goodZoneRegions = getRegions(greenZone);
-			badZoneRegions = new ArrayList<Integer>();//getRegions(redZone);
+			badZoneRegions = getRegions(redZone);
 		}
 		else {
 			goodZoneRegions = getRegions(redZone);
@@ -164,13 +232,6 @@ public class TestAlgorithms {
 				if(!badZoneRegions.contains(i))
 					leftovers.add(new Integer[]{i, getShortestPath(startingCorner, i, edges).size()});
 		}
-		/*
-		System.out.println();
-		
-		System.out.println(pathToGoodZone.size());
-		System.out.println(leftovers.size());
-		
-		System.exit(0);*/
 		
 		//Sort the leftovers in increasing order of shortest path from the green zone upper right region.
 		for(int i=leftovers.size()-1; i>=0; i--){
@@ -209,9 +270,13 @@ public class TestAlgorithms {
 		regions.add(0, ((zone[0]+1)/3) + 4*(zone[1]/3));
 		regions.add(1, (zone[2]/3) + 4*((zone[3]+1)/3));
 		
-		if(regions.get(0)-3 == regions.get(1)){
+		if(regions.get(0)%4 != regions.get(1)%4){
 			regions.add(regions.get(0)+1);
 			regions.add(regions.get(1)-1);
+		}
+		if(regions.get(0)/4 != regions.get(1)/4){
+			regions.add(regions.get(0)-4);
+			regions.add(regions.get(1)+4);
 		}
 		
 		return regions;
@@ -252,24 +317,91 @@ public class TestAlgorithms {
 		}
 		
 		ArrayList<Integer> path = new ArrayList<>();
-		Integer node = start;
+		Integer node = end;
 		path.add(node);
 		
 		for(int j=0; j<i; j++){
 			
-			for(Integer[] edge : edgesUsed.get(j)){
-				if(edge[0] == node)
+			for(Integer[] edge : edgesUsed.get(i-1-j)){
+				if(edge[0] == node){
 					node = edge[1];
-				if(edge[1] == node)
+					break;
+				}
+				if(edge[1] == node){
 					node = edge[0];
+					break;
+				}
 			}
-			path.add(node);
+			path.add(0, node);
 		}
 		
-		for(Integer n : path)
-			System.out.print(n+", ");
-		System.out.println();
-		
 		return path;
+	}
+	
+	private static int getDistance(double distance, double x, double y, double angle, double badZone[]){
+		int modifiedDistance = (int)distance;
+		int distanceFromEdge = modifiedDistance;
+		
+		//If the robot is facing right and the left side of the bad zone is at the robot's right
+		if((angle<90 || angle>270) && badZone[0]-x >= 0){
+			//Calculate the y value of the intersection of the robot's direction and the vertical line
+			double yIntercept = Math.tan(Math.toRadians(angle))*(badZone[0]-x)+y;
+			System.out.println("Case1: y = " + yIntercept);
+			//If the intersection point is within the left edge of the badZone
+			if(yIntercept <= badZone[1] && yIntercept >= badZone[3])
+				//Calculate the distance from the left badZone as seen by the us sensor
+				distanceFromEdge = (int)calculateDistance(x, y, badZone[0], yIntercept);
+			//If that calculated distance is lesser than the current output, set the current output to the calculated distance
+			if(distanceFromEdge < modifiedDistance)
+				modifiedDistance = distanceFromEdge;
+		}
+		
+		//If the robot is facing up and the bottom side of the bad zone is above the robot 
+		if((angle<180 && angle>0) && badZone[3]-y >= 0){
+			//Calculate the x value of the intersection of the robot's direction and the horizontal line
+			double xIntercept = (badZone[3]-y)/Math.tan(Math.toRadians(angle))+x;
+			System.out.println("Case2: x = " + xIntercept);
+			//If the intersection point is within the bottom edge of the badZone
+			if(xIntercept <= badZone[2] && xIntercept >= badZone[0])
+				//Calculate the distance from the left badZone as seen by the us sensor
+				distanceFromEdge = (int)calculateDistance(x, y, xIntercept, badZone[3]);
+			//If that calculated distance is lesser than the current output, set the current output to the calculated distance
+			if(distanceFromEdge < modifiedDistance)
+				modifiedDistance = distanceFromEdge;
+		}
+		
+		//If the robot is facing left and the right side of the bad zone is at the robot's left
+		if((angle<270 && angle>90) && badZone[2]-x <= 0){
+			//Calculate the y value of the intersection of the robot's direction and the vertical line
+			double yIntercept = Math.tan(Math.toRadians(angle))*(badZone[2]-x)+y;
+			System.out.println("Case3: y = " + yIntercept);
+			//If the intersection point is within the right edge of the badZone
+			if(yIntercept <= badZone[1] && yIntercept >= badZone[3])
+				//Calculate the distance from the left badZone as seen by the us sensor
+				distanceFromEdge = (int)calculateDistance(x, y, badZone[2], yIntercept);
+			//If that calculated distance is lesser than the current output, set the current output to the calculated distance
+			if(distanceFromEdge < modifiedDistance)
+				modifiedDistance = distanceFromEdge;
+		}
+		
+		//If the robot is facing down and the top side of the bad zone is below the robots 
+		if((angle<360 && angle>180) && badZone[1]-y <= 0){
+			//Calculate the x value of the intersection of the robot's direction and the horizontal line
+			double xIntercept = (badZone[1]-y)/Math.tan(Math.toRadians(angle))+x;
+			System.out.println("Case4: x = " + xIntercept);
+			//If the intersection point is within the top edge of the badZone
+			if(xIntercept <= badZone[2] && xIntercept >= badZone[0])
+				//Calculate the distance from the left badZone as seen by the us sensor
+				distanceFromEdge = (int)calculateDistance(x, y, xIntercept, badZone[1]);
+			//If that calculated distance is lesser than the current output, set the current output to the calculated distance
+			if(distanceFromEdge < modifiedDistance)
+				modifiedDistance = distanceFromEdge;
+		}
+		
+		return modifiedDistance;
+	}
+	
+	private static double calculateDistance(double x_init, double y_init, double x_fin, double y_fin){
+		return Math.sqrt(Math.pow(x_fin-x_init, 2)+Math.pow(y_fin-y_init, 2));
 	}
 }
