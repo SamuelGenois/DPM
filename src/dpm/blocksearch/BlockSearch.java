@@ -258,14 +258,10 @@ public class BlockSearch implements DPMConstants{
 		interrupted = false;
 		
 		//For testing
-		if (!interrupted)
-			searchRegion(0);
-		/*if (!interrupted)
-			searchRegion(1);
-		if (!interrupted)
-			searchRegion(5);
-		if (!interrupted)
-			searchRegion(4);*/
+		searchRegion(0);
+		searchRegion(1);
+		searchRegion(5);
+		searchRegion(4);
 		
 		//Final
 		/*
@@ -283,9 +279,6 @@ public class BlockSearch implements DPMConstants{
 	 */
 	private static ArrayList<Integer> getRegions(int[] zone){
 		ArrayList<Integer> regions = new ArrayList<>();
-		
-		
-		
 		
 		regions.add(zone[0]/3 + 4*(zone[1]/3));
 		regions.add(zone[2]/3 + 4*(zone[3]/3));
@@ -309,7 +302,6 @@ public class BlockSearch implements DPMConstants{
 			scanPoint[1] = (region/4)* 3 * SQUARE_SIZE;
 			
 			Repository.travelTo(scanPoint[0], scanPoint[1], AVOID_OR_PICKUP);
-			
 			Repository.turnTo(currentOrientation);
 			
 			while(!interrupted && Repository.getAng() < 180){
@@ -332,122 +324,37 @@ public class BlockSearch implements DPMConstants{
 			Sound.beep();
 			
 			currentOrientation = 270;
-			currentRegion = UPPER_RIGHT;
+			currentScanPoint = UPPER_RIGHT;
 		}
+		if (currentScanPoint == UPPER_RIGHT){
+			scanPoint[0] = ((region%4)* 3 + 2) * SQUARE_SIZE;
+			scanPoint[1] = ((region/4)* 3 + 2) * SQUARE_SIZE;
 		
-		scanPoint[0] = ((region%4)* 3 + 2) * SQUARE_SIZE;
-		scanPoint[1] = ((region/4)* 3 + 2) * SQUARE_SIZE;
+			Repository.travelTo(scanPoint[0], scanPoint[1], AVOID_OR_PICKUP);
+			Repository.turnTo(currentOrientation);
 		
-		Repository.travelTo(scanPoint[0], scanPoint[1], AVOID_OR_PICKUP);
-		
-		Repository.turnTo(currentOrientation);
-		
-		while(!interrupted && Repository.getAng() < 180){
-			leftMotor.setSpeed(MOTOR_SCAN_SPEED);
-			rightMotor.setSpeed(-MOTOR_SCAN_SPEED);
-			usSensor.fetchSample(usData, 0);
-			if((int)(usData[0]*100) < SCAN_RANGE){
-				Sound.beep();
-				leftMotor.stop(true);
-				rightMotor.stop();
-				currentOrientation = Repository.getAng();
-				checkObject(scanPoint);
+			while(!interrupted && Repository.getAng() > 180){
+				leftMotor.setSpeed(MOTOR_SCAN_SPEED);
+				rightMotor.setSpeed(-MOTOR_SCAN_SPEED);
+				usSensor.fetchSample(usData, 0);
+				if((int)(usData[0]*100) < SCAN_RANGE){
+					Sound.beep();
+					leftMotor.stop(true);
+					rightMotor.stop();
+					currentOrientation = Repository.getAng();
+					checkObject(scanPoint);
+				}
 			}
-		}
 		
-		leftMotor.stop(true);
-		rightMotor.stop();
-		
-		Sound.beep();
-		Sound.beep();
-		
-		currentOrientation = 90;
-		currentRegion = LOWER_LEFT;
-		
-	}
-	
-	public boolean quickPickup(double distance){
-		double x = Repository.getX();
-		double y = Repository.getY();
-		double angle = Repository.getAng();
-		
-		Repository.travelTo(x + (distance) * Math.cos(Math.toRadians(angle)), y + (distance) * Math.sin(Math.toRadians(angle)), NO_AVOIDANCE);
-		boolean blockPickedUp = false;
-		/*
-		if(identify() == BLUE_BLOCK){
-			Sound.beep();
-			leftMotor.setSpeed(-150);
-			rightMotor.setSpeed(-150);
-			try{Thread.sleep(BACKUP_TIME);} catch(InterruptedException e){}
 			leftMotor.stop(true);
 			rightMotor.stop();
-			Repository.turnTo(Repository.getAng()+180);
-			Repository.drop();
-			Repository.grab();
-			if(Repository.clawIsFull()){
-				greenZoneSearchable = false;
-				this.interrupt();
-			}
-			blockPickedUp = true;
-		}
-		else{
-			leftMotor.setSpeed(-150);
-			rightMotor.setSpeed(-150);
-			try{Thread.sleep(BACKUP_TIME*4);} catch(InterruptedException e){}
-			blockPickedUp = false;
-		}
-		*/
 		
-		//Loop to check multiple points around object
-		for(int i=0; i<7; i++){
-			//Check if object is block, if it is: back up, turn around, grab block, then exit object identification
-			if(identify() == BLUE_BLOCK){
-				Sound.beep();
-				leftMotor.setSpeed(-150);
-				rightMotor.setSpeed(-150);
-				try{Thread.sleep(BACKUP_TIME);} catch(InterruptedException e){}
-				leftMotor.stop(true);
-				rightMotor.stop();
-				Repository.turnTo(Repository.getAng()+180);
-				Repository.turnTo(Repository.getAng()+20);
-				Repository.drop();
-				Repository.grab();
-				if(Repository.clawIsFull()){
-					greenZoneSearchable = false;
-					this.interrupt();
-				}
-				break;
-			}
-			//Check if object is obstacle, if it is: back up, then exit object identification
-			//Also do not scan the next 30 degrees to avoid seeing block again
-			else if (identify() == WOODEN_BLOCK){
-				Sound.twoBeeps();
-				Repository.turnTo(angle);
-				leftMotor.setSpeed(-150);
-				rightMotor.setSpeed(-150);
-				try{Thread.sleep(BACKUP_TIME*4);} catch(InterruptedException e){}
-				break;
-			}
-			//If no object has been identified, move in a cone of 90 degrees centered around the object and try to identify again
-			else {
-				if (i == 3){
-					Repository.turnTo(Repository.getAng()+15*6);
-				}
-				else{
-					Repository.turnTo(Repository.getAng()-15);
-				}
-				if(i==6){
-					Sound.buzz();
-					Repository.turnTo(angle);
-					leftMotor.setSpeed(-150);
-					rightMotor.setSpeed(-150);
-					try{Thread.sleep(BACKUP_TIME*4);} catch(InterruptedException e){}
-				}
-			}
-		}
+			Sound.beep();
+			Sound.beep();
 		
-		Repository.turnTo(angle);
-		return blockPickedUp;
+			currentOrientation = 90;
+			currentScanPoint = LOWER_LEFT;
+		}
 	}
 	
 	/*
@@ -476,6 +383,9 @@ public class BlockSearch implements DPMConstants{
 				if(Repository.clawIsFull()){
 					greenZoneSearchable = false;
 					this.interrupt();
+					Repository.travelToDest();
+					Repository.turnTo(180);
+					Repository.drop();
 				}
 				break;
 			}
@@ -519,6 +429,69 @@ public class BlockSearch implements DPMConstants{
 		Repository.turnTo(currentOrientation);	
 	}
 	
+	public boolean quickPickup(double distance){
+		double x = Repository.getX();
+		double y = Repository.getY();
+		double angle = Repository.getAng();
+		
+		Repository.travelTo(x + (distance) * Math.cos(Math.toRadians(angle)), y + (distance) * Math.sin(Math.toRadians(angle)), NO_AVOIDANCE);
+		boolean blockPickedUp = false;
+		
+		//Loop to check multiple points around object
+		for(int i=0; i<7; i++){
+			//Check if object is block, if it is: back up, turn around, grab block, then exit object identification
+			if(identify() == BLUE_BLOCK){
+				Sound.beep();
+				leftMotor.setSpeed(-150);
+				rightMotor.setSpeed(-150);
+				try{Thread.sleep(BACKUP_TIME);} catch(InterruptedException e){}
+				leftMotor.stop(true);
+				rightMotor.stop();
+				Repository.turnTo(Repository.getAng()+180);
+				Repository.turnTo(Repository.getAng()+20);
+				Repository.drop();
+				Repository.grab();
+				if(Repository.clawIsFull()){
+					greenZoneSearchable = false;
+					this.interrupt();
+					Repository.travelToDest();
+					Repository.turnTo(180);
+					Repository.drop();
+				}
+				break;
+			}
+			//Check if object is obstacle, if it is: back up, then exit object identification
+			//Also do not scan the next 30 degrees to avoid seeing block again
+			else if (identify() == WOODEN_BLOCK){
+				Sound.twoBeeps();
+				Repository.turnTo(angle);
+				leftMotor.setSpeed(-150);
+				rightMotor.setSpeed(-150);
+				try{Thread.sleep(BACKUP_TIME*4);} catch(InterruptedException e){}
+				break;
+			}
+			//If no object has been identified, move in a cone of 90 degrees centered around the object and try to identify again
+			else {
+				if (i == 3){
+					Repository.turnTo(Repository.getAng()+15*6);
+				}
+				else{
+					Repository.turnTo(Repository.getAng()-15);
+				}
+				if(i==6){
+					Sound.buzz();
+					Repository.turnTo(angle);
+					leftMotor.setSpeed(-150);
+					rightMotor.setSpeed(-150);
+					try{Thread.sleep(BACKUP_TIME*4);} catch(InterruptedException e){}
+				}
+			}
+		}
+		
+		Repository.turnTo(angle);
+		return blockPickedUp;
+	}
+	
 	/*
 	 * Determines if the object under the light sensor is a blue foam block, a wooden block or nothing (the floor).
 	 */
@@ -528,7 +501,7 @@ public class BlockSearch implements DPMConstants{
 		float[] colorData = new float[colorSensor.sampleSize()];
 		
 		colorSensor.fetchSample(colorData, 0);
-		if (colorData[1] > colorData[0] && 1000*(colorData[0]+colorData[1]+colorData[2]) > 10){
+		if (colorData[1] > colorData[0] && 1000*(colorData[0]+colorData[1]+colorData[2]) > 8){
 			return BLUE_BLOCK;
 		}
 		else if (colorData[0] > colorData[1] && colorData[1] > 2*colorData[2] && 1000*(colorData[0]+colorData[1]+colorData[2]) > 100){

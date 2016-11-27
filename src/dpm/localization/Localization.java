@@ -142,24 +142,20 @@ public class Localization implements DPMConstants{
 		Repository.turnTo(90);
 		Repository.setRT(2.1, 12.5); //Set the radius and track to navigation-expected values
 		Delay.msDelay(3000); // Delay
-		//Not required when testing localization alone
-				/*
-				switch(Repository.getStartZone()){
-					case LOWER_RIGHT:
-						Repository.setPosition(new double[] {10*SQUARE_SIZE, 0, 180}, new boolean[] {true, true, true});
-						break;
-					case UPPER_LEFT:
-						Repository.setPosition(new double[] {0, 10*SQUARE_SIZE, 0}, new boolean[] {true, true, true});
-						break;
-					case UPPER_RIGHT:
-						Repository.setPosition(new double[] {10*SQUARE_SIZE, 10*SQUARE_SIZE, 270}, new boolean[] {true, true, true});
-						break;
-					case LOWER_LEFT:
-					default:
-				}
-				
-			}
-		}*/
+		switch(Repository.getStartZone()){
+			case LOWER_RIGHT:
+				Repository.setPosition(new double[] {10*SQUARE_SIZE, 0, 180}, new boolean[] {true, true, true});
+				break;
+			case UPPER_LEFT:
+				Repository.setPosition(new double[] {0, 10*SQUARE_SIZE, 0}, new boolean[] {true, true, true});
+				break;
+			case UPPER_RIGHT:
+				Repository.setPosition(new double[] {10*SQUARE_SIZE, 10*SQUARE_SIZE, 270}, new boolean[] {true, true, true});
+				break;
+			case LOWER_LEFT:
+			default:
+		}
+		
 	}
 	
 	/**

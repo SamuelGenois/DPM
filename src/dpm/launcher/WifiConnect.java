@@ -52,7 +52,7 @@ public class WifiConnect {
 	}
 	
 	/**
-	 * Method that gets 
+	 * Method that gets the Wifi data
 	 * @return The Wifi data
 	 */
 	public HashMap<String, Integer> ConnectWifi() {

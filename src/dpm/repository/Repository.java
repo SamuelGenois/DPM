@@ -65,6 +65,26 @@ public class Repository implements DPMConstants{
 	}
 	
 	/**
+	 * Travels to the destination where blocks are to be dropped off
+	 */
+	public static void travelToDest(){
+		double x = 0, y = 0;
+		if (getRole() == BUILDER){
+			x = (getGreenZone()[0]+getGreenZone()[2])*SQUARE_SIZE/2;
+			y = (getGreenZone()[1]+getGreenZone()[3])*SQUARE_SIZE/2;
+			
+		}
+		else if (getRole() == GARBAGE_COLLECTOR){
+			x = (getRedZone()[0]+getRedZone()[2])*SQUARE_SIZE/2;
+			y = (getRedZone()[1]+getRedZone()[3])*SQUARE_SIZE/2;
+		}
+		boolean success = false;
+		while (!success){
+			success = travelTo(x, y, AVOID_ALL);
+		}
+	}
+	
+	/**
 	 * Rotates the robot to the specified angle. The angle is in degrees.
 	 * Angles are counter clockwise from the positive x axis.
 	 * 

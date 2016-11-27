@@ -12,7 +12,7 @@ import lejos.hardware.Button;
 /**
  * Class that executes the tasks required in the final demo
  * 
- * @author Samuel Genois
+ * @author Samuel Genois, Emile Traoré
  *
  */
 public class FinalDemo implements Launcher, DPMConstants{
@@ -75,12 +75,17 @@ public class FinalDemo implements Launcher, DPMConstants{
 		
 		greenZone = new int[] {wifiData.get("LGZx"), wifiData.get("UGZy"), wifiData.get("UGZx"), wifiData.get("LGZy")};
 		redZone = new int[] {wifiData.get("LRZx"), wifiData.get("URZy"), wifiData.get("URZx"), wifiData.get("LRZy")};
-		startingCorner = wifiData.get("BSC");
 		
 		if(wifiData.get("BTN") == TEAM_NUMBER)
 			role = BUILDER;
 		else if(wifiData.get("CTN") == TEAM_NUMBER)
 			role = GARBAGE_COLLECTOR;
+		else
+			throw new Exception();
+		if (role == BUILDER)
+			startingCorner = wifiData.get("BSC");
+		else if (role == GARBAGE_COLLECTOR)
+			startingCorner = wifiData.get("CSC");
 		else
 			throw new Exception();
 	}
