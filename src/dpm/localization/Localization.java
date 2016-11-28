@@ -140,7 +140,7 @@ public class Localization implements DPMConstants{
 
 		Repository.travelTo(0, 0, NO_AVOIDANCE);
 		Repository.turnTo(90);
-		Repository.setRT(2.1, 12.5); //Set the radius and track to navigation-expected values
+		Repository.setRT(2.1, 12.3); //Set the radius and track to navigation-expected values
 		Delay.msDelay(3000); // Delay
 		switch(Repository.getStartZone()){
 			case LOWER_RIGHT:

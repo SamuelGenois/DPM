@@ -182,67 +182,62 @@ public class ObstacleAvoidance implements DPMConstants{
 		Sensors.getSensor(Sensors.US_ACTIVE).fetchSample(data, 0);
 		int distance = (int)(data[0]*100);
 		
-		int distanceFromEdge;
-		double[] position = navigation.getPosition();
+		int distanceFromEdge = distance;
+		
+		double	x = navigation.getPosition()[0],
+				y = navigation.getPosition()[1],
+				angle = navigation.getPosition()[2];
 		
 		//If the robot is facing right and the left side of the bad zone is at the robot's right
-		if((position[2]<90 || position[2]>270) && badZone[0]-position[0] >= 0){
+		if((angle<90 || angle>270) && badZone[0]-x >= 0){
 			//Calculate the y value of the intersection of the robot's direction and the vertical line
-			double yIntercept = Math.tan(Math.toRadians(position[2]))*(badZone[0]-position[0])+position[1];
-			System.out.println("Case1: y = " + yIntercept);
+			double yIntercept = Math.tan(Math.toRadians(angle))*(badZone[0]-x)+y;
 			//If the intersection point is within the left edge of the badZone
-			if(yIntercept <= badZone[1] && yIntercept >= badZone[3]){
+			if(yIntercept <= badZone[1] && yIntercept >= badZone[3])
 				//Calculate the distance from the left badZone as seen by the us sensor
 				distanceFromEdge = (int)navigation.calculateDistance(badZone[0], yIntercept);
-				//If that calculated distance is lesser than the current output, set the current output to the calculated distance
-				if(distanceFromEdge < distance)
-					distance = distanceFromEdge;
-			}
+			//If that calculated distance is lesser than the current output, set the current output to the calculated distance
+			if(distanceFromEdge < distance)
+				distance = distanceFromEdge;
 		}
 		
 		//If the robot is facing up and the bottom side of the bad zone is above the robot 
-		if((position[2]<180 && position[2]>0) && badZone[3]-position[1] >= 0){
+		if((angle<180 && angle>0) && badZone[3]-y >= 0){
 			//Calculate the x value of the intersection of the robot's direction and the horizontal line
-			double xIntercept = (badZone[3]-position[1])/Math.tan(Math.toRadians(position[2]))+position[0];
-			System.out.println("Case2: x = " + xIntercept);
+			double xIntercept = (badZone[3]-y)/Math.tan(Math.toRadians(angle))+x;
 			//If the intersection point is within the bottom edge of the badZone
-			if(xIntercept <= badZone[2] && xIntercept >= badZone[0]){
+			if(xIntercept <= badZone[2] && xIntercept >= badZone[0])
 				//Calculate the distance from the left badZone as seen by the us sensor
 				distanceFromEdge = (int)navigation.calculateDistance(xIntercept, badZone[3]);
-				//If that calculated distance is lesser than the current output, set the current output to the calculated distance
-				if(distanceFromEdge < distance)
-					distance = distanceFromEdge;
-			}
+			//If that calculated distance is lesser than the current output, set the current output to the calculated distance
+			if(distanceFromEdge < distance)
+				distance = distanceFromEdge;
 		}
 		
 		//If the robot is facing left and the right side of the bad zone is at the robot's left
-		if((position[2]<270 && position[2]>90) && badZone[2]-position[0] <= 0){
+		if((angle<270 && angle>90) && badZone[2]-x <= 0){
 			//Calculate the y value of the intersection of the robot's direction and the vertical line
-			double yIntercept = Math.tan(Math.toRadians(position[2]))*(badZone[2]-position[0])+position[1];
-			System.out.println("Case3: y = " + yIntercept);
+			double yIntercept = Math.tan(Math.toRadians(angle))*(badZone[2]-x)+y;
 			//If the intersection point is within the right edge of the badZone
-			if(yIntercept <= badZone[1] && yIntercept >= badZone[3]){
+			if(yIntercept <= badZone[1] && yIntercept >= badZone[3])
 				//Calculate the distance from the left badZone as seen by the us sensor
 				distanceFromEdge = (int)navigation.calculateDistance(badZone[2], yIntercept);
-				//If that calculated distance is lesser than the current output, set the current output to the calculated distance
-				if(distanceFromEdge < distance)
-					distance = distanceFromEdge;
-			}
+			//If that calculated distance is lesser than the current output, set the current output to the calculated distance
+			if(distanceFromEdge < distance)
+				distance = distanceFromEdge;
 		}
 		
 		//If the robot is facing down and the top side of the bad zone is below the robots 
-		if((position[2]<360 && position[2]>180) && badZone[1]-position[1] <= 0){
+		if((angle<360 && angle>180) && badZone[1]-y <= 0){
 			//Calculate the x value of the intersection of the robot's direction and the horizontal line
-			double xIntercept = (badZone[1]-position[1])/Math.tan(Math.toRadians(position[2]))+position[0];
-			System.out.println("Case4: x = " + xIntercept);
+			double xIntercept = (badZone[1]-y)/Math.tan(Math.toRadians(angle))+x;
 			//If the intersection point is within the top edge of the badZone
-			if(xIntercept <= badZone[2] && xIntercept >= badZone[0]){
+			if(xIntercept <= badZone[2] && xIntercept >= badZone[0])
 				//Calculate the distance from the left badZone as seen by the us sensor
 				distanceFromEdge = (int)navigation.calculateDistance(xIntercept, badZone[1]);
-				//If that calculated distance is lesser than the current output, set the current output to the calculated distance
-				if(distanceFromEdge < distance)
-					distance = distanceFromEdge;
-			}
+			//If that calculated distance is lesser than the current output, set the current output to the calculated distance
+			if(distanceFromEdge < distance)
+				distance = distanceFromEdge;
 		}
 		
 		return distance;

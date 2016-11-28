@@ -5,7 +5,7 @@ import dpm.util.Printer;
 import dpm.util.RemoteBrickManager;
 import lejos.hardware.Button;
 
-public class TestLocalization {
+public class TestLocalization{
 
 	public static void main(String[] args){
 		
@@ -17,13 +17,16 @@ public class TestLocalization {
 			}
 		}).start();
 		
-		Printer.getInstance().display("Press any button");
+		(new Thread() {
+			public void run() {
+				while(true)
+					Printer.getInstance().display(Double.toString(Repository.getAng()));
+			}
+		}).start();
+		
 		Button.waitForAnyPress();
-		Printer.getInstance().display("Running");
 		
 		Repository.localize();
-		
-		Printer.getInstance().display("Finished");
 	}
 	
 }

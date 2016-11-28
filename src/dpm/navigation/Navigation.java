@@ -19,7 +19,7 @@ import lejos.robotics.RegulatedMotor;
  * Movement control class (turnTo, travelTo, flt, setSpeeds...)
  */
 public class Navigation implements DPMConstants{
-	private final static int FAST = 200, SLOW = 100;						//Motor speed parameters
+	private final static int FAST = 300, SLOW = 100;						//Motor speed parameters
 	private final static double DEG_ERR = 3.0, CM_ERR = 1.0;				//Tolerances for turnTo and travelTo
 	private RegulatedMotor leftMotor, rightMotor;							//Motor objects
 	boolean interrupted;													//Determines whether methods are interrupted or not

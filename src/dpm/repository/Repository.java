@@ -127,6 +127,37 @@ public class Repository implements DPMConstants{
 	}
 	
 	//This is private because no subsystem should
+	//require direct access to the Launcher object.
+	//If no Launcher is provided to Repository via the launch method,
+	//getLauncher creates a default launcher.
+	private static Launcher getLauncher(){
+		if(launcher == null)
+			launcher = new Launcher(){
+
+				@Override
+				public int[] getGreenZone() {
+					return new int[] {2, 3, 3, 2};
+				}
+
+				@Override
+				public int[] getRedZone() {
+					return new int[] {-1, -1, 0, -2};
+				}
+
+				@Override
+				public int getStartZone() {
+					return 0;
+				}
+
+				@Override
+				public int getRole() {
+					return BUILDER;
+				}
+		};
+		return launcher;
+	}
+	
+	//This is private because no subsystem should
 	//require direct access to the Odometer object
 	private static Odometer getOdometer(){
 		if(odometry == null)
@@ -205,7 +236,7 @@ public class Repository implements DPMConstants{
 	 * @return the coordinates of the top left and bottom right corners of the green zone
 	 */
 	public static int[] getGreenZone() {
-		return launcher.getGreenZone();
+		return getLauncher().getGreenZone();
 	}
 	
 	/**
@@ -213,7 +244,7 @@ public class Repository implements DPMConstants{
 	 * @return the coordinates of the top left and bottom right corners of the green zone
 	 */
 	public static int[] getRedZone() {
-		return launcher.getRedZone();
+		return getLauncher().getRedZone();
 	}
 	
 	/**
@@ -229,7 +260,7 @@ public class Repository implements DPMConstants{
 	 * @return the starting corner of the robot
 	 */
 	public static int getStartZone() {
-		return launcher.getStartZone();
+		return getLauncher().getStartZone();
 	}
 	
 	/**
@@ -237,7 +268,7 @@ public class Repository implements DPMConstants{
 	 * @return the role of the robot
 	 */
 	public static int getRole(){
-		return launcher.getRole();
+		return getLauncher().getRole();
 	}
 	
 	/**

@@ -6,7 +6,7 @@ import dpm.util.Printer;
 import dpm.util.Sensors;
 import lejos.hardware.Button;
 
-public class TestAvoidance extends Thread implements DPMConstants{
+public class TestAvoidance extends Thread implements Launcher, DPMConstants{
 	public static void main(String[] args){
 		(new Thread() {
 			public void run() {
@@ -20,11 +20,36 @@ public class TestAvoidance extends Thread implements DPMConstants{
 		Printer.getInstance().display("Derping");
 		Repository.setRT(2.21, 12.35);
 		Repository.travelTo(60, 0, AVOID_OR_PICKUP);
+		
 		/*Repository.travelTo(5, 60, AVOID_ALL);
 		Repository.travelTo(10, 60, AVOID_ALL);
 		Repository.travelTo(30, 60, AVOID_ALL);
 		Repository.travelTo(60, 60, AVOID_ALL);
 		Repository.travelTo(0, 60, AVOID_ALL);
 		Repository.travelTo(0, 0, AVOID_ALL);*/
+	}
+
+	@Override
+	public int[] getGreenZone() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int[] getRedZone() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public int getStartZone() {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int getRole() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

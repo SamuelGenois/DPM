@@ -15,10 +15,10 @@ public class TestAlgorithms{
 	
 	private static void testGetDistance() {
 		double	distance = 100,
-				x = 5*30,
-				y = 4*30,
-				angle = 315;
-		double[] badZone = {1*30, 3*30, 6*30, 1*30};
+				x = 15,
+				y = 15,
+				angle = 50;
+		double[] badZone = {1*30, 2*30, 2*30, 1*30};
 		
 		System.out.println(Integer.toString(getDistance(distance, x, y, angle, badZone)));
 	}
@@ -67,12 +67,7 @@ public class TestAlgorithms{
 	
 	private static void testGetRegion(){
 		
-		for(Integer i : getRegions(new int[] {1, 6, 3, 4}))
-			System.out.print(i+", ");
-		
-		System.out.println();
-		
-		for(Integer i : getRegions(new int[] {6, 3, 7, 1}))
+		for(Integer i : getRegions(new int[] {1, 2, 2, 1}))
 			System.out.print(i+", ");
 		
 		System.out.println();
@@ -133,7 +128,7 @@ public class TestAlgorithms{
 	
 	private static void testCreateRegionOrder(){
 		
-		int[] regionOrder = createRegionOrder(3, new int[]{1, 6, 3, 4}, new int[] {6, 3, 7, 1}, true);
+		int[] regionOrder = createRegionOrder(3, new int[]{6, 11, 8, 10}, new int[] {-1, 4, 1, 0}, true);
 		
 		for(int i=3; i>=0; i--){
 			for(int j=0; j<4; j++){
