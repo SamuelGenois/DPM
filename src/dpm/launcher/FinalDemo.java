@@ -57,12 +57,14 @@ public class FinalDemo implements Launcher, DPMConstants{
 		Repository.launch(launcher);
 		
 		//After 4 minutes, the finalization routine is performed.
+		/*
 		(new Timer()).schedule(new TimerTask() {
 			public void run() {
 				Repository.doFinalization();
 				Printer.getInstance().display("Finished");
 			}
 		}, FOUR_MINUTES);
+		*/
 		
 		//The localization routine is performed
 		Repository.localize();

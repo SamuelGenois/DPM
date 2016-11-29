@@ -12,7 +12,7 @@ import lejos.utility.Delay;
 * @author Will Liang
 */
 public class Claw implements DPMConstants{
-    private final int CAPACITY = 2;
+    private final int CAPACITY = 1;
     private final RegulatedMotor    gripclawMotor;
     private final RegulatedMotor    liftMotor;
     private int gripStrength = -450;

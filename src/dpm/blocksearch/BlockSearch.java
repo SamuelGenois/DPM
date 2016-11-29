@@ -6,7 +6,6 @@ import dpm.repository.Repository;
 import dpm.util.DPMConstants;
 import dpm.util.Motors;
 import dpm.util.Sensors;
-import lejos.hardware.Sound;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.SampleProvider;
 
@@ -25,7 +24,7 @@ public class BlockSearch implements DPMConstants{
 	
 	private static final int MOTOR_SCAN_SPEED = 90;
 	
-	private static final int	SCAN_RANGE = 61,
+	private static final int	SCAN_RANGE = 55,
 								COLOR_SENSOR_RANGE = 2,
 								BLUE_BLOCK = 0,
 								WOODEN_BLOCK = 1,
@@ -274,16 +273,14 @@ public class BlockSearch implements DPMConstants{
 	public void search(){
 		interrupted = false;
 		
-		searchRegion(0);
-		
 		//Final
-		/*while(!interrupted && currentRegion<regionOrder.length){
+		while(!interrupted && currentRegion<regionOrder.length){
 			if(!badZoneRegions.contains(regionOrder[currentRegion])
 				&& !(goodZoneRegions.contains(regionOrder[currentRegion]) && !greenZoneSearchable))
 				searchRegion(regionOrder[currentRegion]);
 				
 			currentRegion++;
-		}*/
+		}
 	}
 	
 	/*
@@ -327,7 +324,7 @@ public class BlockSearch implements DPMConstants{
 			scanPoint[0] = (region%4)* 3 * SQUARE_SIZE;
 			scanPoint[1] = (region/4)* 3 * SQUARE_SIZE;
 			
-			if(Repository.travelTo(scanPoint[0], scanPoint[1], AVOID_OR_PICKUP)){
+			if(Repository.travelTo(scanPoint[0], scanPoint[1], AVOID_ALL)){
 				Repository.turnTo(currentOrientation);
 				
 				while(!interrupted && Repository.getAng() < 180){

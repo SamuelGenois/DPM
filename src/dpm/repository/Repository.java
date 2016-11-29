@@ -61,7 +61,7 @@ public class Repository implements DPMConstants{
 	 * @param y the y coordinate of the destination
 	 */
 	public static boolean travelTo(double x, double y){
-		return getNavigation().travelTo(x, y, AVOID_OR_PICKUP);
+		return getNavigation().travelTo(x, y, AVOID_ALL);
 	}
 	
 	/**
