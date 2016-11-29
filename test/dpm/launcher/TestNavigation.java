@@ -38,38 +38,27 @@ public class TestNavigation implements DPMConstants{
 	
 	private static void testTurnTo() {
 		Repository.turnTo(0);
-		Sound.beep();
 		Repository.turnTo(45);
-		Sound.twoBeeps();
 		Repository.turnTo(90);
-		Sound.beep();
 		Repository.turnTo(0);
-		Sound.twoBeeps();
 		Repository.turnTo(315);
-		Sound.beep();
 		Repository.turnTo(270);
-		Sound.twoBeeps();
 		Repository.turnTo(0);
-		Sound.beep();
 	}
 	
 	private static void testTravelTo(){
 		Repository.setPosition(new double[] {0.0, 0.0, 0.0}, new boolean[] {true, true, true});
 		
 		Repository.travelTo(30, 30, NO_AVOIDANCE);
-		Sound.beep();
 		try {Thread.sleep(TEST_DELAY);} catch (InterruptedException e) {}
 		
 		Repository.travelTo(0, 30, NO_AVOIDANCE);
-		Sound.beep();
 		try {Thread.sleep(TEST_DELAY);} catch (InterruptedException e) {}
 		
 		Repository.travelTo(30, 0, NO_AVOIDANCE);
-		Sound.beep();
 		try {Thread.sleep(TEST_DELAY);} catch (InterruptedException e) {}
 		
 		Repository.travelTo(0, 0, NO_AVOIDANCE);
-		Sound.beep();
 		try {Thread.sleep(TEST_DELAY);} catch (InterruptedException e) {}
 		
 		Repository.turnTo(0);

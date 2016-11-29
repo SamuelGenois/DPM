@@ -256,7 +256,6 @@ public class ObstacleAvoidance implements DPMConstants{
 		//If that calculated distance is lesser than the current output, set the current output to the calculated distance
 		if(distanceFromEdge < distance){
 			distance = distanceFromEdge;
-			Sound.beep();
 		}
 		
 		System.out.println(distance);

@@ -80,11 +80,6 @@ public class OdometryCorrection extends Thread implements DPMConstants{
 					yDistanceFromGrid = -y;
 				}
 				
-				//For debugging purposes, indicates where correction may occur
-				if (xDistanceFromGrid < CORRECTION_THRESHOLD || yDistanceFromGrid < CORRECTION_THRESHOLD){
-					Sound.beep();
-				}
-				
 				//If vertical line (x distance from grid is within correction threshold, not y distance): correct x coordinate
 				if(xDistanceFromGrid < CORRECTION_THRESHOLD && yDistanceFromGrid > REJECTION_THRESHOLD){
 						if(x>0){
@@ -124,7 +119,6 @@ public class OdometryCorrection extends Thread implements DPMConstants{
 				//If line crossing (both x distance or y distance from grid are within correction threshold): skip correction to prevent mistakes
 				//For debugging purposes, indicates where correction has not occurred due to line crossing
 				else if (yDistanceFromGrid < REJECTION_THRESHOLD && xDistanceFromGrid < REJECTION_THRESHOLD){
-					Sound.buzz();
 				}
 			}
 			try{Thread.sleep(POLLING_DELAY);}catch(InterruptedException e){}

@@ -94,14 +94,12 @@ public class Navigation implements DPMConstants{
 					this.setSpeeds(0, 0);
 					if(avoidanceSetting == AVOID_ALL){
 						if(!avoidance.avoid()){
-							Sound.buzz();
 							return false;
 						}
 					}
 					if(avoidanceSetting == AVOID_OR_PICKUP){
 						if(!Repository.quickPickup(obstacleDistance))
 							if(!avoidance.avoid()){
-								Sound.buzz();
 								return false;
 							}
 					}

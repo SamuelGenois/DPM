@@ -61,7 +61,6 @@ public class Localization implements DPMConstants{
         			seenAWall = true;
             
         		if (seenAWall && data >= wallDist) {
-        			Sound.beep();
                 	angleA = angle;
                 	break;
         		}
@@ -89,7 +88,6 @@ public class Localization implements DPMConstants{
                 seenAWall = true;
             
             if (seenAWall && data >= wallDist) {
-                Sound.beep();
                 angleB = angle;
                 break;
             }
@@ -97,7 +95,7 @@ public class Localization implements DPMConstants{
         
         double correctedTheta = 0;
         if (startWithWall){
-        	correctedTheta = 15 + Math.abs(angleA - angleB)/2;
+        	correctedTheta = 40 + Math.abs(angleA - angleB)/2;
         }
         else{
         	correctedTheta = 220 + Math.abs(angleA-angleB)/2;
@@ -114,7 +112,6 @@ public class Localization implements DPMConstants{
         Repository.turnTo(180);
         leftMotor.stop(true);
         rightMotor.stop();
-        Sound.buzz();
         distanceA = getFilteredData();
         correctedX = distanceA + sensorDist - 30.48;
         
@@ -129,7 +126,6 @@ public class Localization implements DPMConstants{
 		Repository.turnTo(270);
 		leftMotor.stop(true);
         rightMotor.stop();
-        Sound.buzz();
         distanceB = getFilteredData();
 		correctedY = distanceB + sensorDist - 30.48;
         newPositions = new double[] { Repository.getX(), correctedY, Repository.getAng() };
@@ -140,6 +136,7 @@ public class Localization implements DPMConstants{
 
 		Repository.travelTo(0, 0, NO_AVOIDANCE);
 		Repository.turnTo(90);
+		Sound.beep();	//Indicate end of localization
 		Repository.setRT(2.1, 12.3); //Set the radius and track to navigation-expected values
 		Delay.msDelay(3000); // Delay
 		switch(Repository.getStartZone()){

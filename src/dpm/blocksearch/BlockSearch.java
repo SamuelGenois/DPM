@@ -335,7 +335,6 @@ public class BlockSearch implements DPMConstants{
 					rightMotor.setSpeed(-MOTOR_SCAN_SPEED);
 					usSensor.fetchSample(usData, 0);
 					if((int)(usData[0]*100) < SCAN_RANGE){
-						Sound.beep();
 						leftMotor.stop(true);
 						rightMotor.stop();
 						currentOrientation = Repository.getAng();
@@ -345,9 +344,6 @@ public class BlockSearch implements DPMConstants{
 				
 				leftMotor.stop(true);
 				rightMotor.stop();
-				
-				Sound.beep();
-				Sound.beep();
 			}
 			
 			currentOrientation = 270;
@@ -366,7 +362,6 @@ public class BlockSearch implements DPMConstants{
 					rightMotor.setSpeed(-MOTOR_SCAN_SPEED);
 					usSensor.fetchSample(usData, 0);
 					if((int)(usData[0]*100) < SCAN_RANGE){
-						Sound.beep();
 						leftMotor.stop(true);
 						rightMotor.stop();
 						currentOrientation = Repository.getAng();
@@ -376,9 +371,6 @@ public class BlockSearch implements DPMConstants{
 			
 				leftMotor.stop(true);
 				rightMotor.stop();
-			
-				Sound.beep();
-				Sound.beep();
 			}
 		
 			currentOrientation = 90;
@@ -400,7 +392,6 @@ public class BlockSearch implements DPMConstants{
 		for(int i=0; i<7; i++){
 			//Check if object is block, if it is: back up, turn around, grab block, then exit object identification
 			if(identify() == BLUE_BLOCK){
-				Sound.beep();
 				leftMotor.setSpeed(-150);
 				rightMotor.setSpeed(-150);
 				try{Thread.sleep(BACKUP_TIME);} catch(InterruptedException e){}
@@ -418,7 +409,6 @@ public class BlockSearch implements DPMConstants{
 			//Check if object is obstacle, if it is: back up, then exit object identification
 			//Also do not scan the next 30 degrees to avoid seeing block again
 			else if (identify() == WOODEN_BLOCK){
-				Sound.twoBeeps();
 				currentOrientation -= 30.0;
 				if(currentOrientation < 0.0)
 					currentOrientation += 360.0;
@@ -439,7 +429,6 @@ public class BlockSearch implements DPMConstants{
 			//If no object identified for the whole 90 degree sweep, definite false positive: back up, then exit object identification
 			//Also do not scan the next 10 degrees to avoid seeing the same false positive again
 			else{
-				Sound.buzz();
 				currentOrientation -= 10.0;
 				if(currentOrientation < 0.0)
 					currentOrientation += 360.0;
@@ -467,7 +456,6 @@ public class BlockSearch implements DPMConstants{
 		for(int i=0; i<7; i++){
 			//Check if object is block, if it is: back up, turn around, grab block, then exit object identification
 			if(identify() == BLUE_BLOCK){
-				Sound.beep();
 				leftMotor.setSpeed(-150);
 				rightMotor.setSpeed(-150);
 				try{Thread.sleep(BACKUP_TIME);} catch(InterruptedException e){}
@@ -487,7 +475,6 @@ public class BlockSearch implements DPMConstants{
 			//Check if object is obstacle, if it is: back up, then exit object identification
 			//Also do not scan the next 30 degrees to avoid seeing block again
 			else if (identify() == WOODEN_BLOCK){
-				Sound.twoBeeps();
 				Repository.turnTo(angle);
 				leftMotor.setSpeed(-150);
 				rightMotor.setSpeed(-150);
@@ -503,7 +490,6 @@ public class BlockSearch implements DPMConstants{
 					Repository.turnTo(Repository.getAng()-15);
 				}
 				if(i==6){
-					Sound.buzz();
 					Repository.turnTo(angle);
 					leftMotor.setSpeed(-150);
 					rightMotor.setSpeed(-150);
