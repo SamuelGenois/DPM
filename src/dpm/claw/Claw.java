@@ -23,8 +23,8 @@ public class Claw implements DPMConstants{
      * Constructor
      */
     public Claw(){
-        gripclawMotor = Motors.getMotor(Motors.LOWER_CLAW);
-        liftMotor = Motors.getMotor(Motors.LIFT);
+        gripclawMotor = Motors.getMotor(CLAW);
+        liftMotor = Motors.getMotor(LIFT);
     }
     
     /**

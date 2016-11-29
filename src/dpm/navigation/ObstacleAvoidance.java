@@ -1,9 +1,14 @@
 package dpm.navigation;
 
+import java.util.Timer;
+import java.util.TimerTask;
+
+import dpm.repository.Repository;
 import dpm.util.DPMConstants;
 import dpm.util.Motors;
 import dpm.util.Printer;
 import dpm.util.Sensors;
+import lejos.hardware.Sound;
 
 /**
  * This class handles the routines Navigation uses to avoid obstacles in its path.
@@ -25,6 +30,8 @@ public class ObstacleAvoidance implements DPMConstants{
 								BAND_WIDTH = 5;						//The maximum deviation from the nominal distance before adjustment
 	
 	private Navigation navigation;
+	
+	private boolean timedOut;
 	
 	private int direction;
 	private double x_init, y_init, a, b, initialDistanceFromDestination;
@@ -143,7 +150,12 @@ public class ObstacleAvoidance implements DPMConstants{
 	 */
 	public boolean avoid(){
 		direction();
-		while (avoiding() && !navigation.interrupted){
+		
+		timedOut = false;
+		
+		(new Timer()).schedule(new ObstacleAvoidanceTimer(this), 20000l);
+		
+		while (avoiding() && !navigation.interrupted && !timedOut){
 			processUSDistance();
 		}
 		navigation.setSpeeds(0, 0);
@@ -165,28 +177,41 @@ public class ObstacleAvoidance implements DPMConstants{
 		switch(direction){
 		case LEFT:
 			Motors.getMotor(Motors.SENSOR).rotateTo(-SENSOR_TURN_ANGLE);
-			return getDistance();
+			return getDistance(direction);
 		case RIGHT:
 			Motors.getMotor(Motors.SENSOR).rotateTo(SENSOR_TURN_ANGLE);
-			return getDistance();
+			return getDistance(direction);
 		case FORWARD:
 		default:
 			Motors.getMotor(Motors.SENSOR).rotateTo(0);
-			return getDistance();
+			return getDistance(direction);
 		}
 	}
 	
 	//Returns the distance read by the ultrasonic sensor.
-	private int getDistance(){
+	private int getDistance(int direction){
 		float[] data = new float[Sensors.getSensor(Sensors.US_ACTIVE).sampleSize()];
 		Sensors.getSensor(Sensors.US_ACTIVE).fetchSample(data, 0);
 		int distance = (int)(data[0]*100);
 		
+		//Code to treat RedZone as a physical obstacle. Does not work.
+		/*
 		int distanceFromEdge = distance;
 		
 		double	x = navigation.getPosition()[0],
 				y = navigation.getPosition()[1],
 				angle = navigation.getPosition()[2];
+		
+		if(direction == LEFT){
+			angle += SENSOR_TURN_ANGLE;
+			if(angle >=360)
+				angle -= 360; 
+		}
+		if(direction == RIGHT){
+			angle -= SENSOR_TURN_ANGLE;
+			if(angle < 0)
+				angle += 360; 
+		}
 		
 		//If the robot is facing right and the left side of the bad zone is at the robot's right
 		if((angle<90 || angle>270) && badZone[0]-x >= 0){
@@ -195,10 +220,7 @@ public class ObstacleAvoidance implements DPMConstants{
 			//If the intersection point is within the left edge of the badZone
 			if(yIntercept <= badZone[1] && yIntercept >= badZone[3])
 				//Calculate the distance from the left badZone as seen by the us sensor
-				distanceFromEdge = (int)navigation.calculateDistance(badZone[0], yIntercept);
-			//If that calculated distance is lesser than the current output, set the current output to the calculated distance
-			if(distanceFromEdge < distance)
-				distance = distanceFromEdge;
+				distanceFromEdge = Math.min(distanceFromEdge, (int)navigation.calculateDistance(badZone[0], yIntercept));
 		}
 		
 		//If the robot is facing up and the bottom side of the bad zone is above the robot 
@@ -208,10 +230,7 @@ public class ObstacleAvoidance implements DPMConstants{
 			//If the intersection point is within the bottom edge of the badZone
 			if(xIntercept <= badZone[2] && xIntercept >= badZone[0])
 				//Calculate the distance from the left badZone as seen by the us sensor
-				distanceFromEdge = (int)navigation.calculateDistance(xIntercept, badZone[3]);
-			//If that calculated distance is lesser than the current output, set the current output to the calculated distance
-			if(distanceFromEdge < distance)
-				distance = distanceFromEdge;
+				distanceFromEdge = Math.min(distanceFromEdge, (int)navigation.calculateDistance(xIntercept, badZone[3]));
 		}
 		
 		//If the robot is facing left and the right side of the bad zone is at the robot's left
@@ -221,10 +240,7 @@ public class ObstacleAvoidance implements DPMConstants{
 			//If the intersection point is within the right edge of the badZone
 			if(yIntercept <= badZone[1] && yIntercept >= badZone[3])
 				//Calculate the distance from the left badZone as seen by the us sensor
-				distanceFromEdge = (int)navigation.calculateDistance(badZone[2], yIntercept);
-			//If that calculated distance is lesser than the current output, set the current output to the calculated distance
-			if(distanceFromEdge < distance)
-				distance = distanceFromEdge;
+				distanceFromEdge = Math.min(distanceFromEdge, (int)navigation.calculateDistance(badZone[2], yIntercept));
 		}
 		
 		//If the robot is facing down and the top side of the bad zone is below the robots 
@@ -234,12 +250,32 @@ public class ObstacleAvoidance implements DPMConstants{
 			//If the intersection point is within the top edge of the badZone
 			if(xIntercept <= badZone[2] && xIntercept >= badZone[0])
 				//Calculate the distance from the left badZone as seen by the us sensor
-				distanceFromEdge = (int)navigation.calculateDistance(xIntercept, badZone[1]);
-			//If that calculated distance is lesser than the current output, set the current output to the calculated distance
-			if(distanceFromEdge < distance)
-				distance = distanceFromEdge;
+				distanceFromEdge = Math.min(distanceFromEdge, (int)navigation.calculateDistance(xIntercept, badZone[1]));
 		}
 		
+		//If that calculated distance is lesser than the current output, set the current output to the calculated distance
+		if(distanceFromEdge < distance){
+			distance = distanceFromEdge;
+			Sound.beep();
+		}
+		
+		System.out.println(distance);
+		*/
+		
 		return distance;
+	}
+	
+	private class ObstacleAvoidanceTimer extends TimerTask{
+
+		private final ObstacleAvoidance obstacleAvoidance;
+		
+		public ObstacleAvoidanceTimer(ObstacleAvoidance obstacleAvoidance){
+			this.obstacleAvoidance = obstacleAvoidance;
+		}
+		
+		@Override
+		public void run() {
+			obstacleAvoidance.timedOut = true;
+		}
 	}
 }

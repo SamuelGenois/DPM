@@ -274,15 +274,10 @@ public class BlockSearch implements DPMConstants{
 	public void search(){
 		interrupted = false;
 		
-		//For testing
 		searchRegion(0);
-		searchRegion(1);
-		searchRegion(5);
-		searchRegion(4);
 		
 		//Final
-		/*
-		while(!interrupted && i<regionOrder.length){
+		/*while(!interrupted && currentRegion<regionOrder.length){
 			if(!badZoneRegions.contains(regionOrder[currentRegion])
 				&& !(goodZoneRegions.contains(regionOrder[currentRegion]) && !greenZoneSearchable))
 				searchRegion(regionOrder[currentRegion]);
@@ -332,56 +327,59 @@ public class BlockSearch implements DPMConstants{
 			scanPoint[0] = (region%4)* 3 * SQUARE_SIZE;
 			scanPoint[1] = (region/4)* 3 * SQUARE_SIZE;
 			
-			Repository.travelTo(scanPoint[0], scanPoint[1], AVOID_OR_PICKUP);
-			Repository.turnTo(currentOrientation);
-			
-			while(!interrupted && Repository.getAng() < 180){
-				leftMotor.setSpeed(MOTOR_SCAN_SPEED);
-				rightMotor.setSpeed(-MOTOR_SCAN_SPEED);
-				usSensor.fetchSample(usData, 0);
-				if((int)(usData[0]*100) < SCAN_RANGE){
-					Sound.beep();
-					leftMotor.stop(true);
-					rightMotor.stop();
-					currentOrientation = Repository.getAng();
-					checkObject(scanPoint);
+			if(Repository.travelTo(scanPoint[0], scanPoint[1], AVOID_OR_PICKUP)){
+				Repository.turnTo(currentOrientation);
+				
+				while(!interrupted && Repository.getAng() < 180){
+					leftMotor.setSpeed(MOTOR_SCAN_SPEED);
+					rightMotor.setSpeed(-MOTOR_SCAN_SPEED);
+					usSensor.fetchSample(usData, 0);
+					if((int)(usData[0]*100) < SCAN_RANGE){
+						Sound.beep();
+						leftMotor.stop(true);
+						rightMotor.stop();
+						currentOrientation = Repository.getAng();
+						checkObject(scanPoint);
+					}
 				}
+				
+				leftMotor.stop(true);
+				rightMotor.stop();
+				
+				Sound.beep();
+				Sound.beep();
 			}
-			
-			leftMotor.stop(true);
-			rightMotor.stop();
-			
-			Sound.beep();
-			Sound.beep();
 			
 			currentOrientation = 270;
 			currentScanPoint = UPPER_RIGHT;
 		}
+		
 		if (currentScanPoint == UPPER_RIGHT){
 			scanPoint[0] = ((region%4)* 3 + 2) * SQUARE_SIZE;
 			scanPoint[1] = ((region/4)* 3 + 2) * SQUARE_SIZE;
 		
-			Repository.travelTo(scanPoint[0], scanPoint[1], AVOID_OR_PICKUP);
-			Repository.turnTo(currentOrientation);
-		
-			while(!interrupted && Repository.getAng() > 180){
-				leftMotor.setSpeed(MOTOR_SCAN_SPEED);
-				rightMotor.setSpeed(-MOTOR_SCAN_SPEED);
-				usSensor.fetchSample(usData, 0);
-				if((int)(usData[0]*100) < SCAN_RANGE){
-					Sound.beep();
-					leftMotor.stop(true);
-					rightMotor.stop();
-					currentOrientation = Repository.getAng();
-					checkObject(scanPoint);
+			if(Repository.travelTo(scanPoint[0], scanPoint[1], AVOID_ALL)){
+				Repository.turnTo(currentOrientation);
+			
+				while(!interrupted && Repository.getAng() > 180){
+					leftMotor.setSpeed(MOTOR_SCAN_SPEED);
+					rightMotor.setSpeed(-MOTOR_SCAN_SPEED);
+					usSensor.fetchSample(usData, 0);
+					if((int)(usData[0]*100) < SCAN_RANGE){
+						Sound.beep();
+						leftMotor.stop(true);
+						rightMotor.stop();
+						currentOrientation = Repository.getAng();
+						checkObject(scanPoint);
+					}
 				}
+			
+				leftMotor.stop(true);
+				rightMotor.stop();
+			
+				Sound.beep();
+				Sound.beep();
 			}
-		
-			leftMotor.stop(true);
-			rightMotor.stop();
-		
-			Sound.beep();
-			Sound.beep();
 		
 			currentOrientation = 90;
 			currentScanPoint = LOWER_LEFT;

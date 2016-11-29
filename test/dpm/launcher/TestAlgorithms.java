@@ -15,9 +15,9 @@ public class TestAlgorithms{
 	
 	private static void testGetDistance() {
 		double	distance = 100,
-				x = 15,
+				x = 30,
 				y = 15,
-				angle = 50;
+				angle = 0;
 		double[] badZone = {1*30, 2*30, 2*30, 1*30};
 		
 		System.out.println(Integer.toString(getDistance(distance, x, y, angle, badZone)));

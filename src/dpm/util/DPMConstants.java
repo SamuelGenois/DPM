@@ -47,12 +47,18 @@ public interface DPMConstants {
 	/**
 	 * The id of the motor operating the lower claw
 	 */
-	public static final int LOWER_CLAW = 2;
+	public static final int CLAW = 2;
 	
 	/**
-	 * The id of the motor operating the upper claw
+	 * The id of the motor operating the lifting of the upper claw
 	 */
-	public static final int UPPER_CLAW = 3;
+	public static final int LIFT = 4;
+	
+	/**
+	 * The id of the motor operating the motion of the
+	 * dynamic ultrasonic sensor
+	 */
+	public static final int SENSOR = 5;
 	
 	
 	//Sensors

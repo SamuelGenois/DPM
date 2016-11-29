@@ -17,17 +17,6 @@ public class Motors implements DPMConstants{
 	public static final long ONE_SECOND = 1000;
 	
 	/**
-	 * The id of the motor operating the lifting of the upper claw
-	 */
-	public static final int LIFT = 4;
-	
-	/**
-	 * The id of the motor operating the motion of the
-	 * dynamic ultrasonic sensor
-	 */
-	public static final int SENSOR = 5;
-	
-	/**
 	 * The radius of the robot's wheels
 	 */
 	public static final double WHEEL_RADIUS = 2.1;
@@ -56,14 +45,10 @@ public class Motors implements DPMConstants{
 				if(motors[RIGHT] == null)
 					motors[RIGHT] = new Motor(RemoteBrickManager.MASTER, 'L', "D");
 				return motors[RIGHT];
-			case LOWER_CLAW:
-				if(motors[LOWER_CLAW] == null)
-					motors[LOWER_CLAW] = new Motor(RemoteBrickManager.SLAVE, 'M', "A");
-				return motors[LOWER_CLAW];
-			case UPPER_CLAW:
-				if(motors[UPPER_CLAW] == null)
-					motors[UPPER_CLAW] = new Motor(RemoteBrickManager.SLAVE, 'M', "B");
-				return motors[UPPER_CLAW];
+			case CLAW:
+				if(motors[CLAW] == null)
+					motors[CLAW] = new Motor(RemoteBrickManager.SLAVE, 'M', "A");
+				return motors[CLAW];
 			case LIFT:
 				if(motors[LIFT] == null)
 					motors[LIFT] = new Motor(RemoteBrickManager.SLAVE, 'L', "C");

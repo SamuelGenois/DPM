@@ -71,9 +71,9 @@ public class Localization implements DPMConstants{
         
         // Move on to the other side
         if (startWithWall){
-        	leftMotor.stop(true);
+        	/*leftMotor.stop(true);
         	rightMotor.stop();
-        	Delay.msDelay(100);
+        	Delay.msDelay(100);*/
         	cwRotation(); 
         }
         
@@ -97,7 +97,7 @@ public class Localization implements DPMConstants{
         
         double correctedTheta = 0;
         if (startWithWall){
-        	correctedTheta = 35 + Math.abs(angleA - angleB)/2;
+        	correctedTheta = 15 + Math.abs(angleA - angleB)/2;
         }
         else{
         	correctedTheta = 220 + Math.abs(angleA-angleB)/2;
@@ -154,6 +154,7 @@ public class Localization implements DPMConstants{
 				break;
 			case LOWER_LEFT:
 			default:
+				Repository.setPosition(new double[] {0, 0, 90}, new boolean[] {true, true, true});
 		}
 		
 	}

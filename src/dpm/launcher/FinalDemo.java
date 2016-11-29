@@ -39,7 +39,7 @@ public class FinalDemo implements Launcher, DPMConstants{
 		Motors.getMotor(Motors.LEFT);
 		Motors.getMotor(Motors.RIGHT);
 		Motors.getMotor(Motors.LIFT);
-		Motors.getMotor(Motors.LOWER_CLAW);
+		Motors.getMotor(Motors.CLAW);
 		Sensors.getSensor(US_ACTIVE);
 		Sensors.getSensor(COLOR_BLOCK_ID);
 		Sensors.getSensor(COLOR_ODO_CORR);

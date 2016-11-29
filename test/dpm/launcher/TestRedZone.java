@@ -17,13 +17,11 @@ public class TestRedZone implements Launcher, DPMConstants{
 			System.exit(0);
 			}
 		}).start();
-		Printer.getInstance().display("Press any button");
 		Sensors.getSensor(US_ACTIVE);
 		Button.waitForAnyPress();
-		Printer.getInstance().display("Running");
 		Repository.setRT(2.1, 12.3);
 		Repository.launch(new TestRedZone());
-		Repository.travelTo(60, 60, AVOID_ALL);
+		Repository.travelTo(0, 75, AVOID_ALL);
 		Printer.getInstance().display("Finished");
 	}
 
@@ -34,7 +32,7 @@ public class TestRedZone implements Launcher, DPMConstants{
 
 	@Override
 	public int[] getRedZone() {
-		return new int[] {1, 2, 2, 1};
+		return new int[] {-1, 3, 3, 1};
 	}
 
 	@Override

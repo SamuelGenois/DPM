@@ -146,7 +146,7 @@ public class Repository implements DPMConstants{
 
 				@Override
 				public int getStartZone() {
-					return 0;
+					return LOWER_LEFT;
 				}
 
 				@Override
@@ -202,7 +202,6 @@ public class Repository implements DPMConstants{
 	 */
 	public static void interruptBlockSearch(){
 		blockSearch.interrupt();
-		//navigation.interrupt();
 		try {Thread.sleep(INTERRUPT_DELAY);} catch(InterruptedException e){}
 	}
 	
