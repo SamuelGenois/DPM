@@ -12,12 +12,13 @@ import lejos.utility.Delay;
 * @author Will Liang
 */
 public class Claw implements DPMConstants{
-    private final int CAPACITY = 1;
+	
+    private final int CAPACITY = 1;					//The maximum number of blocks the claw can hold at a time
     private final RegulatedMotor    gripclawMotor;
     private final RegulatedMotor    liftMotor;
     private int gripStrength = -450;
     private int height = -170;
-    private static int blockCount = 0; //number of block currently on robot
+    private static int blockCount = 0; 				//number of block currently on robot
     
     /**
      * Constructor

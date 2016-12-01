@@ -20,7 +20,6 @@ public class Localization implements DPMConstants{
 	private SampleProvider usSensor;
 	private float[] usData;
 	private double wallDist = 55;
-	boolean initialWall;
 	private double angleA, angleB;
 	private double distanceA, distanceB, correctedX, correctedY;
 	private double sensorDist = 8.0;

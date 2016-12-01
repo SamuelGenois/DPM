@@ -15,8 +15,8 @@ import lejos.remote.ev3.RemoteRequestEV3;
  */
 public class RemoteBrickManager{
 	
-	public static final int	MASTER = 0,
-							SLAVE = 1;
+	static final int	MASTER = 0,
+						SLAVE = 1;
 	
 	private static final String SLAVE_NAME = "EV3";
 	

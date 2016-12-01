@@ -37,8 +37,6 @@ public class Finalization implements DPMConstants{
 		Repository.interruptBlockSearch();
 		Repository.interruptNavigation();
 		
-		
-		
 		if(!Repository.clawIsEmpty()){
 			
 			boolean foundDumpLocation;

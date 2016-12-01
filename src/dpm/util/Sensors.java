@@ -34,10 +34,6 @@ public class Sensors implements DPMConstants{
 				if(sensors[US_ACTIVE] == null)
 					sensors[US_ACTIVE] = new Sensor(RemoteBrickManager.MASTER, "S1" , US_DISTANCE);
 				return sensors[US_ACTIVE];
-			case US_PASSIVE:
-				if(sensors[US_PASSIVE] == null)
-					sensors[US_PASSIVE] = new Sensor(RemoteBrickManager.SLAVE, "S1" , US_LISTEN);
-				return sensors[US_PASSIVE];
 			case COLOR_BLOCK_ID:
 				if(sensors[COLOR_BLOCK_ID] == null)
 					sensors[COLOR_BLOCK_ID] = new Sensor(RemoteBrickManager.MASTER, "S3" , COLOR_RGB);

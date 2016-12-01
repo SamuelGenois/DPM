@@ -3,12 +3,10 @@ package dpm.navigation;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import dpm.repository.Repository;
 import dpm.util.DPMConstants;
 import dpm.util.Motors;
 import dpm.util.Printer;
 import dpm.util.Sensors;
-import lejos.hardware.Sound;
 
 /**
  * This class handles the routines Navigation uses to avoid obstacles in its path.
@@ -194,7 +192,10 @@ public class ObstacleAvoidance implements DPMConstants{
 		Sensors.getSensor(Sensors.US_ACTIVE).fetchSample(data, 0);
 		int distance = (int)(data[0]*100);
 		
-		//Code to treat RedZone as a physical obstacle. Does not work.
+		//Code to treat badZone as a physical obstacle.
+		//For some reason, using it causes ObstacleAvoidance to fail its avoidance maneuvers after
+		//detecting the badZone.
+		
 		/*
 		int distanceFromEdge = distance;
 		
@@ -258,12 +259,14 @@ public class ObstacleAvoidance implements DPMConstants{
 			distance = distanceFromEdge;
 		}
 		
-		System.out.println(distance);
 		*/
 		
 		return distance;
 	}
 	
+	/*
+	 * Custom TimerTask subclass used to stop ObstacleAvoidance after a scheduled delay
+	 */
 	private class ObstacleAvoidanceTimer extends TimerTask{
 
 		private final ObstacleAvoidance obstacleAvoidance;

@@ -224,8 +224,9 @@ public class Repository implements DPMConstants{
 	}
 	
 	/**
-	 * TODO
-	 * @return
+	 * Returns the next vacant location within the good zone where the robot
+	 * can dump the blocks it is holding.
+	 * @return the next vacant dump location
 	 */
 	public static double[] getNextDumpZone(){
 		return getBlockSearch().getNextDumpZone();
@@ -292,6 +293,13 @@ public class Repository implements DPMConstants{
 		getOdometer().width = t;
 	}
 	
+	/**
+	 * Executes a routine where the robot approaches an object in front of it,
+	 * identifies the object, picks it up if the object is a blue block, and 
+	 * backs up to its original position.
+	 * @param distance the distance between the robot and the object in front of it
+	 * @return true if the object was a blue blocked (and thus was picked up).
+	 */
 	public static boolean quickPickup(double distance){
 		return getBlockSearch().quickPickup(distance);
 	}

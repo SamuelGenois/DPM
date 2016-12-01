@@ -9,7 +9,7 @@ public interface DPMConstants {
 	
 	public static final double SQUARE_SIZE = 30.48;
 	
-	//Travel to modes
+	//Navigation's travelTo modes
 	
 	public static final int NO_AVOIDANCE = 0,
 							AVOID_ALL = 1,
@@ -67,12 +67,6 @@ public interface DPMConstants {
 	 * distance in front of the robot
 	 */
 	public static final int	US_ACTIVE = 0;
-	
-	/**
-	 * The id of the ultrasonic sensor used to detect
-	 * ultrasonic interference
-	 */
-	public static final int	US_PASSIVE = 1;
 	
 	/**
 	 * The id of the color sensor used to identify blue

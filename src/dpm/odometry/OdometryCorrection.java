@@ -2,7 +2,6 @@ package dpm.odometry;
 
 import dpm.util.DPMConstants;
 import dpm.util.Sensors;
-import lejos.hardware.Sound;
 import lejos.robotics.SampleProvider;
 
 /**

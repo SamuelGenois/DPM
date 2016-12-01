@@ -105,23 +105,39 @@ public class BlockSearch implements DPMConstants{
 	/*
 	 * Constructs an array containing the order in witch the regions must be scanned
 	 */
-	private void createRegionOrder(int startingCorner){
+	private void createRegionOrder(int startingCornerRegion){
 		
-		for(int i=0; i<16; i++)
+		//Sets all values of the regionOrder to -1
+		for(int i=0; i<regionOrder.length; i++)
 			regionOrder[i] = -1;
 		
-		regionOrder[0] = startingCorner;
+		//Lists of regions that overlap with the region the robot must drop blocks in (goodZone)
+		//and the regions that overlap with the region the robot must avoid (badZone)
 		ArrayList<Integer> goodZoneRegions, badZoneRegions;
 		
+		//If the robot is the builder, the goodZone is the green zone and the badZone is the redZone
 		if(Repository.getRole() == BUILDER){
 			goodZoneRegions = getRegions(Repository.getGreenZone());
 			badZoneRegions = getRegions(Repository.getRedZone());
 		}
+		
+		//If the robot is the garbage collector, the goodZone is the green zone and the badZone is the redZone
 		else {
 			goodZoneRegions = getRegions(Repository.getRedZone());
 			badZoneRegions = getRegions(Repository.getGreenZone());
 		}
 		
+		//This algorithm uses minimal spanning trees to find shortest paths.
+		//To do so, the algorithms requires a graph with regions as nodes
+		//(identified by an integer from 0 to 15) and edges representing adjacency between regions
+		//
+		//The regions are identified in a certain way such that their id carries some information
+		//about their position, which is used to generate the edges. The regions are identified as follow
+		//
+		//  12 13 14 15
+		//   8  9 10 11
+	    //   4  5  6  7
+	    //   0  1  2  3 
 		
 		ArrayList<Integer[]> edges = new ArrayList<>();
 		
@@ -162,12 +178,17 @@ public class BlockSearch implements DPMConstants{
 			}
 		}
 		
+		//The regions, in order, the robot must scan to reach the upper left region
+		//that overlaps with the good zone in as few region scans as possible.
 		ArrayList<Integer> pathToGoodZone;
+		
+		//All of the remaining regions to scan that do not overlap with the bad Zone.
+		//For each node added to leftovers is stored with information on the length
+		//of the shortest path from the end of pathToGoodZone to the node.
 		ArrayList<Integer[]> leftovers = new ArrayList<Integer[]>();
 		
 		if(!goodZoneRegions.isEmpty()){
 		
-			//System.out.println(regionOrder[0]);
 			pathToGoodZone = getShortestPath(regionOrder[0], goodZoneRegions.get(0), edges);
 			
 			for(int i=0; i<16; i++)
@@ -175,15 +196,17 @@ public class BlockSearch implements DPMConstants{
 					leftovers.add(new Integer[]{i, getShortestPath(goodZoneRegions.get(0), i, edges).size()});
 		}
 		
+		//If the getRegions method fails to find regions overlapping with the goodZone (which should not occur),
+		//by default all of the regions are leftover regions. This default was added only for the sake of robustness.
 		else{
 			pathToGoodZone = new ArrayList<>();
 			
 			for(int i=0; i<16; i++)
 				if(!badZoneRegions.contains(i))
-					leftovers.add(new Integer[]{i, getShortestPath(startingCorner, i, edges).size()});
+					leftovers.add(new Integer[]{i, getShortestPath(startingCornerRegion, i, edges).size()});
 		}
 		
-		//Sort the leftovers in increasing order of shortest path from the green zone upper right region.
+		//Sort the leftover regions in increasing order of shortest path from the end of pathToGoodZone.
 		for(int i=leftovers.size()-1; i>=0; i--){
 			int maxIndex = 0;
 			for(int j=0; j<i; j++)
@@ -194,14 +217,21 @@ public class BlockSearch implements DPMConstants{
 			leftovers.set(maxIndex, temp);
 		}
 		
-		for(int i=1; i<pathToGoodZone.size(); i++)
+		//The first regions to be added to regionOrder are the regions that constitute the path to the good zone.
+		for(int i=0; i<pathToGoodZone.size(); i++)
 			regionOrder[i] = pathToGoodZone.get(i);
 		
+		//The leftover regions fill in the rest of the regionOrder array. The array should have some remaining -1
+		//at its end, given that some regions will overlap with the bad zone and those regions should not be scanned.
 		for(int i=0; i<leftovers.size(); i++){
 			regionOrder[i+pathToGoodZone.size()] = leftovers.get(i)[0];
 		}
 	}
 	
+	/*
+	 * Returns a shortest path from node start to node end, including those nodes. Uses a minimal spanning tree algorithm
+	 * taught in COMP 251.
+	 */
 	private static ArrayList<Integer> getShortestPath(Integer start, Integer end, ArrayList<Integer[]> edges){
 		
 		ArrayList<ArrayList<Integer[]>> edgesUsed = new ArrayList<>();
@@ -236,6 +266,9 @@ public class BlockSearch implements DPMConstants{
 				}
 			i++;
 		}
+		
+		//At this point, edgesUsed and nodesFound constitutes the minimal spanning tree
+		//of start node up to the discovery of end node. From there, the path is built, then returned.
 		
 		ArrayList<Integer> path = new ArrayList<>();
 		Integer node = end;
@@ -289,6 +322,7 @@ public class BlockSearch implements DPMConstants{
 	private static ArrayList<Integer> getRegions(int[] zone){
 		ArrayList<Integer> regions = new ArrayList<>();
 		
+		//Returns an empty ArrayList if the zone corner coordinates are invalid
 		if(	   zone[0]<-1 || zone[0]>10
 			|| zone[1]<0 || zone[1]>11
 			|| zone[2]<0 || zone[2]>11
@@ -441,6 +475,13 @@ public class BlockSearch implements DPMConstants{
 		Repository.turnTo(currentOrientation);	
 	}
 	
+	/**
+	 * Executes a routine where the robot approaches an object in front of it,
+	 * identifies the object, picks it up if the object is a blue block, and 
+	 * backs up to its original position.
+	 * @param distance the distance between the robot and the object in front of it
+	 * @return true if the object was a blue blocked (and thus was picked up).
+	 */
 	public boolean quickPickup(double distance){
 		double x = Repository.getX();
 		double y = Repository.getY();
@@ -536,8 +577,9 @@ public class BlockSearch implements DPMConstants{
 	}
 	
 	/**
-	 * TODO
-	 * @return
+	 * Returns the next vacant location within the good zone where the robot
+	 * can dump the blocks it is holding.
+	 * @return the next vacant dump location
 	 */
 	public double[] getNextDumpZone(){
 		double[] currentDumpZone = nextDumpZone;

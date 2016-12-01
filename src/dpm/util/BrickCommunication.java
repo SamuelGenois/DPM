@@ -14,11 +14,12 @@ import java.util.Map;
 import lejos.hardware.BrickInfo;
 
 /**
- * This class is a container for third party code related to establishing
- * communication between two bricks. This is third party code.
+ * This class holds functionality that should be part of the BrickFinder
+ * class in the leJOS library according to the leJOS library API. However, for some
+ * unknown reason Eclipse fails to recognize the functionality we need, thus we
+ * had no choice but to copy it into the project. 
  * 
- * @author Third party
- *
+ * @author leJOS library
  */
 public class BrickCommunication {
 	

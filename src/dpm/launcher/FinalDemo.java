@@ -57,14 +57,12 @@ public class FinalDemo implements Launcher, DPMConstants{
 		Repository.launch(launcher);
 		
 		//After 4 minutes, the finalization routine is performed.
-		/*
 		(new Timer()).schedule(new TimerTask() {
 			public void run() {
 				Repository.doFinalization();
 				Printer.getInstance().display("Finished");
 			}
 		}, FOUR_MINUTES);
-		*/
 		
 		//The localization routine is performed
 		Repository.localize();
@@ -73,6 +71,11 @@ public class FinalDemo implements Launcher, DPMConstants{
 		Repository.search();
 	}
 	
+	/*
+	 * Attempts to create an instance of FinalDemo, and keep trying
+	 * indefinitely until it succeeds. FinalDemo is expected to fail
+	 * when failures related to WiFi occur.
+	 */
 	private static FinalDemo createFinalDemo(){
 		try{
 			return new FinalDemo();
@@ -82,6 +85,10 @@ public class FinalDemo implements Launcher, DPMConstants{
 		}
 	}
 	
+	/*
+	 * Private constructor. throws an exception if WiFi fails or if
+	 * the data received from WiFi is not within the expected range or values.
+	 */
 	private FinalDemo() throws Exception{
 		
 		HashMap<String, Integer> wifiData = new WifiConnect().ConnectWifi();
